@@ -1,0 +1,12 @@
+Package: BEDr
+Type: Package
+Title: Bayesian Estimation of Densities using R
+Version: 0.1.0
+Author: Kathleen Rey
+Maintainer: The package maintainer <kathleenrey89@gmail.com>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
