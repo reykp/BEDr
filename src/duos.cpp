@@ -1,4 +1,5 @@
 // [[Rcpp::plugins(cpp11)]]
+#include <cmath>
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -13,11 +14,26 @@ using namespace Rcpp;
 //
 
 // [[Rcpp::export]]
-List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
+List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
+
   //Declare list to return: will contain two matrices
-  List C_P(2);
+  List C_P(3);
+
+  double max_y = *std::max_element(y.begin(), y.end());
+  double min_y = *std::min_element(y.begin(), y.end());
+  NumericVector y_orig(y.size());
+
+  for(int j=0; j<y.size(); j++){
+    y_orig[j]=y[j];
+  }
+
+  if((max_y>1)|(min_y<0)){
+    for(int j=0; j<y.size(); j++){
+    y[j]=(y[j]-(min_y-.000001))/(max_y+.000001-(min_y-.000001));
+    }
+  }
   //sort data
-  std::sort(ys.begin(), ys.end());
+  std::sort(y.begin(), y.end());
 
   //Declare 2D arrays to store parameters
   NumericMatrix C(MH_N,k);
@@ -49,7 +65,7 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
 
   //Create initial p vector
   for(int i=0; i<k+1; i++){
-    p_init[i] = rgamma(1, alpha+sum((ys>=c_init_full[i]) & (ys<c_init_full[i+1])),1)[0];
+    p_init[i] = rgamma(1, alpha+sum((y>=c_init_full[i]) & (y<c_init_full[i+1])),1)[0];
 
   }
 
@@ -93,7 +109,7 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
       //cut-point to sample
       int w=k_index[j];
 
-      double m = sum((ys>=Q_C_extra[w]) & (ys<Q_C_extra[w+2]));
+      double m = sum((y>=Q_C_extra[w]) & (y<Q_C_extra[w+2]));
 
       if(m>0){
         //Vector for data between two cut-points
@@ -101,9 +117,9 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
         int btw_index=1;
 
         //Get data between two end points
-        for(int l=0; l<ys.size(); l++){
-          if((ys[l]>=Q_C_extra[w]) & (ys[l]<Q_C_extra[w+2])){
-            xm[btw_index]=ys[l];
+        for(int l=0; l<y.size(); l++){
+          if((y[l]>=Q_C_extra[w]) & (y[l]<Q_C_extra[w+2])){
+            xm[btw_index]=y[l];
             btw_index+=1;
           }
         }
@@ -205,7 +221,7 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
           nk_indiv_log[v] = (v)*log(Q_P[w])-(v)*log(c_max[v]-Q_C_extra[w])+(m-v)*log(Q_P[w+1])-(m-v)*log(Q_C_extra[w+2]-c_max[v])+log(xm[v+1]-xm[v]);
 
           nk_indiv[v] = pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
-          //nk_indiv[v] = ys.size()*(pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v/ys.size())*pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),(m-v)/ys.size()))*(xm[v+1]-xm[v]);
+          //nk_indiv[v] = y.size()*(pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v/y.size())*pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),(m-v)/y.size()))*(xm[v+1]-xm[v]);
 
           nk_indiv_mult[v] = pow((10*Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*pow((10*Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
 
@@ -390,7 +406,7 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
 
       //Create initial p vector
       for(int l=0; l<k+1; l++){
-        p_init[l] = rgamma(1, alpha+sum((ys>=c_init_full[l]) & (ys<c_init_full[l+1])),1)[0];
+        p_init[l] = rgamma(1, alpha+sum((y>=c_init_full[l]) & (y<c_init_full[l+1])),1)[0];
       }
 
       sum_p =0;
@@ -415,6 +431,8 @@ List duos(NumericVector ys,int MH_N=20000,int k=12, double alpha=1){
   //Assign C and P to list
   C_P[0] =C;
   C_P[1] = P;
+  C_P[2]=y_orig;
+
 
   //Return list containing C and P matrix
   return C_P;

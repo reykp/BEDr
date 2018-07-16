@@ -32,4 +32,7 @@ The prior parameter to use in the Dirichlet prior (it is constant)
 \item{P}{
   A matrix containing the poserior draws for the bin probabilities
 }
+\item{y}{
+  The original data passed to the function
+}
 }
