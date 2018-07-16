@@ -11,8 +11,18 @@ using namespace Rcpp;
 //   http://www.rcpp.org/
 //   http://adv-r.had.co.nz/Rcpp.html
 //   http://gallery.rcpp.org/
+//   http://gallery.rcpp.org/
 //
 
+//' @title duos
+//' @description
+//' Modify a string in Rcpp.
+//' @name duos
+//' @param x a vector of strings
+//' @examples
+//' duos(x=c('Hello', "C++", 'header', 'files'))
+//'
+//' @export
 // [[Rcpp::export]]
 List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
 
