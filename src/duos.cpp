@@ -33,11 +33,13 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
   double min_y = *std::min_element(y.begin(), y.end());
   NumericVector y_orig(y.size());
 
+  //Create vector to contain original data
   for(int j=0; j<y.size(); j++){
     y_orig[j]=y[j];
   }
 
-  if((max_y>1)|(min_y<0)){
+  //Check if data is outside (0,1) range
+  if((max_y>=1)|(min_y<=0)){
     for(int j=0; j<y.size(); j++){
     y[j]=(y[j]-(min_y-.000001))/(max_y+.000001-(min_y-.000001));
     }
@@ -48,17 +50,25 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
   //Declare 2D arrays to store parameters
   NumericMatrix C(MH_N,k);
   NumericMatrix P(MH_N,k+1);
+  //Initial values for cutpoints and bin probabilities
   NumericVector c_init(k);
   NumericVector p_init(k+1);
   NumericVector c_init_full(k+2);
+  //Sum of gamma simulations to normalize to sumt to one
   double sum_p=0;
 
   //Initialize values
   for(int i = 0; i < k; i++) {
     c_init[i] = runif(1, 0, 1)[0];
   }
+
+  // c_init[0] = 0.02460801;
+  // c_init[1] =0.19841321;
+  // c_init[2] =0.50856217;
+  // c_init[3] =0.58432119;
+
   //Sort from small to large
-  std::sort (c_init.begin(), c_init.end());
+  std::sort(c_init.begin(), c_init.end());
 
   //assign c_init to first row of matrix
   for(int i = 0; i < k; i++) {
@@ -73,10 +83,9 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
   c_init_full[k+1] = 1;
 
 
-  //Create initial p vector
+ // Create initial p vector
   for(int i=0; i<k+1; i++){
     p_init[i] = rgamma(1, alpha+sum((y>=c_init_full[i]) & (y<c_init_full[i+1])),1)[0];
-
   }
 
   //Normalize initial p
@@ -88,26 +97,38 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
 
   }
 
-  //Gibbs algorithm
-  for(int i=1; i<MH_N;i++){
 
+     // P(0,0) =0.130586202;
+     // P(0,1) =0.187125186;
+     // P(0,2) =0.564395130;
+     // P(0,3) =0.112510424;
+     // P(0,4) =0.005383058;
+
+
+
+  //List test(1);
+
+
+  //Gibbs algorithm
+   for(int i=1; i<MH_N;i++){
+
+    //Vectors to contain previous runs of paramters
     NumericVector Q_C(k);
     NumericVector Q_P(k+1);
     NumericVector Q_C_extra(k+2);
+    //Index for cutpoints
     IntegerVector k_index(k);
 
-    //Start by initializing vectors with previous run to
+    //Start by initializing vectors with previous run
     Q_C = C(i-1,_);
     Q_P = P(i-1,_);
 
-
-    //Calculate vector of c's to use for Gibbs with c0<-0 and ck+1<-1
+    //Calculate vector of c's to use for Gibbs with c0=0 and ck+1=1
     Q_C_extra[0]=0;
     for(int j=1; j<k+1; j++){
       Q_C_extra[j]=Q_C[j-1];
     }
     Q_C_extra[k+1]=1;
-
 
     //Randomize order in which to sample cut-points
     for(int j=0;j<k;j++){
@@ -115,11 +136,17 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
     }
     std::random_shuffle(k_index.begin(), k_index.end());
 
+    // k_index[0] =0;
+    // k_index[1] =1;
+    // k_index[2] =2;
+    // k_index[3] =3;
+
     for(int j=0; j<k; j++){
       //cut-point to sample
       int w=k_index[j];
 
-      double m = sum((y>=Q_C_extra[w]) & (y<Q_C_extra[w+2]));
+      double m = sum(((y>=Q_C_extra[w]) & (y<Q_C_extra[w+2])));
+
 
       if(m>0){
         //Vector for data between two cut-points
@@ -136,6 +163,8 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         //Add C[w-1] and C[w+1] to vector
         xm[0]=Q_C_extra[w];
         xm[xm.size()-1]=Q_C_extra[w+2];
+
+
 
         //Initialize vector to contains maximums on each interval
         NumericVector c_max(m+1);
@@ -154,7 +183,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         //Create to contain ratios of the pdf's
 
         //option1/option2
-        c_max_maxes1= pow((Q_C_extra[w+2]-c_max_choices1[0]),-m)/(pow((Q_C_extra[w+2]-c_max_choices1[1]),(-m)));
+        c_max_maxes1= std::pow((Q_C_extra[w+2]-c_max_choices1[0]),-m)/(std::pow((Q_C_extra[w+2]-c_max_choices1[1]),(-m)));
 
 
         if (c_max_maxes1>1){
@@ -212,7 +241,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
 
         //Pairs (c(1/2), c(1/3), c(2/3))
         //option1/option2
-        c_max_maxes3 = pow((c_max_choices3[0]-Q_C_extra[w]),-m)/(pow((c_max_choices3[1]-Q_C_extra[w]),-m));
+        c_max_maxes3 = std::pow((c_max_choices3[0]-Q_C_extra[w]),-m)/(std::pow((c_max_choices3[1]-Q_C_extra[w]),-m));
 
         if (c_max_maxes3 > 1){
 
@@ -220,6 +249,9 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         } else {
           c_max[m] = c_max_choices3[1];
         }
+
+
+
 
 
         //normalizing constant
@@ -230,12 +262,14 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         for (int v=0; v<m+1;v++) {
           nk_indiv_log[v] = (v)*log(Q_P[w])-(v)*log(c_max[v]-Q_C_extra[w])+(m-v)*log(Q_P[w+1])-(m-v)*log(Q_C_extra[w+2]-c_max[v])+log(xm[v+1]-xm[v]);
 
-          nk_indiv[v] = pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
-          //nk_indiv[v] = y.size()*(pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v/y.size())*pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),(m-v)/y.size()))*(xm[v+1]-xm[v]);
+          nk_indiv[v] = std::pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*std::pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
+          //nk_indiv[v] = y.size()*(std::pow((Q_P[w]/(c_max[v]-Q_C_extra[w])),v/y.size())*std::pow((Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),(m-v)/y.size()))*(xm[v+1]-xm[v]);
 
-          nk_indiv_mult[v] = pow((10*Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*pow((10*Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
+          nk_indiv_mult[v] = std::pow((10*Q_P[w]/(c_max[v]-Q_C_extra[w])),v)*std::pow((10*Q_P[w+1]/(Q_C_extra[w+2]-c_max[v])),m-v)*(xm[v+1]-xm[v]);
 
         }
+
+
 
         //Normalizing constant for bounding function
         NumericVector sum_across(m);
@@ -245,7 +279,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         double nk_mult=0;
 
         for(int l=0; l<m; l++){
-          sum_across[l] = pow(exp(1),nk_indiv_log[l+1]-nk_indiv_log[0]);
+          sum_across[l] = std::pow(exp(1),nk_indiv_log[l+1]-nk_indiv_log[0]);
 
         }
         for(int l=0;l<sum_across.size(); l++){
@@ -265,6 +299,8 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
         //nk_mult = sum(nk_indiv_mult);
 
 
+
+
         //Find probabilites of each interval (these sum to one)
         std::vector< std::pair <double,int> > discrete_prob_log(m+1);
         std::vector< std::pair <double,int> > discrete_prob(m+1);
@@ -274,8 +310,10 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
           //discrete_prob_log.push_back(std::make_pair((nk_indiv_log[l]-nk_log),l) );
           discrete_prob_log[l].first=nk_indiv_log[l]-nk_log;
           discrete_prob_log[l].second=l;
-          discrete_prob.push_back(std::make_pair(nk_indiv[l]/nk,l) );
-          discrete_prob_mult.push_back(std::make_pair(nk_indiv_mult[l]/nk_mult,l) );
+          discrete_prob[l].first=nk_indiv[l]/nk;
+          discrete_prob[l].second=l;
+          discrete_prob_mult[l].first=nk_indiv_mult[l]/nk_mult;
+          discrete_prob_mult[l].second=l;
         }
 
 
@@ -330,7 +368,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
           cum_prob_mult[l].second=discrete_prob_mult[l].second;
 
           for(int q=1; q<l+1; q++){
-            sum_across_sum += pow(exp(1),nk_indiv_log[q]-nk_indiv_log[0]);
+            sum_across_sum += std::pow(exp(1),nk_indiv_log[q]-nk_indiv_log[0]);
           }
 
           cum_prob_log[l].first=nk_indiv_log[0]+log(1+sum_across_sum)-nk_log;
@@ -338,6 +376,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
           sum_across_sum=0;
 
         }
+
 
 
         int found=0;
@@ -352,11 +391,13 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
           int interval;
 
           if (sum_discrete_prob!=0){
-            unif_rand = runif(1,0,1)[0];
-            int select =0;
+              unif_rand = runif(1,0,1)[0];
+                int select =0;
             while(cum_prob[select].first<unif_rand){
               select+=1;
             }
+
+
 
             interval= cum_prob[select].second;
 
@@ -370,7 +411,9 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
             interval= cum_prob_mult[select].second;
 
           }else{
-            unif_rand_log = log(runif(1,0,1)[0]);
+
+              unif_rand_log = log(runif(1,0,1)[0]);
+
             int select =0;
             while(cum_prob_log[select].first<unif_rand_log){
               select+=1;
@@ -395,10 +438,10 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
 
         } //while loop
 
-
-
-
-
+  //
+  //
+  //
+  //
       }else{
         Q_C[w] = runif(1, Q_C_extra[w], Q_C_extra[w+2])[0];
         Q_C_extra[w+1]=Q_C[w];
@@ -429,7 +472,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
       }
 
 
-    } //loop through cut points
+     } //loop through cut points
 
     for(int j=0; j<k+1; j++){
       P(i,j) = Q_P[j];
@@ -442,6 +485,7 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
   C_P[0] =C;
   C_P[1] = P;
   C_P[2]=y_orig;
+
 
 
   //Return list containing C and P matrix

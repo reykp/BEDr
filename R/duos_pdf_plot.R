@@ -9,7 +9,7 @@
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes labs theme_bw theme geom_histogram
-#' geom_line expand_limits ylab
+#' geom_line expand_limits ylab element_text
 
 duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
