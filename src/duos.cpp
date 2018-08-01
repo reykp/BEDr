@@ -39,11 +39,13 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
   }
 
   //Check if data is outside (0,1) range
-  if((max_y>=1)|(min_y<=0)){
+  if((max_y>1)|(min_y<0)){
     for(int j=0; j<y.size(); j++){
-    y[j]=(y[j]-(min_y-.000001))/(max_y+.000001-(min_y-.000001));
+    y[j]=(y_orig[j]-(min_y-.00001))/(max_y+.00001-(min_y-.00001));
+      //Rcout  << y[j] << std::endl;
     }
   }
+
   //sort data
   std::sort(y.begin(), y.end());
 

@@ -28,6 +28,13 @@ duos_cdf <- function(x, duos_output, burnin=NA){
   #Calculate cdf at:
   input <<- x
 
+  y_orig <- duos_output[[3]]
+  min_y <- min(y_orig)
+  max_y <- max(y_orig)
+  if((min_y<0 | max_y>1)){
+    input <<- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+  }
+
   cdf_forapply <- function(x){
     #Vector for probabilities
     pr <- rep(0,length(input))
@@ -50,5 +57,12 @@ duos_cdf <- function(x, duos_output, burnin=NA){
   cdf_y <- apply(cdf_matrix, 1, mean)
   cdf_y_perc <- apply(cdf_matrix, 1, quantile, probs=c(.025, .975))
 
-  return(list(cdf_matrix=cdf_matrix, cdf_y=cdf_y, cdf_percentiles=t(cdf_y_perc), x=input,y_orig=duos_output[[3]]))
+
+  if(scale==FALSE & (min_y<0 | max_y>1)){
+    return(list(cdf_matrix=cdf_matrix, cdf_y=cdf_y, cdf_percentiles=t(cdf_y_perc), x=x))
+
+
+  }else{
+    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=input))
+  }
 }

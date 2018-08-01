@@ -14,6 +14,13 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
   x <- duos_CDF[[4]]
   CDF <- duos_CDF[[2]]
 
+  y_orig <- duos_output[[3]]
+  min_y <- min(y_orig)
+  max_y <- max(y_orig)
+  if(min_y<0 | max_y>1){
+    x <- x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+  }
+
   #Get data
   plot_CDF <- data.frame(x,CDF)
 
@@ -21,6 +28,10 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
   crdble <- data.frame(duos_CDF[[3]])
   names(crdble) <- c("lower", "upper")
   crdble$x <- 1:999/1000
+
+  if(min_y<0 | max_y>1){
+    crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+  }
 
   data_y <- data.frame(duos_CDF[[5]])
   names(data_y) <- "data"
@@ -42,5 +53,6 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }
 
-  g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")
+  g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+    xlab("X")
 }

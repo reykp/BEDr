@@ -2,7 +2,7 @@
 
 
 
-helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
+helper_duos_traceplot <- function(duos_output,burnin=NA){
 
   if(is.na(burnin)){
     burnin <- nrow(duos_output[[1]])/2

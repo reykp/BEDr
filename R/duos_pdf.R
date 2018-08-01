@@ -6,6 +6,7 @@
 #' @param x A single value or vector of values to calculate the density at
 #' @param duos_output The list returned by \code{duos}
 #' @param burnin The desired burnin to discard from including in the estimate
+#' @param scale If the data is not already between 0 or 1, this determines if the pdf is returned on the (0,1) transformed data or the original data scale
 #'
 #' @export
 #' @useDynLib BEDr
@@ -13,7 +14,8 @@
 
 
 
-duos_pdf <- function(x, duos_output, burnin){
+duos_pdf <- function(x, duos_output, burnin,scale=FALSE){
+
 
 
   #Cutpoints
@@ -27,6 +29,14 @@ duos_pdf <- function(x, duos_output, burnin){
   k <<- ncol(C)
   #Calculate pdf at:
   input <<- x
+
+  y_orig <- duos_output[[3]]
+  min_y <- min(y_orig)
+  max_y <- max(y_orig)
+
+  if((min_y<0 | max_y>1)){
+    input <<- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+  }
 
   pdf_forapply <- function(x){
     #Vector for probabilities
@@ -51,5 +61,17 @@ duos_pdf <- function(x, duos_output, burnin){
   pdf_y <- apply(pdf_matrix, 1, mean)
   pdf_y_perc <- apply(pdf_matrix, 1, quantile, probs=c(.025, .975))
 
-  return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=input,y_orig=duos_output[[3]]))
+
+  if(scale==FALSE & (min_y<0 | max_y>1)){
+    pdf_y <- pdf_y/(max_y+.00001-(min_y-.00001))
+    pdf_y_perc[1,] <- pdf_y_perc[1,]/(max_y+.00001-(min_y-.00001))
+    pdf_y_perc[2,] <- pdf_y_perc[2,]/(max_y+.00001-(min_y-.00001))
+
+    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=x))
+
+  }else{
+    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=input))
+  }
+
+
 }
