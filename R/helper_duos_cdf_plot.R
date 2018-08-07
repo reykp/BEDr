@@ -33,7 +33,7 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
     crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
   }
 
-  data_y <- data.frame(duos_CDF[[5]])
+  data_y <- data.frame(y_orig)
   names(data_y) <- "data"
 
   g <- ggplot()+

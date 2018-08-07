@@ -9,15 +9,16 @@ helper_gold_cdf_plot <- function(gold_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
 
   y_orig <- gold_output[[4]]
-  x <- gold_output[[3]]
+  x_gold <- gold_output[[3]]
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
   if(min_y<0 | max_y>1){
-    input <- x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
-    duos_CDF <- gold_cdf(x,gold_output,burnin)
+    input <- (x_gold)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    duos_CDF <- gold_cdf(input,gold_output,burnin)
   }else{
-    duos_CDF <- gold_cdf(x,gold_output,burnin)
+    input <- x_gold
+    duos_CDF <- gold_cdf(x_gold,gold_output,burnin)
   }
 
 

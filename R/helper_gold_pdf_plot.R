@@ -9,15 +9,16 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
 
   y_orig <- gold_output[[4]]
-  x <- gold_output[[3]]
+  x_gold <- gold_output[[3]]
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
   if(min_y<0 | max_y>1){
-    input <- x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
-    gold_density <- gold_pdf(x,gold_output,burnin)
+    input <- x_gold*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    gold_density <- gold_pdf(input,gold_output,burnin)
   }else{
-    gold_density <- gold_pdf(x,gold_output,burnin)
+    input <- x_gold
+    gold_density <- gold_pdf(input,gold_output,burnin)
   }
 
 

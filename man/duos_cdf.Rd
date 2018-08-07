@@ -4,7 +4,7 @@
 \alias{duos_cdf}
 \title{Bayesina Density Estimate of CDF from DUOS.}
 \usage{
-duos_cdf(x, duos_output, burnin = NA)
+duos_cdf(x, duos_output, burnin = NA, scale = FALSE)
 }
 \arguments{
 \item{x}{A single value or vector of values to calculate the CDF at}

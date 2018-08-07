@@ -9,7 +9,7 @@
 #'
 #' @export
 
-duos_cdf <- function(x, duos_output, burnin=NA){
+duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
 
   #if burnin is NA, use half as default
   if(is.na(burnin)){
@@ -21,6 +21,7 @@ duos_cdf <- function(x, duos_output, burnin=NA){
   if(burnin>nrow(C)){
     stop("The specified burnin is greater than the number of iterations.")
   }
+
   #Bin probabilities
   P <- duos_output[[2]]
   #Number of cutpoints
@@ -63,6 +64,6 @@ duos_cdf <- function(x, duos_output, burnin=NA){
 
 
   }else{
-    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=input))
+    return(list(cdf_matrix=cdf_matrix, cdf_y=cdf_y, cdf_percentiles=t(cdf_y_perc), x=input))
   }
 }
