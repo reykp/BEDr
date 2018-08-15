@@ -97,17 +97,18 @@ duos_stat <- function(stat,duos_output, p=NA,burnin=NA,scale=FALSE){
 
   #Get matrix of pdf values
   stats_matrix <- apply(cbind(C_sub,P_sub), 1, stats_apply)
-  mean(stats_matrix[1,])
-  mean(stats_matrix[2,])
+  # mean(stats_matrix[1,])
+  # mean(stats_matrix[2,])
 
   #Create empty list to contain quantiles
   quantiles <- list()
 
-
-  for(i in 1:length(q)){
-    q_loop <<- q[i]
+  if(!is.na(p)){
+  for(i in 1:length(p)){
+    q_loop <<- p[i]
     quant_matrix <- apply(cbind(C_sub,P_sub), 1, duos_quant)
     quantiles[[i]] <- mean(quant_matrix)
+  }
   }
 
   if(stat=="mean"){

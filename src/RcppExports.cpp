@@ -6,16 +6,16 @@
 using namespace Rcpp;
 
 // duos
-List duos(NumericVector y, int MH_N, int k, double alpha);
-RcppExport SEXP _BEDr_duos(SEXP ySEXP, SEXP MH_NSEXP, SEXP kSEXP, SEXP alphaSEXP) {
+List duos(NumericVector y, int k, int MH_N, double alpha);
+RcppExport SEXP _BEDr_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type MH_N(MH_NSEXP);
     Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type MH_N(MH_NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(duos(y, MH_N, k, alpha));
+    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha));
     return rcpp_result_gen;
 END_RCPP
 }

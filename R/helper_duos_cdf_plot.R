@@ -5,33 +5,35 @@
 helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
   if(is.na(burnin)){
-    burnin <- nrow(duos_output[[1]])/2
+    burnin <- nrow(duos_output$C)/2
   }
 
-  duos_CDF <- duos_cdf(1:999/1000,duos_output,burnin)
 
-  #Get x
-  x <- duos_CDF[[4]]
-  CDF <- duos_CDF[[2]]
-
-  y_orig <- duos_output[[3]]
+  y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
+
   if(min_y<0 | max_y>1){
-    x <- x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    input <- (1:999/1000)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    duos_CDF <- duos_cdf(input,duos_output,burnin)
+  }else{
+    input <- 1:999/1000
+    duos_CDF <- duos_cdf(input,duos_output,burnin)
   }
+
+  #Get x
+  x <- duos_CDF$x
+  CDF <- duos_CDF$cdf
+
 
   #Get data
   plot_CDF <- data.frame(x,CDF)
 
   #Get credible intervals
-  crdble <- data.frame(duos_CDF[[3]])
+  crdble <- data.frame(duos_CDF$cri)
   names(crdble) <- c("lower", "upper")
-  crdble$x <- 1:999/1000
+  crdble$x <- duos_CDF$x
 
-  if(min_y<0 | max_y>1){
-    crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
-  }
 
   data_y <- data.frame(y_orig)
   names(data_y) <- "data"

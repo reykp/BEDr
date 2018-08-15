@@ -11,7 +11,7 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes labs theme_bw theme geom_histogram
 #' geom_line expand_limits ylab xlab element_text
-#' @importFrom dplyr %>%
+#' @importFrom dplyr %>% group_by summarise
 #' @importFrom tidyr gather
 #' @importFrom ggforce facet_wrap_paginate
 

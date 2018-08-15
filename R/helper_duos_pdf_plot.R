@@ -3,10 +3,10 @@
 helper_duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
   if(is.na(burnin)){
-    burnin <- nrow(duos_output[[1]])/2
+    burnin <- nrow(duos_output$C)/2
   }
 
-  y_orig <- duos_output[[3]]
+  y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
   if(min_y<0 | max_y>1){
@@ -19,8 +19,8 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
 
   #Get x
-  x <- duos_density[[4]]
-  PDF <- duos_density[[2]]
+  x <- duos_density$x
+  PDF <- duos_density$pdf
 
 
 
@@ -28,16 +28,12 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
   plot_density <- data.frame(x,PDF)
 
   #Get credible intervals
-  crdble <- data.frame(duos_density[[3]])
+  crdble <- data.frame(duos_density$cri)
   names(crdble) <- c("lower", "upper")
-  crdble$x <- duos_density[[4]]
-  # if(min_y<0 | max_y>1){
-  #   crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001)
-  #   crdble$lower <- crdble$lower/(max_y+.00001-(min_y-.00001))
-  #   crdble$upper <- crdble$upper/(max_y+.00001-(min_y-.00001))
-  # }
+  crdble$x <- duos_density$x
 
-  data_y <- data.frame(duos_output[[3]])
+
+  data_y <- data.frame(duos_output$y)
   names(data_y) <- "data"
 
   g <- ggplot(data_y, aes(x=data))+

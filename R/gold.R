@@ -11,6 +11,7 @@
 #'
 #' @export
 #' @importFrom matrixcalc svd.inverse
+#' @importFrom MASS mvrnorm
 
 
 
@@ -21,6 +22,7 @@ gold <- function(y,s1, c1,s2, c2,MH_N){
     y_orig[j]<-y[j]
   }
 
+  y_orig <- sort(y_orig)
   max_y <- max(y)
   min_y <- min(y)
 
@@ -49,12 +51,19 @@ gold <- function(y,s1, c1,s2, c2,MH_N){
   x <- x_full[-1]
   x <- x[-length(x)]
 
+  #Get summary of data to count how many times each data point appeared
+  y_d <- data.frame(y_orig,y)
+  y_d <- y_d %>% group_by(y_orig,y) %>% summarise(n=n())
+
+  y_add <- y_d$y
+  names(y_add) <- rep("data", length(y_add))
+
   #Add in the grid
-  x <- c(x,y)
+  x <- c(x,y_add)
   #Sort the data
   x <- sort(x)
   #Sort the full data
-  x_full <- sort(c(x_full,y))
+  x_full <- sort(c(x_full,y_add))
 
   #calculate the distances between points
   pairwise_dist <- NA
@@ -79,7 +88,10 @@ gold <- function(y,s1, c1,s2, c2,MH_N){
       }
     }
   }
+  #Just in case none to drop
+  if(!is.na(NA)){
   x <- x[-drop]
+  }
   x_full <- c(0,x,1)
 
 
@@ -162,8 +174,8 @@ gold <- function(y,s1, c1,s2, c2,MH_N){
     g_prop <- G[{i-1},]+rw
 
     #Calculate log of numerator and denominator of acceptance probability
-    ap_num_log <- -length(y)*log(sum(widths*exp(g_prop)))+sum(g_prop[which_x])-.5*t(g_prop)%*%cov_prior_inv%*%g_prop
-    ap_den_log <- -length(y)*log(sum(widths*exp(G[{i-1},])))+sum(G[{i-1},which_x])-.5*t(G[{i-1},])%*%cov_prior_inv%*%G[{i-1},]
+    ap_num_log <- -length(y)*log(sum(widths*exp(g_prop)))+sum(y_d$n*g_prop[which_x])-.5*t(g_prop)%*%cov_prior_inv%*%g_prop
+    ap_den_log <- -length(y)*log(sum(widths*exp(G[{i-1},])))+sum(y_d$n*G[{i-1},which_x])-.5*t(G[{i-1},])%*%cov_prior_inv%*%G[{i-1},]
 
     #Calculate log of acceptance probability
     ap_log <- ap_num_log-ap_den_log
@@ -181,7 +193,8 @@ gold <- function(y,s1, c1,s2, c2,MH_N){
 
   #Acceptance Rates
   ar_G <- ar_G[-1]
-
+  print("Acceptance Rate: ")
+  print(sum(ar_G)/length(ar_G))
   #print(sum(ar_G)/length(ar_G))
   return(list(G,widths,x,y_orig,sum(ar_G)/length(ar_G)))
 }

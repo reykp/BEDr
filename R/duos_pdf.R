@@ -1,36 +1,93 @@
-#' Bayesina Density Estimate of PDF from DUOS.
+#' Estimate of PDF from DUOS.
 #'
-#' Calculates an estimate of the density based on the output from \code{duos} for an individual
-#' or vector of values
+#' Calculates a posterior estimate of the PDF based on the output from \code{duos} for an individual
+#' or vector of values.
 #'
-#' @param x A single value or vector of values to calculate the density at
-#' @param duos_output The list returned by \code{duos}
-#' @param burnin The desired burnin to discard from including in the estimate
-#' @param scale If the data is not already between 0 or 1, this determines if the pdf is returned on the (0,1) transformed data or the original data scale
+#' @param x A single value or vector of values at which to calculate the PDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).
+#' @param duos_output The list returned by \code{duos} contain the density estimate results.
+#' @param burnin The desired burnin to discard from the results. If left as NA, the default is half the number of iterations.
+#' @param scale This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export
-#' @useDynLib BEDr
-#' @importFrom Rcpp sourceCpp
+#'
+#' @details
+#'
+#' The function \code{duos_pdf} returns the posterior mean PDF. The PDF is calculated based on the following equation at each iteration:
+#'
+#' \deqn{f(x) =}
+#'
+#' \deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
+#' \deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
+#' \deqn{(\pi_3) / (\gamma_3-\gamma_2) , \gamma_2 \le x  < \gamma_3}
+#' \deqn{...  , ... \le x  < ...}
+#' \deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
+#' \deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
+#'
+#' @return \code{duos_pdf} returns a list of the PDF results from DUOS.
+#'
+#' \item{\code{pdf}}{A vector of the posterior mean PDF values at each value in \code{x}.}
+#' \item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the PDF at each of the points in \code{x}.}
+#' \item{\code{mat}}{A matrix containing the PDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
+#' \item{\code{x}}{A vector containing the values at which to estimate the PDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
+
+#' @examples
+
+#' ## --------------------------------------------------------------------------------
+#' ## Uniform Distribution
+#' ## --------------------------------------------------------------------------------
+#'
+#' # First run 'duos' on data sampled from a Unif(0,1) distribution wiht 70 data points.
+#' duos_unif <- duos(runif(70), k=4, MH_N=20000)
+#' pdf_unif <- duos_pdf(x = c(.1, .5, .65, .98), duos_unif)
+#'
+#' #Examine the PDF at 'x'
+#' pdf_unif$pdf
+#'
+#' #Examine the credibal intervals of the PDF at 'x'
+#' pdf_unif$pri
+#'
+#' ## --------------------------------------------------------------------------------
+#' ## Normal Distribution
+#' ## --------------------------------------------------------------------------------
+#'
+#' # First run 'duos' on data sampled from a Normal(2,2) distribution with 90 data points.
+#' duos_norm <- duos(rnorm(90, 2, 2), k=5, MH_N=20000)
+#' pdf_norm <- duos_pdf(x=c(-1.5, -.3, 0, .3, 2.1), duos_norm)
+#'
+#' #Examine the PDF at 'x'
+#' pdf_norm$pdf
+#'
+#' #Examine the credibal intervals of the PDF at 'x'
+#' pdf_norm$cri
+#'
+#' #Histogram of distribution of the PDF density estimate at -0.3
+#' hist(pdf_norm$mat[,2])
 
 
 
-duos_pdf <- function(x, duos_output, burnin,scale=FALSE){
+duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
 
 
 
   #Cutpoints
-  C <- duos_output[[1]]
+  C <- duos_output$C
+
+  if(is.na(burnin)){
+    burnin <- nrow(C)/2
+  }
   if(burnin>nrow(C)){
     stop("The specified burnin is greater than the number of iterations.")
   }
   #Bin probabilities
-  P <- duos_output[[2]]
+  P <- duos_output$P
+
+
   #Number of cutpoints
   k <<- ncol(C)
   #Calculate pdf at:
   input <<- x
 
-  y_orig <- duos_output[[3]]
+  y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
@@ -57,7 +114,12 @@ duos_pdf <- function(x, duos_output, burnin,scale=FALSE){
   P_sub <- P[burnin:nrow(C),]
 
   #Get matrix of pdf values
-  pdf_matrix <- apply(cbind(C_sub,P_sub), 1, pdf_forapply)
+  #Get matrix of cdf values
+  if(length(x)==1){
+    pdf_matrix <- matrix(apply(cbind(C_sub,P_sub), 1, pdf_forapply), nrow=1)
+  }else{
+    pdf_matrix <- apply(cbind(C_sub,P_sub), 1, pdf_forapply)
+  }
   pdf_y <- apply(pdf_matrix, 1, mean)
   pdf_y_perc <- apply(pdf_matrix, 1, quantile, probs=c(.025, .975))
 
@@ -67,11 +129,14 @@ duos_pdf <- function(x, duos_output, burnin,scale=FALSE){
     pdf_y_perc[1,] <- pdf_y_perc[1,]/(max_y+.00001-(min_y-.00001))
     pdf_y_perc[2,] <- pdf_y_perc[2,]/(max_y+.00001-(min_y-.00001))
 
-    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=x))
+    pdf_matrix <- pdf_matrix/(max_y+.00001-(min_y-.00001))
+
+    return(list(pdf=pdf_y, cri=t(pdf_y_perc), mat=t(pdf_matrix), x=x))
 
   }else{
-    return(list(pdf_matrix=pdf_matrix, pdf_y=pdf_y, pdf_percentiles=t(pdf_y_perc), x=input))
+    return(list(pdf=pdf_y, cri=t(pdf_y_perc), mat=t(pdf_matrix), x=input))
   }
 
 
 }
+

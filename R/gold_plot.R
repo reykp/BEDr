@@ -10,7 +10,7 @@
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes labs theme_bw theme geom_histogram
-#' geom_line expand_limits ylab xlab element_text
+#' geom_line expand_limits ylab xlab element_text geom_point
 
 gold_plot <- function(gold_output,type="pdf",burnin=NA, cr_i=FALSE, data=FALSE){
 

@@ -46,8 +46,9 @@ gold_traceplot <- function(gold_output,npar=9, burnin=NA, start=NA){
 
         print(ggplot(G_plot)+
                 geom_line(aes(Iteration, Simulation))+
+                #geom_point(aes(Iteration, Simulation))+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i))
+                facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i,scales="free"))
 
   }
 

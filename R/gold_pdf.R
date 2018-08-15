@@ -43,12 +43,10 @@ gold_pdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   G_burnin_exp <- exp(G_burnin)
   #Calculate normalizing constat
   nc <- (widths%*%t(G_burnin_exp))
+  nc <- matrix(nc, ncol=1)
 
   #Calcualte pdf at each iteration
-  G_PDF <- G_burnin_exp
-  for (i in 1:nrow(G_burnin_exp)){
-    G_PDF[i,] <- G_PDF[i,]/nc[i]
-  }
+  G_PDF <- G_burnin_exp/nc
 
   #Calculate posterior mean pdf
   pdf_y <- NA
@@ -59,6 +57,7 @@ gold_pdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   #Calculate percentiles
 
   pdf_y_perc <- apply(G_PDF, 2, quantile, probs=c(.025, .975))
+
 
   G_PDF_return <- matrix(0, nrow=nrow(G_PDF), ncol=length(input))
   pdf_y_return <- NA
@@ -100,6 +99,12 @@ gold_pdf <- function(x, gold_output, burnin=NA,scale=FALSE){
 
 
   if(scale==FALSE & (min_y<0 | max_y>1)){
+
+    pdf_y_return <- pdf_y_return/(max_y+.00001-(min_y-.00001))
+    pdf_y_perc_return[1,] <- pdf_y_perc_return[1,]/(max_y+.00001-(min_y-.00001))
+    pdf_y_perc_return[2,] <- pdf_y_perc_return[2,]/(max_y+.00001-(min_y-.00001))
+    G_PDF_return <- G_PDF_return/(max_y+.00001-(min_y-.00001))
+
     return(list(pdf_matrix=G_PDF_return, pdf_y=pdf_y_return, pdf_percentiles=pdf_y_perc_return, x=input))
 
 

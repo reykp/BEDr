@@ -3,34 +3,70 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//   http://gallery.rcpp.org/
-//
 
-//' @title duos
+//' @title duos (Distribution on Uniform Order Statistics)
 //' @description
-//' Modify a string in Rcpp.
+//' Runs Gibbs sampling algorithm to perfum Bayesian density estimation through \code{duos}.
 //' @name duos
-//' @param x a vector of strings
+//' @param y A numberic vector to estimate the density on.
+//' @param k The number of cut-points for the density estimate. See recommendations in the details below.
+//' @param MH_N The number of iterations to run in the algorithm.
+//' @param alpha The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.
 //' @examples
 //' duos(x=c('Hello', "C++", 'header', 'files'))
 //'
 //' @export
-// [[Rcpp::export]]
-List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
+//'
+//' @details
+//'
+//' The density being estimated takes the form below:
+//'
+//' \deqn{f(x) =}
+//'
+//' \deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
+//' \deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
+//' \deqn{(\pi_3) / (\gamma_3-\gamma_2) , \gamma_2 \le x  < \gamma_3}
+//' \deqn{...  , ... \le x  < ...}
+//' \deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
+//' \deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
+//'
+//' where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
+//'
+//' The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
+//'
+//'
+//' @return \code{duos_pdf} returns a list of the PDF results from DUOS.
+//'
+//' \item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
+//' \item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+//' \item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
+//'
+//' @examples
+//' ## --------------------------------------------------------------------------------
+//' ## Beta Distribution
+//' ## --------------------------------------------------------------------------------
+//'
+//' # First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
+//' # Based on the rule of thumb in the details, 7 cutpoints are used
+//' duos_beta <- duos(rbeta(200, 5, 1), k=7, MH_N=20000)
+//'
+//' #Examine estimate of PDF
+//' duos_plot(duos_beta, type="pdf", data=TRUE)
+//'
+//' #Examine estimate of CDF
+//' duos_plot(duos_beta, type="cdf")
+//'
+//' #Find probability of being less than 0.1
+//' duos_cdf(c(.1), duos_beta)$cdf
 
-  //Declare list to return: will contain two matrices
-  List C_P(3);
+// [[Rcpp::export]]
+List duos(NumericVector y, int k=12, int MH_N=20000, double alpha=1){
+
+
 
   double max_y = *std::max_element(y.begin(), y.end());
   double min_y = *std::min_element(y.begin(), y.end());
+
   NumericVector y_orig(y.size());
 
   //Create vector to contain original data
@@ -483,13 +519,12 @@ List duos(NumericVector y,int MH_N=20000,int k=12, double alpha=1){
 
   } //Gibbs iterations
 
-  //Assign C and P to list
-  C_P[0] =C;
-  C_P[1] = P;
-  C_P[2]=y_orig;
-
 
 
   //Return list containing C and P matrix
-  return C_P;
+  return List::create(
+    _["C"] = C,
+    _["P"] = P,
+    _["y"] = y_orig
+  );
 }

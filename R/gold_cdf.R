@@ -108,7 +108,6 @@ gold_cdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   if(scale==FALSE & (min_y<0 | max_y>1)){
     return(list(cdf_matrix=G_CDF_return, cdf_y=cdf_y_return, cdf_percentiles=cdf_y_perc_return, x=input))
 
-
   }else{
     return(list(cdf_matrix=G_CDF_return, cdf_y=cdf_y_return, cdf_percentiles=cdf_y_perc_return, x=input_scaled))
   }

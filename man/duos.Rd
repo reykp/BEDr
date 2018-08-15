@@ -2,15 +2,41 @@
 % Please edit documentation in R/RcppExports.R
 \name{duos}
 \alias{duos}
-\title{duos}
-\usage{
-duos(y, MH_N = 20000L, k = 12L, alpha = 1)
-}
+\title{duos (Distribution on Uniform Order Statistics)}
 \arguments{
-\item{x}{a vector of strings}
+\item{y}{A numberic vector to estimate the density on.}
+
+\item{k}{The number of cut-points for the density estimate. See recommendations in the details below.}
+
+\item{MH_N}{The number of iterations to run in the algorithm.}
+
+\item{alpha}{The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.}
 }
 \description{
-Modify a string in Rcpp.
+Runs Gibbs sampling algorithm to perfum Bayesian density estimation through \code{duos}.
+}
+\details{
+The density being estimated takes the form below:
+
+#' \deqn{f(x) =}
+
+\deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
+\deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
+\deqn{(\pi_3) / (\gamma_3-\gamma_2) , \gamma_2 \le x  < \gamma_3}
+\deqn{...  , ... \le x  < ...}
+\deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
+\deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
+
+where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
+
+The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
+
+
+#' @return \code{duos_pdf} returns a list of the PDF results from DUOS.
+
+\item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
+\item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+\item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
 }
 \examples{
 duos(x=c('Hello', "C++", 'header', 'files'))
