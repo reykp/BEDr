@@ -12,13 +12,20 @@
 
 \item{alpha}{The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.}
 }
+\value{
+\code{duos_pdf} returns a list of the PDF results from DUOS.
+
+\item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
+\item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+\item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
+}
 \description{
 Runs Gibbs sampling algorithm to perfum Bayesian density estimation through \code{duos}.
 }
 \details{
 The density being estimated takes the form below:
 
-#' \deqn{f(x) =}
+\deqn{f(x) =}
 
 \deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
 \deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
@@ -29,16 +36,43 @@ The density being estimated takes the form below:
 
 where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 
+This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1.
+
 The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
-
-
-#' @return \code{duos_pdf} returns a list of the PDF results from DUOS.
-
-\item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
-\item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
-\item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
 }
 \examples{
-duos(x=c('Hello', "C++", 'header', 'files'))
 
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
+# Based on the rule of thumb in the details, 7 cutpoints are used
+duos_beta <- duos(rbeta(200, 5, 1), k=7, MH_N=20000)
+
+#Examine estimate of PDF
+duos_plot(duos_beta, type="pdf", data=TRUE)
+
+#Examine estimate of CDF
+duos_plot(duos_beta, type="cdf")
+
+#Find probability of being less than 0.1
+duos_cdf(c(.1), duos_beta)$cdf
+
+## --------------------------------------------------------------------------------
+## Gamma Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Gamma(5, 0.1) distribution wiht 100 data points.
+# Based on the rule of thumb in the details, 5 cutpoints are used
+duos_gamma <- duos(rgamma(100, 5, 0.1), k=5, MH_N=20000)
+
+#Examine estimate of PDF
+duos_plot(duos_gamma, type="pdf", data=TRUE)
+
+#Examine estimate of CDF
+duos_plot(duos_gamma, type="cdf", cri=TRUE)
+
+#Find probability of being greater than 90
+1-duos_cdf(c(90), duos_gamma)$cdf
 }

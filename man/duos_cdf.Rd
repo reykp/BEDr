@@ -9,9 +9,9 @@ duos_cdf(x, duos_output, burnin = NA, scale = FALSE)
 \arguments{
 \item{x}{A single value or vector of values at which to calculate the CDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).}
 
-\item{duos_output}{The list returned by \code{duos} contain the density estimate results.}
+\item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from the results. If left as NA, the default is half the number of iterations.}
+\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
 
 \item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
@@ -68,5 +68,6 @@ cdf_norm$cdf
 #Examine the credibal intervals of the CDF at 'x'
 cdf_norm$cri
 
-hist(pdf_norm$mat[,4])
+Histogram of distribution of the PDF density estimate at 0.8
+hist(pdf_norm$mat[, 4])
 }

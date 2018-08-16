@@ -1,6 +1,6 @@
 # Plot Probability Density from DUOS.
 
-helper_duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
+helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
 
   if(is.na(burnin)){
     burnin <- nrow(duos_output$C)/2
@@ -44,7 +44,7 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
   if(data==TRUE){
     g <- g+geom_histogram(aes(y=..density..), fill="grey", color="black")
   }
-  if(cr_i==TRUE){
+  if(cri==TRUE){
     g <- g+geom_line(data=crdble, aes(x,lower), color="red",size=.6)+
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }

@@ -4,7 +4,7 @@
 \alias{gold_plot}
 \title{Plot Probability Density from GOLD.}
 \usage{
-gold_plot(gold_output, type = "pdf", burnin = NA, cr_i = FALSE,
+gold_plot(gold_output, type = "pdf", burnin = NA, cri = FALSE,
   data = FALSE)
 }
 \arguments{
@@ -14,7 +14,7 @@ gold_plot(gold_output, type = "pdf", burnin = NA, cr_i = FALSE,
 
 \item{burnin}{The desired burnin to discard from including in the estimate}
 
-\item{cr_i}{An option to include credible intervals}
+\item{cri}{An option to include credible intervals}
 
 \item{data}{An option to overlay histogram of original data on plot}
 }

@@ -1,6 +1,6 @@
 # Plot Probability Density from gold.
 
-helper_gold_pdf_plot <- function(gold_output,burnin=NA, cr_i=FALSE, data=FALSE){
+helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
 
   if(is.na(burnin)){
     burnin <- nrow(gold_output[[1]])/2
@@ -51,7 +51,7 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cr_i=FALSE, data=FALSE){
   if(data==TRUE){
     g <- g+geom_histogram(aes(y=..density..), fill="grey", color="black")
   }
-  if(cr_i==TRUE){
+  if(cri==TRUE){
     g <- g+geom_line(data=crdble, aes(x,lower), color="red",size=.6)+
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }

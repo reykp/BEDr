@@ -2,20 +2,100 @@
 % Please edit documentation in R/duos_stat.R
 \name{duos_stat}
 \alias{duos_stat}
-\title{Bayesina Density Estimate of PDF from DUOS.}
+\title{Statistics from DUOS.}
 \usage{
 duos_stat(stat, duos_output, p = NA, burnin = NA, scale = FALSE)
 }
 \arguments{
-\item{duos_output}{The list returned by \code{duos}}
+\item{stat}{A value indicating choice of statistic (see details).}
 
-\item{burnin}{The desired burnin to discard from including in the estimate}
+\item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{scale}{If the data is not already between 0 or 1, this determines if the pdf is returned on the (0,1) transformed data or the original data scale}
+\item{p}{A list of quantiles if quantiles are requested (see details).}
 
-\item{x}{A single value or vector of values to calculate the density at}
+\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
+
+\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+}
+\value{
+\code{duos_stat} the statistic of choice and the credible intervals associated with it.
+
+If 'mean' or 'm' is specified for \code{stat}:
+\item{\code{mean}}{The E[X] from the details is calulated at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for E[X] calculated using the 0.025th and 0.975th quantiles.}
+
+If 'var' or 'v' is specified for \code{stat}:
+\item{\code{variance}}{The Var[X] from the details is calulated at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for Var[X] calculated using the 0.025th and 0.975th quantiles.}
+
+If 'quant' or 'q' is specified for \code{stat}:
+\item{\code{quantiles}}{The quantils specified in 'p' is calulated using the inverse CDF in the details at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for the quantiles calculated using the 0.025th and 0.975th quantiles.}
 }
 \description{
-Calculates an estimate of the density based on the output from \code{duos} for an individual
-or vector of values
+Calculates a variety of statistics from the \code{duos} density estimate.
+}
+\details{
+The form of the density is below:
+
+\deqn{f(x) =}
+
+\deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
+\deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
+\deqn{(\pi_3) / (\gamma_3-\gamma_2) , \gamma_2 \le x  < \gamma_3}
+\deqn{...  , ... \le x  < ...}
+\deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
+\deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
+
+\eqn{E[X] = \sum_{i=1}^{k+1} ((\gamma_i+\gamma_{i-1}) * \pi_i) / 2}
+
+\eqn{Var[X] = \sum_{i=1}^{k+1} ((\gamma_i^3-\gamma_{i-1}^3) / 3) * \pi_i / (\gamma_i-\gamma_{i-1}) - (E[x])^2}
+
+The inverse CDF is specified below:
+
+ \deqn{F^{-1}(x) =}
+ \deqn{x * (\gamma_1) / (\pi_1) , 0 \le x < \pi_1}
+ \deqn{(x - \pi_1) * (\gamma_2 - \gamma_1) / (\pi_2) + \gamma_1 , \pi_1 \le x  < \pi_1 + \pi_2}
+ \deqn{(x - \pi_1 + \pi_2) * (\gamma_3-\gamma_2) / (\pi_3) + \gamma_2 , \pi_1 + \pi_2 \le x  < \pi_1 + \pi_2 + \pi_3}
+ \deqn{... ,  ... \le x  < ...}
+ \deqn{(x - \sum_{i=1}^{k-1} \pi_i) * (\gamma_k - \gamma_{k-1}) / (\pi_k) + \gamma_{k-1} , \sum_{i=1}^{k-1} \pi_i \le x  < \sum_{i=1}^{k} \pi_i}
+ \deqn{(x - \sum_{i=1}^{k} \pi_i) * (1 - \gamma_{k}) / (\pi_{k+1}) + \gamma_{k} ,  \sum_{i=1}^{k} \pi_i \le x  < 1}
+
+\strong{Options for} \code{stat}
+
+Several of the standard statistics are available through the function \code{duos_stat}.
+\itemize{
+    \item \code{"mean" or "m"}: The E[x] is calculated as in the deatils section for each iteration, and the average of this result is returned as the mean.
+    \item \code{"var" or "v"}: The Var[x] is calculated as in the deatils section for each iteration, and the average of this result is returned as the variance.
+    \item \code{"quant" or "q"}: Returns the quantiles specified in 'p' using the inverse CDF described in the details section.
+    }
+
+\strong{Options for} \code{p}
+
+Default is NA is quantiles are not the desired statistics. If 'quant' is specified for \code{stat}, p is a single value or vectore of values between 0 and 1.
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Beta(2, 6) distribution with 100 data points.
+duos_beta <- duos(rbeta(100, 2, 6), k=5, MH_N=20000)
+
+#Get an estimate of the mean and its credible intervals
+duos_stat(duos_beta, stat="mean")
+
+#Get an estimate of the variance and its credible intervals
+duos_stat(duos_beta, stat="var")
+
+## --------------------------------------------------------------------------------
+## Normal Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Normal(0, 1) distribution with 200 data points.
+duos_norm <- duos(rnorm(200, 0, 1), k=7, MH_N=20000)
+
+#Get an estimate of the quantils and their credible intervals
+duos_stat(duos_norm, stat="q", p=c(0.1, 0.5, 0.9))
 }

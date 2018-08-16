@@ -13,7 +13,6 @@ using namespace Rcpp;
 //' @param MH_N The number of iterations to run in the algorithm.
 //' @param alpha The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.
 //' @examples
-//' duos(x=c('Hello', "C++", 'header', 'files'))
 //'
 //' @export
 //'
@@ -31,6 +30,8 @@ using namespace Rcpp;
 //' \deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
 //'
 //' where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
+//'
+//' This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1.
 //'
 //' The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
 //'
@@ -58,6 +59,23 @@ using namespace Rcpp;
 //'
 //' #Find probability of being less than 0.1
 //' duos_cdf(c(.1), duos_beta)$cdf
+//'
+//' ## --------------------------------------------------------------------------------
+//' ## Gamma Distribution
+//' ## --------------------------------------------------------------------------------
+//'
+//' # First run 'duos' on data sampled from a Gamma(5, 0.1) distribution wiht 100 data points.
+//' # Based on the rule of thumb in the details, 5 cutpoints are used
+//' duos_gamma <- duos(rgamma(100, 5, 0.1), k=5, MH_N=20000)
+//'
+//' #Examine estimate of PDF
+//' duos_plot(duos_gamma, type="pdf", data=TRUE)
+//'
+//' #Examine estimate of CDF
+//' duos_plot(duos_gamma, type="cdf", cri=TRUE)
+//'
+//' #Find probability of being greater than 90
+//' 1-duos_cdf(c(90), duos_gamma)$cdf
 
 // [[Rcpp::export]]
 List duos(NumericVector y, int k=12, int MH_N=20000, double alpha=1){

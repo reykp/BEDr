@@ -4,8 +4,8 @@
 #' or vector of values.
 #'
 #' @param x A single value or vector of values at which to calculate the PDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).
-#' @param duos_output The list returned by \code{duos} contain the density estimate results.
-#' @param burnin The desired burnin to discard from the results. If left as NA, the default is half the number of iterations.
+#' @param duos_output The list returned by \code{duos} containing the density estimate results.
+#' @param burnin The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.
 #' @param scale This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export

@@ -2,7 +2,7 @@
 
 
 
-helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
+helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
 
   if(is.na(burnin)){
     burnin <- nrow(duos_output$C)/2
@@ -50,7 +50,7 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cr_i=FALSE, data=FALSE){
 
     g <- g+geom_line(data=ECDF_data, aes(x,ECDF), color="black", size=.6)
   }
-  if(cr_i==TRUE){
+  if(cri==TRUE){
     g <- g+geom_line(data=crdble, aes(x,lower), color="red",size=.6)+
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }
