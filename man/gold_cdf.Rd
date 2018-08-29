@@ -2,20 +2,75 @@
 % Please edit documentation in R/gold_cdf.R
 \name{gold_cdf}
 \alias{gold_cdf}
-\title{Bayesina Density Estimate of CDF from GOLD.}
+\title{Estimate of CDF from GOLD}
 \usage{
 gold_cdf(x, gold_output, burnin = NA, scale = FALSE)
 }
 \arguments{
-\item{x}{A single value or vector of values to calculate the density at}
+\item{x}{A single value or vector of values at which to calculate the CDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).}
 
-\item{gold_output}{The list returned by \code{duos}}
+\item{gold_output}{The list returned by \code{gold} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from including in the estimate}
+\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
 
-\item{scale}{If the data is not already between 0 or 1, this determines if the pdf is returned on the (0,1) transformed data or the original data scale}
+\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+}
+\value{
+\code{gold_cdf} returns a list of the CDF results from \code{gold}.
+
+\item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
+\item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
+\item{\code{mat}}{A matrix containing the CDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
+\item{\code{x}}{A vector containing the values at which to estimate the CDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
 }
 \description{
-Calculates an estimate of the CDF based on the output from \code{duos} for an individual
-or vector of values
+Calculates a posterior estimate of the CDF based on the output from \code{gold} for an individual
+or vector of values.
+}
+\details{
+The function \code{gold_cdf} returns the posterior mean CDF. The CDF is calculated based on the following equation at each iteration:
+
+\deqn{F(x) =}
+\deqn{\int_{0}^{x} exp(g(y)) / (\int_{0}^{1} exp(g(u)) du)}
+
+where g(x) is an unknown log density.
+
+Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
+These weights are also used in the estimate of the integral in the numerator.
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Beta(2,5) distribution wiht 100 data points.
+y <- rbeta(100, 2, 5)
+gold_beta <- gold(y, s1=1, c1=1, s2=0.8, c2=.8, MH_N=20000)
+#Calculate cdf at a variety of values
+cdf_beta <- gold_cdf(x = c(.01, .25, .6, .9), gold_beta)
+
+#Examine the CDF at 'x'
+cdf_beta$cdf
+
+#Examine the credibal intervals of the CDF at 'x'
+cdf_beta$cri
+
+## --------------------------------------------------------------------------------
+## Normal Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'gold' on data sampled from a Normal(0,1) distribution with 50 data points.
+y <- rnorm(50, 0, 1)
+gold_norm <- gold(y, s1 = 1, c1 = 0.8, s2 = 1, c2 = 0.5, MH_N=20000)
+cdf_norm <- gold_cdf(x=c(-2, -1, 0, .8, 1.8), gold_norm)
+
+#Examine the CDF at 'x'
+cdf_norm$cdf
+
+#Examine the credibal intervals of the CDF at 'x'
+cdf_norm$cri
+
+Histogram of distribution of the CDF density estimate at 0.8
+hist(cdf_norm$mat[, 4])
 }

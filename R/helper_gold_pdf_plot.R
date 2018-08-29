@@ -3,13 +3,13 @@
 helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
 
   if(is.na(burnin)){
-    burnin <- nrow(gold_output[[1]])/2
+    burnin <- nrow(gold_output$G)/2
   }
 
 
 
-  y_orig <- gold_output[[4]]
-  x_gold <- gold_output[[3]]
+  y_orig <- gold_output$y
+  x_gold <- gold_output$x
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
@@ -24,23 +24,23 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
 
 
   #Get x
-  x <- gold_density[[4]]
-  PDF <- gold_density[[2]]
+  x <- gold_density$x
+  PDF <- gold_density$pdf
 
   #Get data
   plot_density <- data.frame(x,PDF)
 
   #Get credible intervals
-  crdble <- data.frame(gold_density[[3]])
+  crdble <- data.frame(gold_density$cri)
   names(crdble) <- c("lower", "upper")
-  crdble$x <- gold_density[[4]]
+  crdble$x <- gold_density$x
   # if(min_y<0 | max_y>1){
   #   crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001)
   #   crdble$lower <- crdble$lower/(max_y+.00001-(min_y-.00001))
   #   crdble$upper <- crdble$upper/(max_y+.00001-(min_y-.00001))
   # }
 
-  data_y <- data.frame(gold_output[[4]])
+  data_y <- data.frame(gold_output$y)
   names(data_y) <- "data"
 
   g <- ggplot(data_y, aes(x=data))+

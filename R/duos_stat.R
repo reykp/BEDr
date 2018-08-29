@@ -50,7 +50,7 @@
 #'
 #' \strong{Options for} \code{p}
 #'
-#' Default is NA is quantiles are not the desired statistics. If 'quant' is specified for \code{stat}, p is a single value or vectore of values between 0 and 1.
+#' Default is NA is quantiles are not the desired statistics. If 'quant' is specified for \code{stat}, p is a single value or vector of values between 0 and 1.
 #'
 #' @return
 #'
@@ -75,7 +75,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Beta(2, 6) distribution with 100 data points.
-#' duos_beta <- duos(rbeta(100, 2, 6), k=5, MH_N=20000)
+#' y <- rbeta(100, 2, 6)
+#' duos_beta <- duos(y, k=5, MH_N=20000)
 #'
 #' #Get an estimate of the mean and its credible intervals
 #' duos_stat(duos_beta, stat="mean")
@@ -88,7 +89,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Normal(0, 1) distribution with 200 data points.
-#' duos_norm <- duos(rnorm(200, 0, 1), k=7, MH_N=20000)
+#' y <- rnorm(200, 0, 1)
+#' duos_norm <- duos(y, k=7, MH_N=20000)
 #'
 #' #Get an estimate of the quantils and their credible intervals
 #' duos_stat(duos_norm, stat="q", p=c(0.1, 0.5, 0.9))

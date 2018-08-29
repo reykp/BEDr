@@ -16,7 +16,7 @@ duos_cdf(x, duos_output, burnin = NA, scale = FALSE)
 \item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
 \value{
-\code{duos_cdf} returns a list of the CDF results from DUOS.
+\code{duos_cdf} returns a list of the CDF results from \code{duos}.
 
 \item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
 \item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
@@ -45,7 +45,8 @@ The function \code{duos_cdf} returns the posterior mean CDF. The CDF is calculat
 ## --------------------------------------------------------------------------------
 
 # First run 'duos' on data sampled from a Beta(2,5) distribution wiht 100 data points.
-duos_beta <- duos(rbeta(100, 2, 5), k=5, MH_N=20000)
+y <- rbeta(100, 2, 5)
+duos_beta <- duos(y, k=5, MH_N=20000)
 cdf_beta <- duos_cdf(x = c(.01, .25, .6, .9), duos_beta)
 
 #Examine the CDF at 'x'
@@ -59,7 +60,8 @@ cdf_beta$cri
 ## --------------------------------------------------------------------------------
 
 # First run 'duos' on data sampled from a Normal(0,1) distribution with 50 data points.
-duos_norm <- duos(rnorm(50, 0, 1), k=4, MH_N=20000)
+y <- rnorm(50, 0, 1)
+duos_norm <- duos(y, k=4, MH_N=20000)
 cdf_norm <- duos_cdf(x=c(-2, -1, 0, .8, 1.8), duos_norm)
 
 #Examine the CDF at 'x'
@@ -68,6 +70,6 @@ cdf_norm$cdf
 #Examine the credibal intervals of the CDF at 'x'
 cdf_norm$cri
 
-Histogram of distribution of the PDF density estimate at 0.8
-hist(pdf_norm$mat[, 4])
+Histogram of distribution of the CDF density estimate at 0.8
+hist(cdf_norm$mat[, 4])
 }

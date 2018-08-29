@@ -23,7 +23,9 @@
 #' \deqn{\sum_{i=1}^{k-1} \pi_i + (\pi_k) / (\gamma_k-\gamma_{k-1}) * (x-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
 #' \deqn{\sum_{i=1}^{k}\pi_i + (\pi_{k+1}) / (1-\gamma_k) * (x-\gamma_k) , \gamma_k \le x  < 1}
 #'
-#' @return \code{duos_cdf} returns a list of the CDF results from DUOS.
+#' @return
+#'
+#' \code{duos_cdf} returns a list of the CDF results from \code{duos}.
 #'
 #' \item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
 #' \item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
@@ -37,7 +39,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Beta(2,5) distribution wiht 100 data points.
-#' duos_beta <- duos(rbeta(100, 2, 5), k=5, MH_N=20000)
+#' y <- rbeta(100, 2, 5)
+#' duos_beta <- duos(y, k=5, MH_N=20000)
 #' cdf_beta <- duos_cdf(x = c(.01, .25, .6, .9), duos_beta)
 #'
 #' #Examine the CDF at 'x'
@@ -51,7 +54,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Normal(0,1) distribution with 50 data points.
-#' duos_norm <- duos(rnorm(50, 0, 1), k=4, MH_N=20000)
+#' y <- rnorm(50, 0, 1)
+#' duos_norm <- duos(y, k=4, MH_N=20000)
 #' cdf_norm <- duos_cdf(x=c(-2, -1, 0, .8, 1.8), duos_norm)
 #'
 #' #Examine the CDF at 'x'
@@ -60,8 +64,8 @@
 #' #Examine the credibal intervals of the CDF at 'x'
 #' cdf_norm$cri
 #'
-#' Histogram of distribution of the PDF density estimate at 0.8
-#' hist(pdf_norm$mat[, 4])
+#' Histogram of distribution of the CDF density estimate at 0.8
+#' hist(cdf_norm$mat[, 4])
 
 duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
 
@@ -70,32 +74,42 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
     burnin <- nrow(duos_output$C)/2
   }
 
-  #Cutpoints
+  #Get the Cutpoints
   C <- duos_output$C
+
+  #Do an error check to make sure burnin not greater than number of iterations
   if(burnin>nrow(C)){
     stop("The specified burnin is greater than the number of iterations.")
   }
 
-  #Bin probabilities
+  #Get the bin proportions
   P <- duos_output$P
+
   #Number of cutpoints
   k <<- ncol(C)
+
   #Calculate cdf at:
   input <<- x
 
+  #Get the data
   y_orig <- duos_output$y
+  #Calculate the maximum and minimum
   min_y <- min(y_orig)
   max_y <- max(y_orig)
+
+  #If the data is not between 0 and 1, scale 'x' to be on the same scale the density was estimated on
   if((min_y<0 | max_y>1)){
     input <<- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
   }
 
+  #Function that calculates CDF
+  #input and k and global paramters
   cdf_forapply <- function(x){
-    #Vector for probabilities
+    #Vector for CDF results
     pr <- rep(0,length(input))
     #Vector for cutpoints from rows with 0 and 1 added in
     c_full <- c(0, x[1:k],1)
-    #Bin probabiliites
+    #Bin proportions
     p <- x[{k+1}:length(x)]
     #Loop to get CDF estimates
     for (j in 1:(k+1)){
@@ -113,14 +127,15 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   }else{
     cdf_matrix <- apply(cbind(C_sub,P_sub), 1, cdf_forapply)
   }
+  #Calculate mean at each 'x'
   cdf_y <- apply(cdf_matrix, 1, mean)
+  #Calculate percentiles at each 'x'
   cdf_y_perc <- apply(cdf_matrix, 1, quantile, probs=c(.025, .975))
 
-
+  #If data is outside (0,1) and scaling was not requested, return all results on data scale, else
+  #return scaled values
   if(scale==FALSE & (min_y<0 | max_y>1)){
     return(list(cdf=cdf_y, cri=t(cdf_y_perc), mat=cdf_matrix,x=x))
-
-
   }else{
     return(list(cdf=cdf_y, cri=t(cdf_y_perc), mat=cdf_matrix, x=input))
   }

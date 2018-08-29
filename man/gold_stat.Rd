@@ -2,20 +2,92 @@
 % Please edit documentation in R/gold_stat.R
 \name{gold_stat}
 \alias{gold_stat}
-\title{Bayesina Density Estimate of PDF from DUOS.}
+\title{Statistics from GOLD.}
 \usage{
 gold_stat(stat, gold_output, p = NA, burnin = NA, scale = FALSE)
 }
 \arguments{
-\item{burnin}{The desired burnin to discard from including in the estimate}
+\item{stat}{A value indicating choice of statistic (see details).}
 
-\item{scale}{If the data is not already between 0 or 1, this determines if the pdf is returned on the (0,1) transformed data or the original data scale}
+\item{gold_output}{The list returned by \code{gold} containing the density estimate results.}
 
-\item{x}{A single value or vector of values to calculate the density at}
+\item{p}{A list of quantiles if quantiles are requested (see details).}
 
-\item{duos_output}{The list returned by \code{duos}}
+\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
+
+\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+}
+\value{
+\code{gold_stat} the statistic of choice and the credible intervals associated with it.
+
+If 'mean' or 'm' is specified for \code{stat}:
+\item{\code{mean}}{The E[X] from the details is calulated at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for E[X] calculated using the 0.025th and 0.975th quantiles.}
+
+If 'var' or 'v' is specified for \code{stat}:
+\item{\code{variance}}{The Var[X] from the details is calulated at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for Var[X] calculated using the 0.025th and 0.975th quantiles.}
+
+If 'quant' or 'q' is specified for \code{stat}:
+\item{\code{quantiles}}{The quantils specified in 'p' is calulated using the inverse CDF in the details at each iteration and the mean of these is returned.}
+\item{\code{cri}}{The credible intervals for the quantiles calculated using the 0.025th and 0.975th quantiles.}
 }
 \description{
-Calculates an estimate of the density based on the output from \code{duos} for an individual
-or vector of values
+Calculates a variety of statistics from the \code{gold} density estimate.
+}
+\details{
+The form of the density is below:
+
+\deqn{f(x) =}
+\deqn{exp(g(x)) / (\int_{0}^{1} exp(g(u)) du)}
+
+where g(x) is an unknown log density.
+
+Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
+
+\eqn{E[X] = \int_{0}^{1} x * exp(g(x)) / (\int_{0}^{1} exp(g(u)) du)}
+
+\eqn{Var[X] = \int_{0}^{1} (x-x^2) * exp(g(x)) / (\int_{0}^{1} exp(g(u)) du)}
+
+The inverse CDF is specified below:
+
+\strong{Options for} \code{stat}
+
+Several of the standard statistics are available through the function \code{gold_stat}.
+\itemize{
+    \item \code{"mean" or "m"}: The E[x] is calculated as in the deatils section for each iteration, and the average of this result is returned as the mean.
+    \item \code{"var" or "v"}: The Var[x] is calculated as in the deatils section for each iteration, and the average of this result is returned as the variance.
+    \item \code{"quant" or "q"}: Returns the quantiles specified in 'p' using the inverse CDF described in the details section.
+    }
+
+\strong{Options for} \code{p}
+
+Default is NA is quantiles are not the desired statistics. If 'quant' is specified for \code{stat}, p is a single value or vector of values between 0 and 1.
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'gold' on data sampled from a Beta(2, 6) distribution with 100 data points.
+y <- rbeta(100, 2, 6)
+gold_beta <- gold(y, s1 = 1, c1 = 1, s2 = 1, c2 = 0.8, MH_N = 20000)
+
+#Get an estimate of the mean and its credible intervals
+gold_stat(gold_beta, stat="mean")
+
+#Get an estimate of the variance and its credible intervals
+gold_stat(gold_beta, stat="var")
+
+## --------------------------------------------------------------------------------
+## Normal Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'gold' on data sampled from a Normal(0, 1) distribution with 200 data points.
+y <- rnorm(200, 0, 1)
+gold_norm <- gold(y, s1 = 1, c1 = 1, s2 = 0.5, c2 = 0.8, MH_N = 20000)
+
+#Get an estimate of the quantils and their credible intervals
+gold_stat(gold_norm, stat="q", p=c(0.1, 0.5, 0.9))
 }

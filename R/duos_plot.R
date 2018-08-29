@@ -1,6 +1,6 @@
 #' Plot PDF or CDF
 #'
-#' Plots the posterior mean PDF or CDF based on the output from \text{duos}.
+#' Plots the posterior mean PDF or CDF based on the output from \code{duos}.
 #'
 #' @param duos_output The list returned by \code{duos} containing the density estimate results.
 #' @param type The type of desired graph (see details).
@@ -67,7 +67,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Uniform(0,1) distribution with 50 data points.
-#' duos_unif <- duos(runif(50), k=4, MH_N=20000)
+#' y <- runif(50)
+#' duos_unif <- duos(y, k=4, MH_N=20000)
 #'
 #' #Plot the PDF with the data and credible intervals
 #' duos_plot(duos_unif, type="pdf", data=TRUE)
@@ -80,7 +81,8 @@
 #' ## --------------------------------------------------------------------------------
 #'
 #' # First run 'duos' on data sampled from a Beta(0.5,0.5) distribution with 300 data points.
-#' duos_arcsin <- duos(rbeta(300, 0.5, 0.5), k=10, MH_N=20000)
+#' y <- rbeta(300, 0.5, 0.5)
+#' duos_arcsin <- duos(y, k=10, MH_N=20000)
 #' #Plot the PDF with the data
 #' duos_plot(duos_arcsin, type="pdf", data=TRUE)
 #'

@@ -4,21 +4,60 @@
 \alias{gold}
 \title{Bayesina Density Estimation Using GOLD (Gaussian process On a Log Density).}
 \usage{
-gold(y, s1, c1, s2, c2, MH_N)
+gold(y, s1, c1, s2, c2, MH_N = 20000)
 }
 \arguments{
-\item{y}{a numeric vector containing the data on which to estimate a density}
+\item{y}{A numberic vector to estimate the density on.}
 
-\item{s1}{the standard deviation of the Gaussian prior}
+\item{s1}{The standard deviation of the Gaussian prior.}
 
-\item{c1}{the correlation parameter of the Gaussian prior that controls the correlation in the covariance structure}
+\item{c1}{The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure.}
 
-\item{s2}{the standard deviation of the Gaussian proposal distribution}
+\item{s2}{The standard deviation of the Gaussian proposal distribution.}
 
-\item{c2}{the correlation paramtet that controls the covariance structure of the Gaussian proposal distribution}
+\item{c2}{The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.}
 
-\item{MH_N}{the number of iterations}
+\item{MH_N}{the number of iterations to run in the algorithm.}
+}
+\value{
+\code{gold} returns a list containing the density estimate results.
+
+\item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations.}
+\item{\code{widths}}{A vector with the widths around each each x used for g(x).}
+\item{\code{x}}{A vector with the points at which g(x) was estimated.}
+\item{\code{y}}{A vector containing the data introduced to \code{gold} for density estimation.}
+\item{\code{ar}}{The acceptance rate from the random walk proposals.}
 }
 \description{
-Bayesian density estimation through a Gaussian process on a log density
+Estimates a density Bayesian techniques using a Gaussian process on a log density
+}
+\details{
+The density being estimated takes the form below:
+
+\deqn{f(x) =}
+\deqn{exp(g(x)) / (\int_{0}^{1} exp(g(u)) du)}
+
+where g(x) is an unknown log density.
+
+Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
+# Based on the rule of thumb in the details, 7 cutpoints are used
+y <- rbeta(200, 5, 1)
+gold_beta <- gold(y, s1 = 1, c1 = 0.8, s2 = 0.4, c2 = 0.5, MH_N = 20000)
+
+#Examine estimate of PDF
+gold_plot(gold_beta, type="pdf", data=TRUE)
+
+#Examine estimate of CDF
+gold_plot(gold_beta, type="cdf")
+
+#Find probability of being less than 0.4
+gold_cdf(c(.4), gold_beta)$cdf
 }

@@ -8,8 +8,8 @@ helper_gold_cdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
 
 
 
-  y_orig <- gold_output[[4]]
-  x_gold <- gold_output[[3]]
+  y_orig <- gold_output$y
+  x_gold <- gold_output$x
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
@@ -24,23 +24,23 @@ helper_gold_cdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
 
 
   #Get x
-  x <- duos_CDF[[4]]
-  CDF <- duos_CDF[[2]]
+  x <- duos_CDF$x
+  CDF <- duos_CDF$cdf
 
   #Get data
   plot_CDF <- data.frame(x,CDF)
 
   #Get credible intervals
-  crdble <- data.frame(duos_CDF[[3]])
+  crdble <- data.frame(duos_CDF$cri)
   names(crdble) <- c("lower", "upper")
-  crdble$x <- duos_CDF[[4]]
+  crdble$x <- duos_CDF$x
   # if(min_y<0 | max_y>1){
   #   crdble$x <- crdble$x*(max_y+.00001-(min_y-.00001))+(min_y-.00001)
   #   crdble$lower <- crdble$lower/(max_y+.00001-(min_y-.00001))
   #   crdble$upper <- crdble$upper/(max_y+.00001-(min_y-.00001))
   # }
 
-  data_y <- data.frame(gold_output[[4]])
+  data_y <- data.frame(gold_output$y)
   names(data_y) <- "data"
 
   g <- ggplot()+

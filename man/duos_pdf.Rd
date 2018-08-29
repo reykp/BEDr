@@ -45,7 +45,8 @@ The function \code{duos_pdf} returns the posterior mean PDF. The PDF is calculat
 ## --------------------------------------------------------------------------------
 
 # First run 'duos' on data sampled from a Unif(0,1) distribution wiht 70 data points.
-duos_unif <- duos(runif(70), k=4, MH_N=20000)
+y <- runif(70)
+duos_unif <- duos(y, k=4, MH_N=20000)
 pdf_unif <- duos_pdf(x = c(.1, .5, .65, .98), duos_unif)
 
 #Examine the PDF at 'x'
@@ -59,7 +60,8 @@ pdf_unif$pri
 ## --------------------------------------------------------------------------------
 
 # First run 'duos' on data sampled from a Normal(2,2) distribution with 90 data points.
-duos_norm <- duos(rnorm(90, 2, 2), k=5, MH_N=20000)
+y <- rnorm(90, 2, 2)
+duos_norm <- duos(y, k=5, MH_N=20000)
 pdf_norm <- duos_pdf(x=c(-1.5, -.3, 0, .3, 2.1), duos_norm)
 
 #Examine the PDF at 'x'

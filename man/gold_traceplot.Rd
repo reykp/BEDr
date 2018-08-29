@@ -2,21 +2,73 @@
 % Please edit documentation in R/gold_traceplot.R
 \name{gold_traceplot}
 \alias{gold_traceplot}
-\title{Traceplots from DUOS.}
+\title{Plot Traceplots}
 \usage{
-gold_traceplot(gold_output, npar = 9, burnin = NA, start = NA)
+gold_traceplot(gold_output, npar = 9, burnin = 1)
 }
 \arguments{
-\item{gold_output}{The list returned by \code{duos}}
+\item{gold_output}{The list returned by \code{gold} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from including in the estimate}
+\item{npar}{The number of paramters to plot. 3X3 grids of tracepltos are created (DEFAULT is 9).}
 
-\item{type}{The type of desired graph (pdf, cdf)}
-
-\item{cr_i}{An option to include credible intervals}
-
-\item{data}{An option to overlay histogram of original data on plot}
+\item{burnin}{The desired burnin to discard from the results. By default it is 1 so that all iterations are plotted.}
+}
+\value{
+A plot of traceplots.
 }
 \description{
-Traceplots
+Plots the traceplots of the paramters from \code{gold}.
+}
+\details{
+If \code{npar} is specified to be 9, 9 paramters (as equally spaced as possible) are chosen to plot.
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Uniform Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Uniform(0,1) distribution with 50 data points.
+duos_unif <- duos(runif(50), k=4, MH_N=20000)
+
+#Plot the traceplots of the cut-points all in a single graph
+duos_traceplot(duos_unif)
+
+## --------------------------------------------------------------------------------
+## Gamma Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a gamma(1, 3) distribution with 300 data points.
+y <- rgamma(300, 1, 3)
+gold_gamma <- gold(y, s1 = 2, c1 = 4, s2 = 0.6, c2 = 1, MH_N = 20000)
+
+#By default, 9 parameters are plotted
+gold_traceplot(gold_gamma)
+
+#Plot the PDF with the credible intervals
+gold_plot(gold_gamma, type="pdf", cri=TRUE)
+
+## --------------------------------------------------------------------------------
+## Bimodal Distribution
+## --------------------------------------------------------------------------------
+
+#Sample 150 random uniforms
+U =runif(150)
+y = rep(NA,150)
+#Sampling from the mixture
+for(i in 1:150){
+  if(U[i]<.3){
+   y[i] = rnorm(1,0,1)
+  }else {
+   y[i] = rnorm(1,4,1)
+  }
+}
+# First run 'duos' on data sampled from a bimodal distribution with 150 data points.
+gold_bimodal <- gold(y, s1 = 1, c1 = 5, s2 = 0.4, c2 = 4, MH_N = 20000)
+
+#Plot 15 of the paramters after discarding the first 5000
+gold_traceplot(gold_bimodal, npar = 15, burnin = 5000)
+
+#Plot the CDF with the emprical CDF
+gold_plot(gold_bimodal, type = "cdf", data = TRUE)
 }

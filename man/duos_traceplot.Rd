@@ -2,22 +2,90 @@
 % Please edit documentation in R/duos_traceplot.R
 \name{duos_traceplot}
 \alias{duos_traceplot}
-\title{Traceplots from DUOS.}
+\title{Plot Traceplots}
 \usage{
-duos_traceplot(duos_output, parameters = "c", plots = "all", burnin = NA,
-  start = NA)
+duos_traceplot(duos_output, parameters = "c", plots = "all", burnin = 1)
 }
 \arguments{
-\item{duos_output}{The list returned by \code{duos}}
+\item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from including in the estimate}
+\item{parameters}{The group of paramters to plot (see details).}
 
-\item{type}{The type of desired graph (pdf, cdf)}
+\item{plots}{An option to plot paramters on the same plot or as individuals (see details).}
 
-\item{cr_i}{An option to include credible intervals}
-
-\item{data}{An option to overlay histogram of original data on plot}
+\item{burnin}{The desired burnin to discard from the results. By default it is 1 so that all iterations are plotted.}
+}
+\value{
+A plot of traceplots.
 }
 \description{
-Traceplots
+Plots the traceplots of the paramters from \code{duos}.
+}
+\details{
+\strong{Options for} \code{parameters}
+
+There are two sets of paramters that can plotted in the traceplots: the cut-points and the proportion parameters.
+\itemize{
+    \item \code{"c"}: Plots the traceplots of the cut-points that are ordered and between 0 and 1 (DEFAULT).
+    \item \code{"p"}: Plots the traceplots of the proportion paramters that sum to one.
+  }
+
+\strong{Options for} \code{plots}
+
+There are several options on how to display the traceplots.
+\itemize{
+    \item \code{"all"}: Overlays all traceplots in one plot (works well for the cut-point parameters) (DEFAULT).
+    \item \code{"indiv"}: Create a grid of traceplots where each plot contains a single paramter's traceplot. Four plots are included in a traceplot so multiple panels are created there are more than 4 paramters.
+  }
+}
+\examples{
+
+## --------------------------------------------------------------------------------
+## Uniform Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Uniform(0,1) distribution with 50 data points.
+duos_unif <- duos(runif(50), k=4, MH_N=20000)
+
+#Plot the traceplots of the cut-points all in a single graph
+duos_traceplot(duos_unif)
+
+## --------------------------------------------------------------------------------
+## Beta Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Beta(0.5,0.5) distribution with 300 data points.
+duos_arcsin <- duos(rbeta(300, 0.5, 0.5), k=10, MH_N=20000)
+
+#Plot the traceplots for the cut-points as individual graphs
+#Note: The plots are printed four at a time so multiple panels are printed
+duos_traceplot(duos_arcsin, plots="indiv")
+
+#Plot the CDF with the credible intervals
+duos_plot(duos_arcsin, type="cdf", cri=TRUE)
+
+## --------------------------------------------------------------------------------
+## Bimodal Distribution
+## --------------------------------------------------------------------------------
+
+#Sample 150 random uniforms
+U =runif(150)
+y = rep(NA,150)
+#Sampling from the mixture
+for(i in 1:150){
+  if(U[i]<.3){
+   y[i] = rnorm(1,0,1)
+  }else {
+   y[i] = rnorm(1,4,1)
+  }
+}
+# First run 'duos' on data sampled from a bimodal distribution with 150 data points.
+duos_bimodal <- duos(y, k=6, MH_N=20000)
+
+#Plot the individual traceplots for the proportion paramters
+duos_traceplot(duos_bimodal, parameters="p", plots="indiv")
+
+#Plot the individual tracepltos for the cut-points with a burnin of 10,000
+duos_traceplot(duos_bimodal, parameters="c", burnin=10000)
+
 }

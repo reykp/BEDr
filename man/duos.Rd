@@ -13,7 +13,7 @@
 \item{alpha}{The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.}
 }
 \value{
-\code{duos_pdf} returns a list of the PDF results from DUOS.
+\code{duos} returns a list of density estimate results.
 
 \item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
 \item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
@@ -48,7 +48,8 @@ The recommended number of cupoints starts are 3 or 4 for data sets around 50 dat
 
 # First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
 # Based on the rule of thumb in the details, 7 cutpoints are used
-duos_beta <- duos(rbeta(200, 5, 1), k=7, MH_N=20000)
+y <- rbeta(200, 5, 1)
+duos_beta <- duos(y, k=7, MH_N=20000)
 
 #Examine estimate of PDF
 duos_plot(duos_beta, type="pdf", data=TRUE)
@@ -65,7 +66,8 @@ duos_cdf(c(.1), duos_beta)$cdf
 
 # First run 'duos' on data sampled from a Gamma(5, 0.1) distribution wiht 100 data points.
 # Based on the rule of thumb in the details, 5 cutpoints are used
-duos_gamma <- duos(rgamma(100, 5, 0.1), k=5, MH_N=20000)
+y <- rgamma(100, 5, 0.1)
+duos_gamma <- duos(, k=5, MH_N=20000)
 
 #Examine estimate of PDF
 duos_plot(duos_gamma, type="pdf", data=TRUE)
@@ -75,4 +77,22 @@ duos_plot(duos_gamma, type="cdf", cri=TRUE)
 
 #Find probability of being greater than 90
 1-duos_cdf(c(90), duos_gamma)$cdf
+
+## --------------------------------------------------------------------------------
+## Uniform Distribution
+## --------------------------------------------------------------------------------
+
+# First run 'duos' on data sampled from a Uniform(0, 1) distribution wiht 150 data points.
+# Based on the rule of thumb in the details, 6 cutpoints are used
+y <- runif(150)
+duos_unif <- duos(y, k=6, MH_N=20000)
+
+#Examine estimate of PDF
+duos_plot(duos_unif, type="pdf", data=TRUE)
+
+#Examine estimate of CDF
+duos_plot(duos_unif, type="cdf", cri=TRUE)
+
+#Find probability of being less than 0.3
+duos_cdf(c(.3), duos_unif)$cdf
 }
