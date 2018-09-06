@@ -71,12 +71,24 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE){
   max_y <- max(y)
   min_y <- min(y)
 
+  # mx_mn <- c(min_y, max_y)
+  # largest <- mx_mn[which(abs(mx_mn)==max(abs(mx_mn)))]
+
+  # new_upper <- ifelse(max_y>=0, max_y+2*sd(y), max_y-2*sd(y))
+  # new_lower <- ifelse(min_y>=0, min_y+2*sd(y), min_y-2*sd(y))
+
   #Check if data is outside (0,1) range
-  if((max_y>1)|(min_y<0)){
-    for(j in 1:length(y)){
-      y[j] <- (y_orig[j]-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
-    }
+if((max_y>1)|(min_y<0)){
+  for(j in 1:length(y)){
+    y[j] <- (y_orig[j]-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
   }
+}
+
+  # if((max_y>1)|(min_y<0)){
+  #   for(j in 1:length(y)){
+  #     y[j] <- (y_orig[j]-new_lower)/(new_upper-new_lower)
+  #   }
+  # }
 
   y <- sort(y)
   #Create grid:0,0,01,...,.99,1

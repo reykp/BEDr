@@ -85,12 +85,21 @@ gold_pdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
+  # new_upper <- ifelse(max_y>=0, max_y+2*sd(y), max_y-2*sd(y))
+  # new_lower <- ifelse(min_y>=0, min_y+2*sd(y), min_y-2*sd(y))
+
   #IF original data lies outside of 0 and 1, needs to be scaled
   if((min_y<0 | max_y>1)){
     input_scaled <- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
   }else{
     input_scaled <- input
   }
+
+  # if((min_y<0 | max_y>1)){
+  #   input_scaled <- (x-new_lower)/(new_upper-new_lower)
+  # }else{
+  #   input_scaled <- input
+  # }
 
   #if no burnin assigned, use half of iterations as burnin
   if(is.na(burnin)){
@@ -166,13 +175,17 @@ gold_pdf <- function(x, gold_output, burnin=NA,scale=FALSE){
     }
   }
 
-
   if(scale==FALSE & (min_y<0 | max_y>1)){
     #To have pdf on original scale, need to transform estimate of pdf
     pdf_y_return <- pdf_y_return/(max_y+.00001-(min_y-.00001))
     pdf_y_perc_return[,1] <- pdf_y_perc_return[,1]/(max_y+.00001-(min_y-.00001))
     pdf_y_perc_return[,2] <- pdf_y_perc_return[,2]/(max_y+.00001-(min_y-.00001))
     G_PDF_return <- G_PDF_return/(max_y+.00001-(min_y-.00001))
+
+    # pdf_y_return <- pdf_y_return/(new_upper-new_lower)
+    # pdf_y_perc_return[,1] <- pdf_y_perc_return[,1]/(new_upper-new_lower)
+    # pdf_y_perc_return[,2] <- pdf_y_perc_return[,2]/(new_upper-new_lower)
+    # G_PDF_return <- G_PDF_return/(new_upper-new_lower)
 
     return(list(pdf=pdf_y_return, cri=pdf_y_perc_return, mat=G_PDF_return, x=input))
 
