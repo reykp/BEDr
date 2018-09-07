@@ -97,7 +97,7 @@
 #' duos_cdf(c(.3), duos_unif)$cdf
 NULL
 
-duos <- function(y, k = 12L, MH_N = 20000L, alpha = 1) {
-    .Call('_BEDr_duos', PACKAGE = 'BEDr', y, k, MH_N, alpha)
+duos <- function(y, k = 12, MH_N = 20000L, alpha = 1, scale_l = 0.00001, scale_u = 0.00001) {
+    .Call('_BEDr_duos', PACKAGE = 'BEDr', y, k, MH_N, alpha, scale_l, scale_u)
 }
 

@@ -6,22 +6,24 @@
 using namespace Rcpp;
 
 // duos
-List duos(NumericVector y, int k, int MH_N, double alpha);
-RcppExport SEXP _BEDr_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP) {
+List duos(NumericVector y, double k, int MH_N, double alpha, double scale_l, double scale_u);
+RcppExport SEXP _BEDr_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type k(kSEXP);
     Rcpp::traits::input_parameter< int >::type MH_N(MH_NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha));
+    Rcpp::traits::input_parameter< double >::type scale_l(scale_lSEXP);
+    Rcpp::traits::input_parameter< double >::type scale_u(scale_uSEXP);
+    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha, scale_l, scale_u));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BEDr_duos", (DL_FUNC) &_BEDr_duos, 4},
+    {"_BEDr_duos", (DL_FUNC) &_BEDr_duos, 6},
     {NULL, NULL, 0}
 };
 

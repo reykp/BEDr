@@ -100,9 +100,20 @@ using namespace Rcpp;
 //' duos_cdf(c(.3), duos_unif)$cdf
 
 // [[Rcpp::export]]
-List duos(NumericVector y, int k=12, int MH_N=20000, double alpha=1){
+List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double scale_l = 0.00001, double scale_u = 0.00001){
 
-
+  //Stop function and throw errors
+  if (scale_l < 0.0) {         	// scale paramter needs to be greater than or equal to 0
+    throw std::range_error("Scale parameter should be >= 0.");
+  }
+  if (scale_u < 0.0) {         	// scale paramter needs to be greater than or equal to 0
+    throw std::range_error("Scale parameter should be >= 0.");
+  }
+  
+  if(k/ceil(k)<1){
+    throw std::range_error("k should be an integer value.");
+    
+  }
 
   double max_y = *std::max_element(y.begin(), y.end());
   double min_y = *std::min_element(y.begin(), y.end());
@@ -117,7 +128,7 @@ List duos(NumericVector y, int k=12, int MH_N=20000, double alpha=1){
   //Check if data is outside (0,1) range
   if((max_y>1)|(min_y<0)){
     for(int j=0; j<y.size(); j++){
-    y[j]=(y_orig[j]-(min_y-.00001))/(max_y+.00001-(min_y-.00001));
+    y[j]=(y_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l));
       //Rcout  << y[j] << std::endl;
     }
   }
