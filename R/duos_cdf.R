@@ -81,7 +81,6 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   if(burnin>nrow(C)){
     stop("The specified burnin is greater than the number of iterations.")
   }
-
   #Get the bin proportions
   P <- duos_output$P
 
@@ -97,9 +96,11 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
+  scale_l <- duos_output$scale_l
+  scale_u <- duos_output$scale_u
   #If the data is not between 0 and 1, scale 'x' to be on the same scale the density was estimated on
   if((min_y<0 | max_y>1)){
-    input <<- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+    input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
   }
 
   #Function that calculates CDF

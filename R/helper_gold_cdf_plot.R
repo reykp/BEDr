@@ -13,8 +13,11 @@ helper_gold_cdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
+  scale_l <- gold_output$scale_l
+  scale_u <- gold_output$scale_u
+  
   if(min_y<0 | max_y>1){
-    input <- (x_gold)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    input <- (x_gold)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
     duos_CDF <- gold_cdf(input,gold_output,burnin)
   }else{
     input <- x_gold

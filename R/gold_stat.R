@@ -125,10 +125,13 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA,scale=FALSE){
     G_PDF[i,] <- (G_PDF[i,]*widths)/nc[i]
   }
 
+  scale_l <- gold_output$scale_l
+  scale_u <- gold_output$scale_u
+  
   if((min_y<0) | (max_y>1)){
-    mean_matrix <- (G_PDF %*% x_gold)*(max_y+.00001-(min_y-.00001))+(min_y-.00001)
+    mean_matrix <- (G_PDF %*% x_gold)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l)
     mean_matrix_scaled <- (G_PDF %*% x_gold)
-    var_matrix <- ((G_PDF %*% (x_gold^2))-mean_matrix_scaled^2)*(max_y+.00001-(min_y-.00001))^2
+    var_matrix <- ((G_PDF %*% (x_gold^2))-mean_matrix_scaled^2)*(max_y+scale_u-(min_y-scale_l))^2
   }else{
     mean_matrix <- (G_PDF %*% x_gold)
     var_matrix <- ((G_PDF %*% (x_gold^2))-mean_matrix^2)
@@ -136,7 +139,7 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA,scale=FALSE){
 
 
   if((min_y<0) | (max_y>1)){
-    input <- (x_gold)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    input <- (x_gold)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
     duos_CDF <- gold_cdf(input,gold_output,burnin)
   }else{
     input <- x_gold

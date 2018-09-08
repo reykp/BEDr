@@ -9,7 +9,7 @@
 #' @param scale This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export
-#' @useDynLib BEDr
+#' @useDynLib biRd
 #' @importFrom Hmisc Lag
 #'
 #' @details
@@ -123,6 +123,9 @@ duos_stat <- function(stat,duos_output, p=NA,burnin=NA,scale=FALSE){
   min_y <<- min(y_orig)
   max_y <<- max(y_orig)
 
+  scale_l <<- duos_output$scale_l
+  scale_u <<- duos_output$scale_u
+  
   #Calculate mean and variance
   stats_apply <- function(x){
     c_full <- c(0, x[1:k],1)
@@ -133,12 +136,12 @@ duos_stat <- function(stat,duos_output, p=NA,burnin=NA,scale=FALSE){
     if((min_y<0) | (max_y>1)){
       #mean
       m_scaled <- (sum((c_full+c_full_lag)*p)/2)
-      m <- (sum((c_full+c_full_lag)*p)/2)*(max_y+.00001-(min_y-.00001))+(min_y-.00001)
+      m <- (sum((c_full+c_full_lag)*p)/2)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l)
 
       c_full_lag3 <- c_full_lag^3
       c_full3 <- c_full^3
 
-      v <- ((sum((c_full3-c_full_lag3)/3*(p/(c_full-c_full_lag))))-m_scaled^2)*(max_y+.00001-(min_y-.00001))^2
+      v <- ((sum((c_full3-c_full_lag3)/3*(p/(c_full-c_full_lag))))-m_scaled^2)*(max_y+scale_u-(min_y-scale_l))^2
     }else{
       #mean
       m <- sum((c_full+c_full_lag)*p)/2
@@ -163,7 +166,7 @@ duos_stat <- function(stat,duos_output, p=NA,burnin=NA,scale=FALSE){
     for(i in 1:{k+1}){
       if((q_loop>=p_bounds[i])&(q_loop<p_bounds[{i+1}])){
         if((min_y<0) | (max_y>1)){
-        return((((q_loop-p_bounds[i])*(c_full[{i+1}]-c_full[i])/p[i])+c_full[i])*(max_y+.00001-(min_y-.00001))+(min_y-.00001))
+        return((((q_loop-p_bounds[i])*(c_full[{i+1}]-c_full[i])/p[i])+c_full[i])*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l))
         }else{
           return((q_loop-p_bounds[i])*(c_full[{i+1}]-c_full[i])/p[i]+c_full[i])
         }

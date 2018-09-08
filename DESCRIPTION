@@ -1,9 +1,9 @@
-Package: BEDr
+Package: biRd
 Type: Package
 Title: What the Package Does in One 'Title Case' Line
-Version: 1.0
+Version: 0.0.0.9100
 Date: 2018-07-15
-Author: Your Name
+Author: Kathleen Rey
 Maintainer: Your Name <your@email.com>
 Description: One paragraph description of what the package does as one or more full sentences.
 License: GPL (>= 2)

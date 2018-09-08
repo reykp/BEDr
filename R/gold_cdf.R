@@ -87,9 +87,12 @@ gold_cdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
+  scale_l <- gold_output$scale_l
+  scale_u <- gold_output$scale_u
+  
   #If min and max of y outside of range of 1, data needs to be standardized
   if((min_y<0 | max_y>1)){
-    input_scaled <- (input-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+    input_scaled <- (input-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
   }else{
     input_scaled <- input
   }

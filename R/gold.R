@@ -9,6 +9,9 @@
 #' @param c2 The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.
 #' @param MH_N the number of iterations to run in the algorithm.
 #' @param graves An option to have the variance of the proposal distribution chosen using an automatice step size selection (insert reference) (DEFAULT is FALSE).
+#' @param scale_l A value >= 0 controlling the scaling based on the minimum data value (see details).
+#' @param scale_u A value >= 0 controlling the scaling based on the maximum data value (see details).
+#' 
 #'
 #' @export
 #' @importFrom matrixcalc svd.inverse
@@ -25,6 +28,10 @@
 #'
 #' Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
 #'
+#' This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1. The formula for scaling is below:
+#' 
+#'   \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
+#'   
 #' @return
 #'
 #' \code{gold} returns a list containing the density estimate results.
@@ -60,7 +67,7 @@
 #' gold_cdf(c(.4), gold_beta)$cdf
 
 
-gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE){
+gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001){
   #Create vector to contain original data
   y_orig <- NA
   for(j in 1:length(y)){
@@ -80,7 +87,7 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE){
   #Check if data is outside (0,1) range
 if((max_y>1)|(min_y<0)){
   for(j in 1:length(y)){
-    y[j] <- (y_orig[j]-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+    y[j] <- (y_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
   }
 }
 
@@ -339,8 +346,8 @@ mvrnorm_calc <- eS$u %*% diag(sqrt(pmax(ev, 0)), p)
   print(sum(ar_G)/length(ar_G))
   #print(sum(ar_G)/length(ar_G))
   if(graves==TRUE){
-      return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), s2=s2))
+      return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), s2=s2, scale_l = scale_l, scale_u = scale_u))
   }else{
-    return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G)))
+    return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), scale_l = scale_l, scale_u = scale_u))
   }
 }

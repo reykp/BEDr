@@ -12,6 +12,8 @@ using namespace Rcpp;
 //' @param k The number of cut-points for the density estimate. See recommendations in the details below.
 //' @param MH_N The number of iterations to run in the algorithm.
 //' @param alpha The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.
+//' @param scale_l A value >= 0 controlling the scaling based on the minimum data value (see details).
+//' @param scale_u A value >= 0 controlling the scaling based on the maximum data value (see details).
 //' @examples
 //'
 //' @export
@@ -31,19 +33,30 @@ using namespace Rcpp;
 //'
 //' where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 //'
-//' This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1.
+//' This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1. The formula for scaling is below:
+//' 
+//' \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
+//' 
+//' Values of 0 for the scale paramters indicates the density will only be estimated to the minimum and maximum of \code{y}.
 //'
-//' The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
+//' The recommended number of cupoints starts at 3, and then at each increment of 50, adds a cutpoint.
 //'
-//'
+//' Default: k = floor(n/50)+3
+//' 
 //' @return
 //'
 //' \code{duos} returns a list of density estimate results.
 //'
 //' \item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
-//' \item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+//' \item{\code{P}}{A matrix containing the positerior draws for the probability parameters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
 //' \item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
+//' \item{\code{k}}{The number of cut-points.}
+//' \item{\code{alpha}}{The paramter for the prior on the probability parameters.}
+//' \item{\code{scale_l}}{The scaling parameter for the lower end of the data.}
+//' \item{\code{scale_u}}{The scaling parameter for the upper end of the data.}
 //'
+//'
+//' 
 //' @examples
 //' ## --------------------------------------------------------------------------------
 //' ## Beta Distribution
@@ -100,8 +113,12 @@ using namespace Rcpp;
 //' duos_cdf(c(.3), duos_unif)$cdf
 
 // [[Rcpp::export]]
-List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double scale_l = 0.00001, double scale_u = 0.00001){
+List duos(NumericVector y, double k=-1, double MH_N=20000, double alpha=1, double scale_l=0.00001, double scale_u=0.00001){
 
+  if(k == -1){
+   k = floor(y.size()/50)+3;
+  }
+  
   //Stop function and throw errors
   if (scale_l < 0.0) {         	// scale paramter needs to be greater than or equal to 0
     throw std::range_error("Scale parameter should be >= 0.");
@@ -111,30 +128,44 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
   }
   
   if(k/ceil(k)<1){
-    throw std::range_error("k should be an integer value.");
-    
+    throw std::range_error("k should be an integer value greater than zero");
   }
+  
+  if(k<0){
+    throw std::range_error("k should be an integer value greater than zero");
+  }
+  
+  if(MH_N/ceil(MH_N)<1){
+    throw std::range_error("MH_N should be an integer value.");
+  }
+  
+  if(alpha<=0){
+    throw std::range_error("alpha should be greater then 0.");
+  }
+  
 
   double max_y = *std::max_element(y.begin(), y.end());
   double min_y = *std::min_element(y.begin(), y.end());
 
-  NumericVector y_orig(y.size());
+  //NumericVector y_orig(y.size());
 
   //Create vector to contain original data
-  for(int j=0; j<y.size(); j++){
-    y_orig[j]=y[j];
-  }
+  //for(int j=0; j<y.size(); j++){
+    //y_orig[j]=y[j];
+  //}
+  
+  NumericVector y_analyize(y.size());
 
   //Check if data is outside (0,1) range
   if((max_y>1)|(min_y<0)){
     for(int j=0; j<y.size(); j++){
-    y[j]=(y_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l));
+      y_analyize[j]=(y[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l));
       //Rcout  << y[j] << std::endl;
     }
   }
 
   //sort data
-  std::sort(y.begin(), y.end());
+  std::sort(y_analyize.begin(), y_analyize.end());
 
   //Declare 2D arrays to store parameters
   NumericMatrix C(MH_N,k);
@@ -174,7 +205,7 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
 
  // Create initial p vector
   for(int i=0; i<k+1; i++){
-    p_init[i] = rgamma(1, alpha+sum((y>=c_init_full[i]) & (y<c_init_full[i+1])),1)[0];
+    p_init[i] = rgamma(1, alpha+sum((y_analyize>=c_init_full[i]) & (y_analyize<c_init_full[i+1])),1)[0];
   }
 
   //Normalize initial p
@@ -234,7 +265,7 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
       //cut-point to sample
       int w=k_index[j];
 
-      double m = sum(((y>=Q_C_extra[w]) & (y<Q_C_extra[w+2])));
+      double m = sum(((y_analyize>=Q_C_extra[w]) & (y_analyize<Q_C_extra[w+2])));
 
 
       if(m>0){
@@ -243,9 +274,9 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
         int btw_index=1;
 
         //Get data between two end points
-        for(int l=0; l<y.size(); l++){
-          if((y[l]>=Q_C_extra[w]) & (y[l]<Q_C_extra[w+2])){
-            xm[btw_index]=y[l];
+        for(int l=0; l<y_analyize.size(); l++){
+          if((y_analyize[l]>=Q_C_extra[w]) & (y_analyize[l]<Q_C_extra[w+2])){
+            xm[btw_index]=y_analyize[l];
             btw_index+=1;
           }
         }
@@ -548,7 +579,7 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
 
       //Create initial p vector
       for(int l=0; l<k+1; l++){
-        p_init[l] = rgamma(1, alpha+sum((y>=c_init_full[l]) & (y<c_init_full[l+1])),1)[0];
+        p_init[l] = rgamma(1, alpha+sum((y_analyize>=c_init_full[l]) & (y_analyize<c_init_full[l+1])),1)[0];
       }
 
       sum_p =0;
@@ -576,6 +607,10 @@ List duos(NumericVector y, double k=12, int MH_N=20000, double alpha=1, double s
   return List::create(
     _["C"] = C,
     _["P"] = P,
-    _["y"] = y_orig
+    _["y"] = y,
+    _["k"] = k,
+    _["alpha"] = alpha,
+    _["scale_l"] = scale_l,
+    _["scale_u"] = scale_u
   );
 }

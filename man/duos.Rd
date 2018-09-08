@@ -11,13 +11,21 @@
 \item{MH_N}{The number of iterations to run in the algorithm.}
 
 \item{alpha}{The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.}
+
+\item{scale_l}{A value >= 0 controlling the scaling based on the minimum data value (see details).}
+
+\item{scale_u}{A value >= 0 controlling the scaling based on the maximum data value (see details).}
 }
 \value{
 \code{duos} returns a list of density estimate results.
 
 \item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
-\item{\code{P}}{A matrix containing the positerior draws for the probability paramters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+\item{\code{P}}{A matrix containing the positerior draws for the probability parameters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
 \item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
+\item{\code{k}}{The number of cut-points.}
+\item{\code{alpha}}{The paramter for the prior on the probability parameters.}
+\item{\code{scale_l}}{The scaling parameter for the lower end of the data.}
+\item{\code{scale_u}}{The scaling parameter for the upper end of the data.}
 }
 \description{
 Runs Gibbs sampling algorithm to perfum Bayesian density estimation through \code{duos}.
@@ -36,9 +44,15 @@ The density being estimated takes the form below:
 
 where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 
-This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1.
+This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1. The formula for scaling is below:
 
-The recommended number of cupoints starts are 3 or 4 for data sets around 50 data points or less. For each additional 50 data points, an additional cutpoint is recommend.
+\deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
+
+Values of 0 for the scale paramters indicates the density will only be estimated to the minimum and maximum of \code{y}.
+
+The recommended number of cupoints starts at 3, and then at each increment of 50, adds a cutpoint.
+
+Default: k = floor(n/50)+3
 }
 \examples{
 

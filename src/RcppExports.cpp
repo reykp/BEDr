@@ -6,14 +6,14 @@
 using namespace Rcpp;
 
 // duos
-List duos(NumericVector y, double k, int MH_N, double alpha, double scale_l, double scale_u);
-RcppExport SEXP _BEDr_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP) {
+List duos(NumericVector y, double k, double MH_N, double alpha, double scale_l, double scale_u);
+RcppExport SEXP _biRd_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    Rcpp::traits::input_parameter< int >::type MH_N(MH_NSEXP);
+    Rcpp::traits::input_parameter< double >::type MH_N(MH_NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type scale_l(scale_lSEXP);
     Rcpp::traits::input_parameter< double >::type scale_u(scale_uSEXP);
@@ -23,11 +23,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BEDr_duos", (DL_FUNC) &_BEDr_duos, 6},
+    {"_biRd_duos", (DL_FUNC) &_biRd_duos, 6},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_BEDr(DllInfo *dll) {
+RcppExport void R_init_biRd(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

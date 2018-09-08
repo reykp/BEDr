@@ -8,13 +8,16 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
     burnin <- nrow(duos_output$C)/2
   }
 
+  scale_l <- duos_output$scale_l
+  scale_u <- duos_output$scale_u
+  
 
   y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
   if(min_y<0 | max_y>1){
-    input <- (1:999/1000)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    input <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
     duos_CDF <- duos_cdf(input,duos_output,burnin)
   }else{
     input <- 1:999/1000

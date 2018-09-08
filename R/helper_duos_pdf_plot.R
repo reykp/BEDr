@@ -6,11 +6,16 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
     burnin <- nrow(duos_output$C)/2
   }
 
+  
   y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
+  
+  scale_l <- duos_output$scale_l
+  scale_u <- duos_output$scale_u
+  
   if(min_y<0 | max_y>1){
-    x <- (1:999/1000)*(max_y+.00001-(min_y-.00001))+(min_y-.00001);
+    x <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
     duos_density <- duos_pdf(x,duos_output,burnin)
   }else{
     duos_density <- duos_pdf(1:999/1000,duos_output,burnin)

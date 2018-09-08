@@ -93,8 +93,11 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
   min_y <- min(y_orig)
   max_y <- max(y_orig)
 
+  scale_l <- duos_output$scale_l
+  scale_u <- duos_output$scale_u
+  
   if((min_y<0 | max_y>1)){
-    input <<- (x-(min_y-.00001))/(max_y+.00001-(min_y-.00001))
+    input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
   }
 
   pdf_forapply <- function(x){
@@ -127,11 +130,11 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
 
 
   if(scale==FALSE & (min_y<0 | max_y>1)){
-    pdf_y <- pdf_y/(max_y+.00001-(min_y-.00001))
-    pdf_y_perc[1,] <- pdf_y_perc[1,]/(max_y+.00001-(min_y-.00001))
-    pdf_y_perc[2,] <- pdf_y_perc[2,]/(max_y+.00001-(min_y-.00001))
+    pdf_y <- pdf_y/(max_y+scale_u-(min_y-scale_l))
+    pdf_y_perc[1,] <- pdf_y_perc[1,]/(max_y+scale_u-(min_y-scale_l))
+    pdf_y_perc[2,] <- pdf_y_perc[2,]/(max_y+scale_u-(min_y-scale_l))
 
-    pdf_matrix <- pdf_matrix/(max_y+.00001-(min_y-.00001))
+    pdf_matrix <- pdf_matrix/(max_y+scale_u-(min_y-scale_l))
 
     return(list(pdf=pdf_y, cri=t(pdf_y_perc), mat=t(pdf_matrix), x=x))
 
