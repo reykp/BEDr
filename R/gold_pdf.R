@@ -88,6 +88,15 @@ gold_pdf <- function(x, gold_output, burnin = NA, scale = FALSE){
   scale_l <- gold_output$scale_l
   scale_u <- gold_output$scale_u
   
+  
+  if(min_y<0|max_y>1){
+    for (i in 1:length(x)){
+      if(x[i]<(min_y-scale_l)|x[i]>(max_y+scale_u)){
+        print(x[i])
+        print("is out of the range of the data in 'y'.")
+      }
+    }    
+  }
   # new_upper <- ifelse(max_y>=0, max_y+2*sd(y), max_y-2*sd(y))
   # new_lower <- ifelse(min_y>=0, min_y+2*sd(y), min_y-2*sd(y))
 
@@ -143,40 +152,77 @@ gold_pdf <- function(x, gold_output, burnin = NA, scale = FALSE){
   pdf_y_return <- NA
   pdf_y_perc_return <- matrix(0, nrow=length(input), ncol=2)
 
-  x_pdfs <- NA
-  for(i in 1:length(input)){
-    #Check if any of the input outside of the max and min of x if needs to be scaled
-    if((input_scaled[i]<1)&(input_scaled[i]>0)){
-      diff1 <- input_scaled[i]-x_gold[max(which(x_gold<=input_scaled[i]))]
-      if(!is.na(x_gold[max(which(x_gold<=input_scaled[i]))+1])){
-        diff2 <- x_gold[max(which(x_gold<=input_scaled[i]))+1]-input_scaled[i]
-      }else{
-        diff2 <- 0
-      }
-
-      if(diff1<=diff2){
-        x_pdfs[i] <- max(which(x_gold<=input_scaled[i]))
-        G_PDF_return[,i] <- G_PDF[,x_pdfs[i]]
-        pdf_y_return[i] <- pdf_y[x_pdfs[i]]
-        pdf_y_perc_return[i,] <- t(pdf_y_perc)[x_pdfs[i],]
-      }else{
-        x_pdfs[i] <- max(which(x_gold<=input_scaled[i]))+1
-        G_PDF_return[,i] <- G_PDF[,x_pdfs[i]]
-        pdf_y_return[i] <- pdf_y[x_pdfs[i]]
-        pdf_y_perc_return[i,] <- t(pdf_y_perc)[x_pdfs[i],]
-      }
+  #For extrapolating
+  # 
+  # ss_x <<- x_gold
+  # 
+  # 
+  # ss_function <- function(x){
+  #   ss_matrix <- smooth.spline(ss_x, x)
+  #   return(predict(ss_matrix, x_ss)$y) 
+  # }
+  
+  for(i in 1:length(input_scaled)){
+    
+    find_x <- which(x_gold==input_scaled[i]) 
+    
+    if((min_y<0|max_y>1) & (input[i]<(min_y-scale_l)|input[i]>(max_y+scale_u))){
+          print(input[i])
+          print("is out of the range of the data in 'y'.")
+        }else if(length(find_x)>0){
+      pdf_y_return[i] <- pdf_y[find_x]
+      G_PDF_return[,i] <- G_PDF[,find_x]
+      pdf_y_perc_return[i,] <- t(pdf_y_perc)[find_x,]
     }else{
-      if(input[i]<min_y){
-        G_PDF_return[,i] <- rep(0,nrow(G_PDF_return))
-        pdf_y_return[i] <- 0
-        pdf_y_perc_return[i,] <- c(0,0)
-      }else{
-        G_PDF_return[,i] <- rep(1,nrow(G_PDF_return))
-        pdf_y_return[i] <- 1
-        pdf_y_perc_return[i,] <- c(1,1)
-      }
+      #x_ss <<- input_scaled[i]
+      ss_indiv <- smooth.spline(x_gold, pdf_y)
+      pdf_y_return[i] <- predict(ss_indiv, input_scaled[i])$y
+      #G_PDF_return[,i] <- apply(G_PDF, 1, ss_function)
+      G_PDF_return[,i] <- rep(NA, nrow(G_PDF_return))
+      #pdf_y_perc_return[i,] <- quantile(G_PDF_return[,i], c(.025, .975))
+      ss_indiv_q1 <- smooth.spline(x_gold, t(pdf_y_perc)[,1])
+      pdf_y_perc_return[i,1] <- predict(ss_indiv_q1, input_scaled[i])$y
+      ss_indiv_q2 <- smooth.spline(x_gold, t(pdf_y_perc)[,2])
+      pdf_y_perc_return[i,2] <- predict(ss_indiv_q2, input_scaled[i])$y
     }
   }
+  
+  
+  
+  # x_pdfs <- NA
+  # for(i in 1:length(input)){
+  #   #Check if any of the input outside of the max and min of x if needs to be scaled
+  #   if((input_scaled[i]<1)&(input_scaled[i]>0)){
+  #     diff1 <- input_scaled[i]-x_gold[max(which(x_gold<=input_scaled[i]))]
+  #     if(!is.na(x_gold[max(which(x_gold<=input_scaled[i]))+1])){
+  #       diff2 <- x_gold[max(which(x_gold<=input_scaled[i]))+1]-input_scaled[i]
+  #     }else{
+  #       diff2 <- 0
+  #     }
+  # 
+  #     if(diff1<=diff2){
+  #       x_pdfs[i] <- max(which(x_gold<=input_scaled[i]))
+  #       G_PDF_return[,i] <- G_PDF[,x_pdfs[i]]
+  #       pdf_y_return[i] <- pdf_y[x_pdfs[i]]
+  #       pdf_y_perc_return[i,] <- t(pdf_y_perc)[x_pdfs[i],]
+  #     }else{
+  #       x_pdfs[i] <- max(which(x_gold<=input_scaled[i]))+1
+  #       G_PDF_return[,i] <- G_PDF[,x_pdfs[i]]
+  #       pdf_y_return[i] <- pdf_y[x_pdfs[i]]
+  #       pdf_y_perc_return[i,] <- t(pdf_y_perc)[x_pdfs[i],]
+  #     }
+  #   }else{
+  #     if(input[i]<min_y){
+  #       G_PDF_return[,i] <- rep(0,nrow(G_PDF_return))
+  #       pdf_y_return[i] <- 0
+  #       pdf_y_perc_return[i,] <- c(0,0)
+  #     }else{
+  #       G_PDF_return[,i] <- rep(1,nrow(G_PDF_return))
+  #       pdf_y_return[i] <- 1
+  #       pdf_y_perc_return[i,] <- c(1,1)
+  #     }
+  #   }
+  # }
 
   if(scale==FALSE & (min_y<0 | max_y>1)){
     #To have pdf on original scale, need to transform estimate of pdf

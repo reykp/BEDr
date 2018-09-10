@@ -92,9 +92,20 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
   y_orig <- duos_output$y
   min_y <- min(y_orig)
   max_y <- max(y_orig)
-
+  
   scale_l <- duos_output$scale_l
   scale_u <- duos_output$scale_u
+  
+  
+  
+  if(min_y<0|max_y>1){
+    for (i in 1:length(x)){
+      if(x[i]<(min_y-scale_l)|x[i]>(max_y+scale_u)){
+        print(x[i])
+        print("is out of the range of the data in 'y'.")
+      }
+    }    
+  }
   
   if((min_y<0 | max_y>1)){
     input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))

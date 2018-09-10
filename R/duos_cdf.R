@@ -98,6 +98,17 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
 
   scale_l <- duos_output$scale_l
   scale_u <- duos_output$scale_u
+  
+  if(min_y<0|max_y>1){
+    for (i in 1:length(x)){
+      if(x[i]<(min_y-scale_l)|x[i]>(max_y+scale_u)){
+        print(x[i])
+        print("is out of the range of the data in 'y'.")
+      }
+    }    
+  }
+  
+  
   #If the data is not between 0 and 1, scale 'x' to be on the same scale the density was estimated on
   if((min_y<0 | max_y>1)){
     input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
