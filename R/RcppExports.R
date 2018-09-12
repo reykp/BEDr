@@ -110,7 +110,7 @@
 #' duos_cdf(c(.3), duos_unif)$cdf
 NULL
 
-duos <- function(y, k = -1, MH_N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001) {
+duos <- function(y, k = 0, MH_N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001) {
     .Call('_biRd_duos', PACKAGE = 'biRd', y, k, MH_N, alpha, scale_l, scale_u)
 }
 

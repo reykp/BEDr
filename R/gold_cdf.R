@@ -150,45 +150,70 @@ gold_cdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   cdf_y_return <- NA
   cdf_y_perc_return <- matrix(0, nrow=length(input), ncol=2)
 
-  #Since the density is estimated at the grid and data points, only estimate
-  #for values in x is the data point or grid point nearest to them
-  x_cdfs <- NA
-  for(i in 1:length(input)){
-    #Check if input is within appropriate range (if outside of 0 and 1, is outside range
-    #of original data)
-    if((input_scaled[i]<1)&(input_scaled[i]>0)){
-      #Find data point or grid point nearest
-    diff1 <- input_scaled[i]-x_gold[max(which(x_gold<=input_scaled[i]))]
-    if(!is.na(x_gold[max(which(x_gold<=input_scaled[i]))+1])){
-    diff2 <- x_gold[max(which(x_gold<=input_scaled[i]))+1]-input_scaled[i]
+  
+  for(i in 1:length(input_scaled)){
+    
+    find_x <- which(x_gold==input_scaled[i]) 
+    
+    if((min_y<0|max_y>1) & (input[i]<(min_y-scale_l)|input[i]>(max_y+scale_u))){
+      print(input[i])
+      print("is out of the range of the data in 'y'.")
+    }else if(length(find_x)>0){
+      cdf_y_return[i] <- cdf_y[find_x]
+      G_CDF_return[,i] <- G_CDF[,find_x]
+      cdf_y_perc_return[i,] <- t(cdf_y_perc)[find_x,]
     }else{
-      diff2 <- 0
-    }
-
-    if(diff1<=diff2){
-      x_cdfs[i] <- max(which(x_gold<=input_scaled[i]))
-      G_CDF_return[,i] <- G_CDF[,x_cdfs[i]]
-      cdf_y_return[i] <- cdf_y[x_cdfs[i]]
-      cdf_y_perc_return[i,] <- t(cdf_y_perc)[x_cdfs[i],]
-    }else{
-      x_cdfs[i] <- max(which(x_gold<=input_scaled[i]))+1
-      G_CDF_return[,i] <- G_CDF[,x_cdfs[i]]
-      cdf_y_return[i] <- cdf_y[x_cdfs[i]]
-      cdf_y_perc_return[i,] <- t(cdf_y_perc)[x_cdfs[i],]
-    }
-    }else{
-      #if 'x' outside of range of original data, CDF value is 0 or 1
-      if(input[i]<min_y){
-        G_CDF_return[,i] <- rep(0,nrow(G_CDF_return))
-        cdf_y_return[i] <- 0
-        cdf_y_perc_return[i,] <- c(0,0)
-      }else{
-        G_CDF_return[,i] <- rep(1,nrow(G_CDF_return))
-        cdf_y_return[i] <- 1
-        cdf_y_perc_return[i,] <- c(1,1)
-      }
+      ss_indiv <- smooth.spline(x_gold, cdf_y)
+      cdf_y_return[i] <- predict(ss_indiv, input_scaled[i])$y
+      G_CDF_return[,i] <- rep(NA, nrow(G_CDF_return))
+      ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
+      cdf_y_perc_return[i,1] <- predict(ss_indiv_q1, input_scaled[i])$y
+      ss_indiv_q2 <- smooth.spline(x_gold, t(cdf_y_perc)[,2])
+      cdf_y_perc_return[i,2] <- predict(ss_indiv_q2, input_scaled[i])$y
     }
   }
+  
+  
+  
+  # #Since the density is estimated at the grid and data points, only estimate
+  # #for values in x is the data point or grid point nearest to them
+  # x_cdfs <- NA
+  # for(i in 1:length(input)){
+  #   #Check if input is within appropriate range (if outside of 0 and 1, is outside range
+  #   #of original data)
+  #   if((input_scaled[i]<1)&(input_scaled[i]>0)){
+  #     #Find data point or grid point nearest
+  #   diff1 <- input_scaled[i]-x_gold[max(which(x_gold<=input_scaled[i]))]
+  #   if(!is.na(x_gold[max(which(x_gold<=input_scaled[i]))+1])){
+  #   diff2 <- x_gold[max(which(x_gold<=input_scaled[i]))+1]-input_scaled[i]
+  #   }else{
+  #     diff2 <- 0
+  #   }
+  # 
+  #   if(diff1<=diff2){
+  #     x_cdfs[i] <- max(which(x_gold<=input_scaled[i]))
+  #     G_CDF_return[,i] <- G_CDF[,x_cdfs[i]]
+  #     cdf_y_return[i] <- cdf_y[x_cdfs[i]]
+  #     cdf_y_perc_return[i,] <- t(cdf_y_perc)[x_cdfs[i],]
+  #   }else{
+  #     x_cdfs[i] <- max(which(x_gold<=input_scaled[i]))+1
+  #     G_CDF_return[,i] <- G_CDF[,x_cdfs[i]]
+  #     cdf_y_return[i] <- cdf_y[x_cdfs[i]]
+  #     cdf_y_perc_return[i,] <- t(cdf_y_perc)[x_cdfs[i],]
+  #   }
+  #   }else{
+  #     #if 'x' outside of range of original data, CDF value is 0 or 1
+  #     if(input[i]<min_y){
+  #       G_CDF_return[,i] <- rep(0,nrow(G_CDF_return))
+  #       cdf_y_return[i] <- 0
+  #       cdf_y_perc_return[i,] <- c(0,0)
+  #     }else{
+  #       G_CDF_return[,i] <- rep(1,nrow(G_CDF_return))
+  #       cdf_y_return[i] <- 1
+  #       cdf_y_perc_return[i,] <- c(1,1)
+  #     }
+  #   }
+  # }
 
   #return results with original 'x' or 'x' after scaling
   if(scale==FALSE & (min_y<0 | max_y>1)){

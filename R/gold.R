@@ -11,6 +11,7 @@
 #' @param graves An option to have the variance of the proposal distribution chosen using an automatice step size selection (insert reference) (DEFAULT is FALSE).
 #' @param scale_l A value >= 0 controlling the scaling based on the minimum data value (see details).
 #' @param scale_u A value >= 0 controlling the scaling based on the maximum data value (see details).
+#' @param poi Points of interest to estimate the density at. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf} only returns the posterior draws if the density is estimate at that point from the beginning.
 #' 
 #'
 #' @export
@@ -41,7 +42,8 @@
 #' \item{\code{x}}{A vector with the points at which g(x) was estimated.}
 #' \item{\code{y}}{A vector containing the data introduced to \code{gold} for density estimation.}
 #' \item{\code{ar}}{The acceptance rate from the random walk proposals.}
-#' \item{\code{s2}}{If graves==TRUE, a sixth element is returned that contains the standard deviation chosen by the graves method.}
+#' \item{\code{prior}}{A vector of all prior parameter values.}
+#' \item{\code{poi}}{The points of interest added to estimate the density at if \code{poi} is non-missing.}
 #'
 #' @examples
 #'
@@ -52,7 +54,7 @@
 #' # First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
 #' # Based on the rule of thumb in the details, 7 cutpoints are used
 #' y <- rbeta(200, 5, 1)
-#' gold_beta <- gold(y, s1 = 1, c1 = 0.8, s2 = 0.4, c2 = 0.5, MH_N = 20000)
+#' gold_beta <- gold(y = y, s1 = 1, c1 = 0.8, s2 = 0.4, c2 = 0.5, MH_N = 20000)
 #'
 #' #Check traceplots
 #' gold_plot(gold_beta, type="pdf", data=TRUE)
@@ -67,27 +69,51 @@
 #' gold_cdf(c(.4), gold_beta)$cdf
 
 
-gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001){
+gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001, poi = NA){
+  
+  
+  
+  if(!is.na(poi[1])){
+    total_length <- length(y)+length(poi)
+    if(length(unique(poi))!=length(poi)){
+      stop("The values in 'poi' are not unique.")
+    }
+  }else{
+    total_length <- length(y)
+  }
+  
   #Create vector to contain original data
   y_orig <- NA
   for(j in 1:length(y)){
     y_orig[j]<-y[j]
   }
 
+  
   y_orig <- sort(y_orig)
   max_y <- max(y)
   min_y <- min(y)
 
+  #Mark positions that are data
+  names(y_orig) <- rep("data", length(y_orig))
+  
+  if(is.na(poi[1])){
+      y_all_orig <- y_orig
+  } else{
+    names(poi) <- rep("poi", length(poi))
+    y_all_orig <- sort(c(y_orig, poi))
+    
+  }
   # mx_mn <- c(min_y, max_y)
   # largest <- mx_mn[which(abs(mx_mn)==max(abs(mx_mn)))]
 
   # new_upper <- ifelse(max_y>=0, max_y+2*sd(y), max_y-2*sd(y))
   # new_lower <- ifelse(min_y>=0, min_y+2*sd(y), min_y-2*sd(y))
 
+  y_all <- y_all_orig
   #Check if data is outside (0,1) range
 if((max_y>1)|(min_y<0)){
-  for(j in 1:length(y)){
-    y[j] <- (y_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+  for(j in 1:length(y_all_orig)){
+    y_all[j] <- (y_all_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
   }
 }
 
@@ -97,7 +123,7 @@ if((max_y>1)|(min_y<0)){
   #   }
   # }
 
-  y <- sort(y)
+  y_all <- sort(y_all)
   #Create grid:0,0,01,...,.99,1
   x_full <- 0:100
   x_full <- x_full/100
@@ -108,20 +134,19 @@ if((max_y>1)|(min_y<0)){
   names(x_full)[1] <- "end"
   names(x_full)[length(x_full)] <- "end"
 
-  #Mark positions that are data
-  names(y) <- rep("data", length(y))
-
+  
   #x_full contains the end points, x removes them
   x <- x_full[-1]
   x <- x[-length(x)]
 
   #Get summary of data to count how many times each data point appeared
-  y_d <- data.frame(y_orig,y)
-  y_d <- y_d %>% group_by(y_orig,y) %>% summarise(n=n())
+  y_d <- data.frame(y_all_orig,y_all, names(y_all_orig))
+  y_d <- y_d %>% group_by(y_all_orig,y_all, names.y_all_orig.) %>% summarise(n=n()) 
 
-  y_add <- y_d$y
-  names(y_add) <- rep("data", length(y_add))
+  y_add <- y_d$y_all
+  names(y_add) <- y_d$names.y_all_orig.
 
+  y_d <- y_d %>% filter(names.y_all_orig. != "poi")
   #Add in the grid
   x <- c(x,y_add)
   #Sort the data
@@ -139,13 +164,13 @@ if((max_y>1)|(min_y<0)){
   #remove grid point in between
   drop <- NA
   r_index <- 1
-  check <- which(names(x)!="data")
+  check <- which(!(names(x)%in% c("data", "poi")))
 
   for(j in check){
-    if(j>1){
+    if(j>1&j<length(x)){
       if(names(x)[{j-1}]=="data"&names(x)[{j+1}]=="data"){
         distance <- x[{j+1}]-x[{j-1}]
-        if(distance<.01){
+        if(distance<.01&names(x)[j]=="grid"){
           drop[r_index] <- j
           r_index <- r_index+1
         }
@@ -345,9 +370,9 @@ mvrnorm_calc <- eS$u %*% diag(sqrt(pmax(ev, 0)), p)
   print("Acceptance Rate:")
   print(sum(ar_G)/length(ar_G))
   #print(sum(ar_G)/length(ar_G))
-  if(graves==TRUE){
-      return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), s2=s2, scale_l = scale_l, scale_u = scale_u))
+  if(is.na(poi[1])){
+    return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), prior=c(s1 = s1, c1 = c1, s2 = s2, c2 = c2), scale_l = scale_l, scale_u = scale_u))
   }else{
-    return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), scale_l = scale_l, scale_u = scale_u))
+      return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), prior=c(s1 = s1, c1 = c1, s2 = s2, c2 = c2), scale_l = scale_l, scale_u = scale_u, poi = poi))
   }
 }

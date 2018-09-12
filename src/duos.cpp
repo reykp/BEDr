@@ -113,10 +113,10 @@ using namespace Rcpp;
 //' duos_cdf(c(.3), duos_unif)$cdf
 
 // [[Rcpp::export]]
-List duos(NumericVector y, double k=-1, double MH_N=20000, double alpha=1, double scale_l=0.00001, double scale_u=0.00001){
+List duos(NumericVector y, double k=0, double MH_N=20000, double alpha=1, double scale_l=0.00001, double scale_u=0.00001){
 
-  if(k == -1){
-   k = floor(y.size()/50)+3;
+  if(k == 0){
+   k = round(y.size()/50)+3;
   }
   
   //Stop function and throw errors
@@ -161,8 +161,13 @@ List duos(NumericVector y, double k=-1, double MH_N=20000, double alpha=1, doubl
     for(int j=0; j<y.size(); j++){
       y_analyize[j]=(y[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l));
       //Rcout  << y[j] << std::endl;
+    }}else{
+      for(int j=0; j<y.size(); j++){
+        y_analyize[j]=y[j];
+        //Rcout  << y[j] << std::endl;
+      }
     }
-  }
+  
 
   //sort data
   std::sort(y_analyize.begin(), y_analyize.end());
