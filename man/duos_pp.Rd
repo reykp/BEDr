@@ -9,23 +9,25 @@ duos_pp(duos_output, parameters = "c", burnin = NA)
 \arguments{
 \item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{parameters}{The group of paramters to plot (see details).}
+\item{parameters}{The group of parameters to plot (see details).}
 
-\item{burnin}{The desired burnin to discard from the results. By default it is half the number of iterations.}
+\item{burnin}{The desired burnin to discard from the results. By default, it is half the number of iterations.}
 }
 \value{
-A plot of histograms.
+A plot of overlaid histograms.
 }
 \description{
-Plots the histograms and densities of simulations from the prior verses the posterior from \code{duos}.
+Plots the histograms of simulations from the prior verses the posterior from \code{duos}.
 }
 \details{
+The results are designed to plot of a 3X3 grid. If there are more than 9 parameters, separate plots are created and printed and can be viewed by clicking the arrow through the results in the 'Plots' window.
+
 \strong{Options for} \code{parameters}
 
-There are two sets of paramters that can plotted in the histograms: the cut-points and the proportion parameters.
+There are two sets of parameters that can plotted in the histograms: the cut-points and the bin proportion parameters.
 \itemize{
-    \item \code{"c"}: Plots the histograms of the cut-points that are ordered and between 0 and 1 (DEFAULT).
-    \item \code{"p"}: Plots the histograms of the proportion paramters that sum to one.
+    \item \code{"c"}: Plots the histograms of the cut-points. (DEFAULT).
+    \item \code{"p"}: Plots the histograms of the bin proportion parameters.
   }
 }
 \examples{
@@ -34,13 +36,13 @@ There are two sets of paramters that can plotted in the histograms: the cut-poin
 ## Beta Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a beat(2,5) distribution with 50 data points.
-y <- rbeta(50, 2, 5)
-duos_beta <- duos(y, k=4, MH_N=20000)
+# First run 'duos' on data sampled from a beat(2,5) distribution with 150 data points.
+y <- rbeta(150, 2, 5)
+duos_beta <- duos(y)
 
-#Plot histograms of the priors vs. the posteriors of the cut-point parameters 
+# Plot histograms of the priors vs. the posteriors of the cut-point parameters 
 duos_pp(duos_beta)
 
-#Plot histograms of the priors vs. the posteriors of the proportion parameters 
+# Plot histograms of the priors vs. the posteriors of the proportion parameters 
 duos_pp(duos_beta, parameters = "p")
 }

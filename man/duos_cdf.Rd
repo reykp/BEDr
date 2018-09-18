@@ -2,25 +2,25 @@
 % Please edit documentation in R/duos_cdf.R
 \name{duos_cdf}
 \alias{duos_cdf}
-\title{Estimate of CDF from DUOS.}
+\title{Estimate of the CDF from \code{duos}}
 \usage{
 duos_cdf(x, duos_output, burnin = NA, scale = FALSE)
 }
 \arguments{
-\item{x}{A single value or vector of values at which to calculate the CDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).}
+\item{x}{A single value or vector of values at which to calculate the CDF. These values should be entered on the scale of the data (i.e. values can fall outside of 0 and 1 if data does).}
 
 \item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
+\item{burnin}{The desired burnin to discard from the results. If no value is entered, the default is half the number of iterations.}
 
-\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
 \value{
 \code{duos_cdf} returns a list of the CDF results from \code{duos}.
 
-\item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
-\item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
-\item{\code{mat}}{A matrix containing the CDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
+\item{\code{cdf}}{A vector of the posterior mean CDF at each value in \code{x}.}
+\item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
+\item{\code{mat}}{A matrix containing the CDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
 \item{\code{x}}{A vector containing the values at which to estimate the CDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
 }
 \description{
@@ -30,7 +30,7 @@ or vector of values.
 \details{
 The function \code{duos_cdf} returns the posterior mean CDF. The CDF is calculated based on the following equation at each iteration:
 
-\deqn{F(x) =}
+\eqn{F(x) =}
 
 \deqn{(\pi_1) / (\gamma_1) * x , 0 \le x < \gamma_1}
 \deqn{\pi_1 + (\pi_2) / (\gamma_2-\gamma_1) * (x-\gamma_1) , \gamma_1 \le x  < \gamma_2}
@@ -38,21 +38,24 @@ The function \code{duos_cdf} returns the posterior mean CDF. The CDF is calculat
 \deqn{...  , ... \le x  < ...}
 \deqn{\sum_{i=1}^{k-1} \pi_i + (\pi_k) / (\gamma_k-\gamma_{k-1}) * (x-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
 \deqn{\sum_{i=1}^{k}\pi_i + (\pi_{k+1}) / (1-\gamma_k) * (x-\gamma_k) , \gamma_k \le x  < 1}
+
+where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k  is in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 }
 \examples{
 ## --------------------------------------------------------------------------------
 ## Beta Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Beta(2,5) distribution wiht 100 data points.
+# First run 'duos' on data sampled from a Beta(2,5) distribution with 100 data points.
 y <- rbeta(100, 2, 5)
-duos_beta <- duos(y, k=5, MH_N=20000)
+duos_beta <- duos(y = y, k = 5, MH_N = 20000)
+# Estimate the CDF at a vector of values
 cdf_beta <- duos_cdf(x = c(.01, .25, .6, .9), duos_beta)
 
-#Examine the CDF at 'x'
+# Examine the CDF at each value in 'x'
 cdf_beta$cdf
 
-#Examine the credibal intervals of the CDF at 'x'
+# Examine the credible intervals of the CDF at 'x'
 cdf_beta$cri
 
 ## --------------------------------------------------------------------------------
@@ -61,15 +64,24 @@ cdf_beta$cri
 
 # First run 'duos' on data sampled from a Normal(0,1) distribution with 50 data points.
 y <- rnorm(50, 0, 1)
-duos_norm <- duos(y, k=4, MH_N=20000)
-cdf_norm <- duos_cdf(x=c(-2, -1, 0, .8, 1.8), duos_norm)
+duos_norm <- duos(y = y, k = 4, MH_N = 20000, scale_l = sd(y), scale_u = sd(y))
+# Estimate the CDF at a vector of values
+cdf_norm <- duos_cdf(x = c(-2, -1, 0, .8, 1.8), duos_norm)
 
-#Examine the CDF at 'x'
+# Examine the CDF at 'x'
 cdf_norm$cdf
 
-#Examine the credibal intervals of the CDF at 'x'
+# Examine the credible intervals of the CDF at 'x'
 cdf_norm$cri
 
-Histogram of distribution of the CDF density estimate at 0.8
+# Plot a histogram of distribution of the posterior draws for the CDF estimate at 0.8
 hist(cdf_norm$mat[, 4])
+
+# Find probability of being greater than 2
+1 - duos_cdf(2, duos_norm)$cdf
+
+# Data is scaled between 0 and 1 for the density estimation.
+# If 'scale' = TRUE is requested, the 'x' is returned on the scaled range.
+duos_cdf(x = c(-2, -1, 0, .8, 1.8), duos_norm, scale = TRUE)$x
+
 }

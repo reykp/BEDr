@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // duos
-List duos(NumericVector y, double k, double MH_N, double alpha, double scale_l, double scale_u);
-RcppExport SEXP _biRd_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP) {
+List duos(NumericVector y, double k, double MH_N, double alpha, double scale_l, double scale_u, NumericVector start);
+RcppExport SEXP _biRd_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP, SEXP startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -17,13 +17,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type scale_l(scale_lSEXP);
     Rcpp::traits::input_parameter< double >::type scale_u(scale_uSEXP);
-    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha, scale_l, scale_u));
+    Rcpp::traits::input_parameter< NumericVector >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha, scale_l, scale_u, start));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_biRd_duos", (DL_FUNC) &_biRd_duos, 6},
+    {"_biRd_duos", (DL_FUNC) &_biRd_duos, 7},
     {NULL, NULL, 0}
 };
 

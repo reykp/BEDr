@@ -1,11 +1,25 @@
 # Plot Probability Density from DUOS.
 
-helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
+helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
 
+  
   if(is.na(burnin)){
-    burnin <- nrow(duos_output$C)/2
+    burnin <- ceiling(nrow(duos_output$C)/2)
   }
 
+  C <- duos_output$C
+  if(burnin>nrow(C)){
+    stop("The specified burnin is greater than the number of iterations.")
+  }
+  # Check if burnin is an integer
+  if(burnin/ceiling(burnin) < 1){
+    stop("burnin should be an integer greater than zero.")
+  }
+  
+  # Check if burnin is an positive number
+  if(burnin <= 0){
+    stop("burnin should be an integer greater than zero.")
+  }
   
   y_orig <- duos_output$y
   min_y <- min(y_orig)
@@ -16,9 +30,9 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
   
   if(min_y<0 | max_y>1){
     x <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_density <- duos_pdf(x,duos_output,burnin)
+    duos_density <- duos_pdf(x,duos_output,burnin, scale)
   }else{
-    duos_density <- duos_pdf(1:999/1000,duos_output,burnin)
+    duos_density <- duos_pdf(1:999/1000,duos_output,burnin, scale)
   }
 
 
@@ -37,9 +51,14 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
   names(crdble) <- c("lower", "upper")
   crdble$x <- duos_density$x
 
-
-  data_y <- data.frame(duos_output$y)
-  names(data_y) <- "data"
+  if(scale == TRUE){
+    data_y <- data.frame(duos_output$y)
+    names(data_y) <- "data"
+    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+  }else{
+    data_y <- data.frame(duos_output$y)
+    names(data_y) <- "data"
+  }
 
   g <- ggplot(data_y, aes(x=data))+
     theme(axis.title = element_text(size = 12))+
@@ -54,6 +73,12 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }
 
-  g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
-    xlab("X")
+  if(interact == TRUE){
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+                       xlab("X")))
+    
+  }else{
+    g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+      xlab("X")
+  }
 }

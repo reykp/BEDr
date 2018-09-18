@@ -1,18 +1,20 @@
-#' Bayesina Density Estimation Using GOLD (Gaussian process On a Log Density).
+#' Bayesian Density Estimation Using \code{gold} (Gaussian process On a Log Density).
 #'
-#' Estimates a density Bayesian techniques using a Gaussian process on a log density
+#' Estimates a density from Bayesian techniques using a Gaussian process on a log density.
+#' 
+#' @usage 
+#' gold(y, s1, c1, s2, c2, MH_N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
 #'
-#' @param y A numberic vector to estimate the density on.
+#' @param y A numeric vector. \code{gold} estimates the density on this data.
 #' @param s1 The standard deviation of the Gaussian prior.
 #' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure.
 #' @param s2 The standard deviation of the Gaussian proposal distribution.
 #' @param c2 The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.
-#' @param MH_N the number of iterations to run in the algorithm.
-#' @param graves An option to have the variance of the proposal distribution chosen using an automatice step size selection (insert reference) (DEFAULT is FALSE).
-#' @param scale_l A value >= 0 controlling the scaling based on the minimum data value (see details).
-#' @param scale_u A value >= 0 controlling the scaling based on the maximum data value (see details).
-#' @param poi Points of interest to estimate the density at. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf} only returns the posterior draws if the density is estimate at that point from the beginning.
-#' 
+#' @param MH_N he number of iterations to run in the algorithm. The default is 20,000.
+#' @param graves An option to have the standard deviation of the proposal distribution (s1) chosen using an automatic step size selection (See Graves (2011)) (DEFAULT is FALSE).
+#' @param scale_l A value >= 0 controlling the scaling based on the minimum data value. The default is 0.00001 (see details).
+#' @param A value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).
+#' @param poi Points of interest to estimate the density at. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf}  and \code{gold_cdf} only return the posterior draws if the density is estimated at that point.
 #'
 #' @export
 #' @importFrom matrixcalc svd.inverse
@@ -22,57 +24,134 @@
 #'
 #' The density being estimated takes the form below:
 #'
-#' \deqn{f(x) =}
+#' \eqn{f(x) =}
 #' \deqn{exp(g(x)) / (\int_{0}^{1} exp(g(u)) du)}
 #'
 #' where g(x) is an unknown log density.
 #'
-#' Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
-#'
-#' This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1. The formula for scaling is below:
+#' Given that g(x) is unknown, the integral in the normalizing constant is estimated using a weighted average, and the set of unknown parameters that receive a prior is g(x) at a finite set of points. This finite set of points includes each data point, as well as a grid to ensure good coverage.
 #' 
-#'   \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
+#' This density operates on data between 0 and 1. Thus, if the input is not between 0 and 1, it is standardized. The formula for scaling is below:
+#'
+#'  \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
+#'  
+#'  Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.0001.
 #'   
 #' @return
 #'
 #' \code{gold} returns a list containing the density estimate results.
 #'
 #' \item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations.}
-#' \item{\code{widths}}{A vector with the widths around each each x used for g(x).}
+#' \item{\code{widths}}{A vector with the widths around each x used for g(x). These are the widths used in the weighted average used to estimate the integral in the normalizing constant.}
 #' \item{\code{x}}{A vector with the points at which g(x) was estimated.}
 #' \item{\code{y}}{A vector containing the data introduced to \code{gold} for density estimation.}
 #' \item{\code{ar}}{The acceptance rate from the random walk proposals.}
 #' \item{\code{prior}}{A vector of all prior parameter values.}
-#' \item{\code{poi}}{The points of interest added to estimate the density at if \code{poi} is non-missing.}
+#' \item{\code{poi}}{The points of interest if \code{poi} is non-missing.}
 #'
+#' @references 
+#' 
+#' Graves, T. (2011). \emph{Automatic Step Size Selection in Random Walk Metropolis Algorithms}.
+#' 
 #' @examples
 #'
 #' ## --------------------------------------------------------------------------------
 #' ## Beta Distribution
 #' ## --------------------------------------------------------------------------------
 #'
-#' # First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
-#' # Based on the rule of thumb in the details, 7 cutpoints are used
+#' # First run 'gold' on data sampled from a Beta(5, 1) distribution with 200 data points.
 #' y <- rbeta(200, 5, 1)
-#' gold_beta <- gold(y = y, s1 = 1, c1 = 0.8, s2 = 0.4, c2 = 0.5, MH_N = 20000)
+#' # Specify all prior parameters and tune s2 until a reasonable acceptance rate is achieved
+#' gold_beta <- gold(y = y, s1 = 1, c1 = 0.8, s2 = 0.2, c2 = 0.5, MH_N = 20000)
 #'
-#' #Check traceplots
-#' gold_plot(gold_beta, type="pdf", data=TRUE)
+#' # Check trace plots
+#' gold_traceplot(gold_beta)
 #'
-#' #Examine estimate of PDF
-#' gold_plot(gold_beta, type="pdf", data=TRUE)
+#' # Examine the estimate of the PDF
+#' gold_plot(gold_beta, data = TRUE)
 #'
-#' #Examine estimate of CDF
-#' gold_plot(gold_beta, type="cdf")
+#' # Examine the estimate of the CDF with the empirical CDF overlaied
+#' gold_plot(gold_beta, type = "cdf", data = TRUE)
+#' 
+#' ## --------------------------------------------------------------------------------
+#' ## Normal Distribution
+#' ## --------------------------------------------------------------------------------
 #'
-#' #Find probability of being less than 0.4
-#' gold_cdf(c(.4), gold_beta)$cdf
-
+#' # First run 'gold' on data sampled from a Normal(0, 1) distribution with 100 data points.
+#' y <- rnorm(100, 0, 1)
+#' # Specify all prior parameters except s2. Use graves instead to choose s2 to achieve a reasonable acceptance rate
+#' # Set the upper and lower scaling parameters to the standard deviation of the data
+#' gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, MH_N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
+#'
+#' # Check what s2 was chosen
+#' gold_norm$prior
+#' 
+#' # Check trace plots
+#' gold_traceplot(gold_norm)
+#'
+#' # Examine the estimate of the PDF with credible intervals
+#' gold_plot(gold_norm, cri = TRUE)
+#'
+#' # Examine the estimate of the CDF using an interactive graph
+#' gold_plot(gold_norm, type = "cdf", interact = TRUE)
+#' 
+#' ## --------------------------------------------------------------------------------
+#' ## Bimodal Distribution
+#' ## --------------------------------------------------------------------------------
+#'
+#' # Sample 400 random uniforms
+#' u  <- runif(400)
+#' y <- rep(NA,400)
+#' # Sampling from the mixture
+#' for(i in 1:400){
+#'   if(u[i] < 0.3){
+#'    y[i]  <-  rnorm(1, 0, 1)
+#'   }else {
+#'    y[i] <- rnorm(1, 4, 1)
+#'   }
+#' }
+#' 
+#' # First run 'gold' on data sampled from a bimodal distribution with 200 data points.
+#' # Specify several points of interest
+#' gold_bimodal <- gold(y = y, s1 = 1, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5))
+#'
+#' # Check the trace plots
+#' gold_traceplot(gold_bimodal)
+#' 
+#' # Plot the PDF with the data and credible intervals
+#' gold_plot(gold_bimodal, data = TRUE, cri = TRUE)
+#'
+#' # Plot the CDF
+#' gold_plot(gold_bimodal, type = "cdf")
+#' 
+#' # Plot histograms at estimates of the CDF at the 'poi'
+#' bimodal_cdf <- gold_cdf(x = c(0, 6.5), gold_bimodal)
+#' bimodal_cdf$cdf
+#' # x = 0
+#' hist(bimodal_cdf$mat[,1])
+#' # x = 6.5
+#' hist(bimodal_cdf$mat[,2])
 
 gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001, poi = NA){
   
+  # All error checking ********************************************************************
+    
+  # Error check for appropriate range of parameters
+  if(s1<=0){
+    stop("s1 needs to be greater than 0.")
+  }
+  
+  if(c1 < 0){
+    stop("c1 cannot be negative.")
+  }
   
   
+  if(c2 < 0){
+    stop("c2 cannot be negative.")
+  }
+  
+  
+  # Make sure numbers in 'poi' are unique, otherwise throws algorithm off  
   if(!is.na(poi[1])){
     total_length <- length(y)+length(poi)
     if(length(unique(poi))!=length(poi)){
@@ -82,20 +161,42 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
     total_length <- length(y)
   }
   
-  #Create vector to contain original data
+    
+  # Scale paramters needs to be greater than or equal to 0
+  if (scale_l < 0.0) {
+    stop("Scale parameter should be >= 0.")
+  }
+  if (scale_u < 0.0) {         	# scale paramter needs to be greater than or equal to 0
+    stop("Scale parameter should be >= 0.")
+  }
+
+  # Make sure MH_N is an integer 
+  if(MH_N/ceiling(MH_N)<1){
+    stop("MH_N should be an integer value.")
+  }
+  
+  # Make sure MH_N is greater than 0
+  if(MH_N<=0){
+    stop("MH_N should be an integer greater than zero.")
+  }
+  
+  
+  # Create vector to contain original data
   y_orig <- NA
   for(j in 1:length(y)){
     y_orig[j]<-y[j]
   }
 
-  
+  # Sort the data
   y_orig <- sort(y_orig)
+  # Find the maximum and minimum
   max_y <- max(y)
   min_y <- min(y)
 
-  #Mark positions that are data
+  # Mark positions that are data
   names(y_orig) <- rep("data", length(y_orig))
   
+  # Add points of interest to the data if there are any entered
   if(is.na(poi[1])){
       y_all_orig <- y_orig
   } else{
@@ -103,65 +204,62 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
     y_all_orig <- sort(c(y_orig, poi))
     
   }
-  # mx_mn <- c(min_y, max_y)
-  # largest <- mx_mn[which(abs(mx_mn)==max(abs(mx_mn)))]
-
-  # new_upper <- ifelse(max_y>=0, max_y+2*sd(y), max_y-2*sd(y))
-  # new_lower <- ifelse(min_y>=0, min_y+2*sd(y), min_y-2*sd(y))
-
+  
+  # y_all becomes the scaled data
   y_all <- y_all_orig
-  #Check if data is outside (0,1) range
-if((max_y>1)|(min_y<0)){
-  for(j in 1:length(y_all_orig)){
-    y_all[j] <- (y_all_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+  # Check if data is outside (0,1) range
+  if((max_y>1)|(min_y<0)){
+    for(j in 1:length(y_all_orig)){
+      y_all[j] <- (y_all_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+    }
   }
-}
 
-  # if((max_y>1)|(min_y<0)){
-  #   for(j in 1:length(y)){
-  #     y[j] <- (y_orig[j]-new_lower)/(new_upper-new_lower)
-  #   }
-  # }
-
+  # Sort the data again
   y_all <- sort(y_all)
-  #Create grid:0,0,01,...,.99,1
+  
+  # Create grid:0, 0.01,..., 0.99, 1
   x_full <- 0:100
   x_full <- x_full/100
 
-  #Will eventually remove end points, but just need to calculating bin widths
-  #also mark positions that are the grid
+  # Will eventually remove end points, but just need for calculating bin widths
+  # Mark positions that are the grid
   names(x_full) <- rep("grid", length(x_full))
   names(x_full)[1] <- "end"
   names(x_full)[length(x_full)] <- "end"
-
   
-  #x_full contains the end points, x removes them
+  # x_full contains the end points, x removes them
   x <- x_full[-1]
   x <- x[-length(x)]
 
-  #Get summary of data to count how many times each data point appeared
+  # Get summary of data to count how many times each data point appeared
   y_d <- data.frame(y_all_orig,y_all, names(y_all_orig))
   y_d <- y_d %>% group_by(y_all_orig,y_all, names.y_all_orig.) %>% summarise(n=n()) 
 
+  # Data to add to grid
   y_add <- y_d$y_all
+  # Maintain "data" and "poi"
   names(y_add) <- y_d$names.y_all_orig.
 
-  y_d <- y_d %>% filter(names.y_all_orig. != "poi")
-  #Add in the grid
+  # if contains "poi", remove rows from y_d that are 'poi' since y_d used in likelihood
+  if(length(which(y_d$names.y_all_orig.=="poi"))!=0){
+    y_d <- y_d %>% filter(names.y_all_orig. != "poi")
+  }
+  
+  # Add data to grid
   x <- c(x,y_add)
-  #Sort the data
+  # Sort the data
   x <- sort(x)
-  #Sort the full data
+  # Sort the full data
   x_full <- sort(c(x_full,y_add))
 
-  #calculate the distances between points
+  # calculate the distances between points
   pairwise_dist <- NA
   for(i in 1:(length(x_full)-1)){
     pairwise_dist[i] <- abs(x_full[{i+1}]-x_full[i])
   }
 
-  #The grid is designed to have distances of .01 between them, if there are two data points within .01 of each other
-  #remove grid point in between
+  # The grid is designed to have distances of .01 between them, if there are two data points within .01 of each other
+  # remove grid point in between
   drop <- NA
   r_index <- 1
   check <- which(!(names(x)%in% c("data", "poi")))
@@ -177,29 +275,27 @@ if((max_y>1)|(min_y<0)){
       }
     }
   }
-  #Just in case none to drop
+  
+  # Just in case none to drop
   if(!is.na(drop[1])){
   x <- x[-drop]
   }
   x_full <- c(0,x,1)
 
 
-  #Calculate the midpoints of the remaining points
+  # Calculate the midpoints of the remaining points
   midpoints <- NA
   for (i in 1:(length(x)+1)){
     midpoints[i] <- (x_full[{i+1}]-x_full[{i}])/2+x_full[{i}]
   }
 
-  #Calculate the widths between each pair of points
+  # Calculate the widths between each pair of points
   widths <- NA
   for (i in 1:(length(x))){
     widths[i] <- abs(midpoints[{i+1}]-midpoints[{i}])
   }
 
-
-
-
-  #Covariance matrix for prior distribution
+  # Covariance matrix for prior distribution
   cov_prior <- matrix(0, nrow=length(x), ncol=length(x))
   for (i in 1:length(x)){
     for(j in 1:length(x)){
@@ -216,27 +312,34 @@ if((max_y>1)|(min_y<0)){
     }
   }
 
-
-  #Use SVD
-  cov_prior_inv <- svd.inverse(cov_prior)
+  # Use SVD
+  cov_prior_inv <- matrixcalc::svd.inverse(cov_prior)
   G <- matrix(0, nrow=MH_N, ncol=length(x))
-
-  #G[1,] <- mvrnorm(n = 1, mu=rep(0,length(x)), Sigma=cov_prior, tol = 1e-6, empirical = FALSE, EISPACK = FALSE)
+  
+  # Starting values
   G[1,] <-rep(0, ncol(G))
 
 
   ###GRAVES################
 
   if(graves==TRUE){
+  # Vector of values to establish trend in acceptance rate
   s2_graves <- c(.001,.01,.03,.06,.08,.1,.2,.3,.6,.8,1,3,5)
+  # Number of step sizes to try
   n_step_size <- length(s2_graves)
+  # The target is .35, slightly lower than .4 due to number of parameteres
   target <- .35
+  # Store acceptance rates
   ar <- NA
+  
+  #Which which data points in x are the data
   which_x <- which(names(x)=="data")
 
+  # Loop through each step size suggestion
   for (i in 1:n_step_size){
+    
     ar_G <- NA
-    #Covariate matrix
+    # Covariate matrix
     cov_x <- matrix(0, nrow=length(x), ncol=length(x))
     for (l in 1:length(x)){
       for(j in 1:length(x)){
@@ -247,14 +350,12 @@ if((max_y>1)|(min_y<0)){
     for (l in 1:ncol(cov_x)){
       cov_x[l,l] <- cov_x[l,l]+.0000000000001
     }
-
-
+    
+    # Set up for multivariate simultions from normal
     n <- 1
     mu <- rep(0, length(x))
     tol = 1e-06
     p <- length(mu)
-    if (!all(dim(cov_x) == c(p, p)))
-      stop("incompatible arguments")
     eS <- svd(cov_x)
     ev <- eS$d
     if (!all(ev >= -tol * abs(ev[1L])))
@@ -262,20 +363,24 @@ if((max_y>1)|(min_y<0)){
 
     mvrnorm_calc <- eS$u %*% diag(sqrt(pmax(ev, 0)), p)
 
+    # Store iterations for tuning purposes 
     tune<- matrix(0, nrow=201, ncol=ncol(cov_x))
     tune[1,] <- G[1,]
 
     for(j in 2:101){
-      #Simulate length(x) values from standard normal
+      
+      # Simulate length(x) values from standard normal
       rw <- matrix(rnorm(p * n), n)
 
+      # Get proposal
       rw <- drop(mu) + mvrnorm_calc %*% t(rw)
       g_prop <- tune[{j-1},]+rw
-      #plot(x, exp(g_prop))
-
+      
+      # Numerator and denominator for acceptance ratio on the log scale
       ap_num_log <- -length(y)*log(sum(widths*exp(g_prop)))+sum(g_prop[which_x])-.5*t(g_prop)%*%cov_prior_inv%*%g_prop
       ap_den_log <- -length(y)*log(sum(widths*exp(tune[{j-1},])))+sum(tune[{j-1},which_x])-.5*t(tune[{j-1},])%*%cov_prior_inv%*%tune[{j-1},]
 
+      # Calculate acceptance ratio on the log scale
       ap_log <- ap_num_log-ap_den_log
 
       if (log(runif(1))<ap_log){
@@ -285,24 +390,29 @@ if((max_y>1)|(min_y<0)){
         tune[j,] <- tune[j-1,]
         ar_G[j] <- 0
       }
-      #print(i)
     }
     ar_G <- ar_G[-1]
-
+    
+    # Calculate the number that accepted
     ar[i] <- sum(ar_G)
   }
 
+  # Relationship between log acceptance ratio and log of s2 is linear
   test <- glm(cbind(ar,100-ar)~log(s2_graves), family="binomial")
+  # Back calculate what s2 leads to .35 acceptance rate
   s2_start <- exp((log(target/(1-target))-test$coefficients[1])/test$coefficients[2])
 
   names(s2_start) <- NULL
+  # s2 should not be too huge or small, if it is, algorithm is not converging so 
+  # pick more reasonable value by finding closest in suggestions to 
   if(s2_start>15 | s2_start<.0001){
-    s2_start <- s2_graves[which.min(abs(ar - 30)) ]
+    s2_start <- s2_graves[which.min(abs(ar - target*100)) ]
   }
   ##########
   s2 <- s2_start
 }
 
+# Calculate covariance matrix for proposals
 cov_x <- matrix(0, nrow=length(x), ncol=length(x))
 for (i in 1:length(x)){
   for(j in 1:length(x)){
@@ -310,18 +420,16 @@ for (i in 1:length(x)){
   }
 }
 
+# Ensures has inverse
 for (i in 1:ncol(cov_x)){
   cov_x[i,i] <- cov_x[i,i]+.0000000000001
 }
-
 
 ####SVD#####################
 n <- 1
 mu <- rep(0, length(x))
 tol = 1e-06
 p <- length(mu)
-if (!all(dim(cov_x) == c(p, p)))
-  stop("incompatible arguments")
 eS <- svd(cov_x)
 ev <- eS$d
 if (!all(ev >= -tol * abs(ev[1L])))
@@ -329,29 +437,27 @@ if (!all(ev >= -tol * abs(ev[1L])))
 
 mvrnorm_calc <- eS$u %*% diag(sqrt(pmax(ev, 0)), p)
 
+# Collect acceptance rate
+ar_G <- NA
 
+# Get indices for which parameters are actual data verses part of the grid
+which_x <- which(names(x)=="data")
 
-  #Collect acceptance rate
-  ar_G <- NA
+# Metropolis-Hastings algorithm
+for (i in 2:MH_N){
 
-  #Get indeces for which parameters are actual data verses part of the grid
-  which_x <- which(names(x)=="data")
-
-  #Metropolis-Hastings algorithm
-  for (i in 2:MH_N){
-
-    #Simulate length(x) values from standard normal
+    # Simulate length(x) values from standard normal
     rw <- matrix(rnorm(p * n), n)
     rw <- drop(mu) + mvrnorm_calc %*% t(rw)
 
-    #Add to previous iteration
+    # Add to previous iteration
     g_prop <- G[{i-1},]+rw
 
-    #Calculate log of numerator and denominator of acceptance probability
+    # Calculate log of numerator and denominator of acceptance probability
     ap_num_log <- -length(y)*log(sum(widths*exp(g_prop)))+sum(y_d$n*g_prop[which_x])-.5*t(g_prop)%*%cov_prior_inv%*%g_prop
     ap_den_log <- -length(y)*log(sum(widths*exp(G[{i-1},])))+sum(y_d$n*G[{i-1},which_x])-.5*t(G[{i-1},])%*%cov_prior_inv%*%G[{i-1},]
 
-    #Calculate log of acceptance probability
+    # Calculate log of acceptance probability
     ap_log <- ap_num_log-ap_den_log
 
     if (log(runif(1))<ap_log){
@@ -362,14 +468,17 @@ mvrnorm_calc <- eS$u %*% diag(sqrt(pmax(ev, 0)), p)
       ar_G[i] <- 0
     }
 
+    if(i %% 1000 == 0){
+     print(paste("Iteration:", i))
+    }
+    
   }
 
 
-  #Acceptance Rates
+  # Acceptance Rates
   ar_G <- ar_G[-1]
   print("Acceptance Rate:")
   print(sum(ar_G)/length(ar_G))
-  #print(sum(ar_G)/length(ar_G))
   if(is.na(poi[1])){
     return(list(G=G,widths=widths,x=x,y=y_orig,ar=sum(ar_G)/length(ar_G), prior=c(s1 = s1, c1 = c1, s2 = s2, c2 = c2), scale_l = scale_l, scale_u = scale_u))
   }else{

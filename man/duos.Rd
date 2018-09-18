@@ -2,55 +2,62 @@
 % Please edit documentation in R/RcppExports.R
 \name{duos}
 \alias{duos}
-\title{duos (Distribution on Uniform Order Statistics)}
+\title{duos (Distribution of Uniform Order Statistics)}
+\usage{
+duos(y, k = ceiling(n/50) + 3, MH_N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001, start = NA)
+}
 \arguments{
-\item{y}{A numberic vector to estimate the density on.}
+\item{y}{A numeric vector. \code{duos} estimates the density on this data.}
 
-\item{k}{The number of cut-points for the density estimate. See recommendations in the details below.}
+\item{k}{The number of cut-points for the density estimate. There is a default based on the size of \code{y} (see details).}
 
-\item{MH_N}{The number of iterations to run in the algorithm.}
+\item{MH_N}{The number of iterations to run in the algorithm. The default is 20,000.}
 
-\item{alpha}{The paramater values for the Dirichlet prior. All paramters are equal to the same number which is 1 by default.}
+\item{alpha}{The parameter values for the Dirichlet prior. The parameter is constant and set to 1 by default.}
 
-\item{scale_l}{A value >= 0 controlling the scaling based on the minimum data value (see details).}
+\item{scale_l}{A value >= 0 controlling the scaling based on the minimum data value. The default is 0.00001 (see details).}
 
-\item{scale_u}{A value >= 0 controlling the scaling based on the maximum data value (see details).}
+\item{scale_u}{A value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).}
+
+\item{start}{A vector of starting values of length k. This is useful for creating output to use in Gelman and Rubin's convergence diagnostics (see examples). If NA, reasonable starting values are selected by the algorithm.}
 }
 \value{
 \code{duos} returns a list of density estimate results.
 
-\item{\code{C}}{A matrix containing the positerior draws for the cut-point paramters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
-\item{\code{P}}{A matrix containing the positerior draws for the probability parameters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+\item{\code{C}}{A matrix containing the posterior draws for the cut-point parameters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
+\item{\code{P}}{A matrix containing the posterior draws for the bin proportion parameters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
 \item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
 \item{\code{k}}{The number of cut-points.}
-\item{\code{alpha}}{The paramter for the prior on the probability parameters.}
+\item{\code{alpha}}{The parameter for the prior on the bin proportions.}
 \item{\code{scale_l}}{The scaling parameter for the lower end of the data.}
 \item{\code{scale_u}}{The scaling parameter for the upper end of the data.}
 }
 \description{
-Runs Gibbs sampling algorithm to perfum Bayesian density estimation through \code{duos}.
+Runs Gibbs sampling algorithm to perform Bayesian density estimation through \code{duos}.
 }
 \details{
 The density being estimated takes the form below:
 
-\deqn{f(x) =}
-
+\eqn{f(x) =}
 \deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
 \deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
 \deqn{(\pi_3) / (\gamma_3-\gamma_2) , \gamma_2 \le x  < \gamma_3}
 \deqn{...  , ... \le x  < ...}
-\deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
+\deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k} 
 \deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
 
-where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k \in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
+where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k  is in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 
-This density operates on data between 0 and 1, thus if the input is not between 0 and 1, it is standardized to be between 0 and 1. The formula for scaling is below:
+The prior on the \eqn{\gamma's} is: draw k values from $unif(0,1)$ and order: $0 < \gamma_1 < \gamma_2 < ... < \gamma_{k-1} < \gamma_k < 1$.
+The prior on the \eqn{\pi's} is Dirichlet(\eqn{\alpha}).
+
+This density operates on data between 0 and 1. Thus, if the input is not between 0 and 1, it is standardized. The formula for scaling is below:
 
 \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
 
-Values of 0 for the scale paramters indicates the density will only be estimated to the minimum and maximum of \code{y}.
+Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.0001.
 
-The recommended number of cupoints starts at 3, and then at each increment of 50, adds a cutpoint.
+The recommended number of cut-points starts at 3, and then for each increment of 50, adds a cut-point.
 
 Default: k = floor(n/50)+3
 }
@@ -60,53 +67,106 @@ Default: k = floor(n/50)+3
 ## Beta Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Beta(5, 1) distribution wiht 200 data points.
-# Based on the rule of thumb in the details, 7 cutpoints are used
-y <- rbeta(200, 5, 1)
-duos_beta <- duos(y, k=7, MH_N=20000)
+# Run 'duos' on data sampled from a Beta(5, 1) distribution with 100 data points.
+# All defaults are used.
+y <- rbeta(100, 5, 1)
+duos_beta <- duos(y)
 
 #Examine estimate of PDF
-duos_plot(duos_beta, type="pdf", data=TRUE)
+duos_plot(duos_beta, type = "pdf", data = TRUE)
 
-#Examine estimate of CDF
-duos_plot(duos_beta, type="cdf")
+#Examine estimate of CDF with credible intervals
+duos_plot(duos_beta, type = "cdf")
 
 #Find probability of being less than 0.1
 duos_cdf(c(.1), duos_beta)$cdf
 
 ## --------------------------------------------------------------------------------
-## Gamma Distribution
+## Claw Distribution
+## --------------------------------------------------------------------------------
+# Run 'duos' on data sampled from a 'Claw' distribution with 200 data points.
+u <- runif(200)
+
+# Variable to store the samples from the mixture distribution 
+y <- rep(NA, 200)
+# Sampling from the mixture
+for(i in 1:200){
+if(u[i] < 0.5){
+     y[i] <- rnorm(1, 0, 1)
+     }else if(u[i] < 0.6){
+     y[i] <- rnorm(1, -1, 0.1)
+     }else if (u[i] < 0.7){
+     y[i] <- rnorm(1, -0.5, 0.1)
+     }else if (u[i] < 0.8){
+     y[i] <- rnorm(1, 0, 0.1)
+     }else if (u[i] <- 0.9){
+     y[i] <- rnorm(1, 0.5, 0.1)
+     }else{
+     y[i] <- rnorm(1, 1, 0.1)
+     }
+     }
+     
+# Choose 12 cutpoints
+duos_claw <- duos(y = y, k = 12, MH_N = 20000)
+
+# Examine estimate of PDF
+duos_plot(duos_claw, type = "pdf", data = TRUE)
+
+# Examine estimate of CDF
+duos_plot(duos_claw, type = "cdf")
+
+# Find probability of being greater than 90
+1-duos_cdf(c(0.90), duos_claw)$cdf
+
+## --------------------------------------------------------------------------------
+## Normal Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Gamma(5, 0.1) distribution wiht 100 data points.
-# Based on the rule of thumb in the details, 5 cutpoints are used
-y <- rgamma(100, 5, 0.1)
-duos_gamma <- duos(, k=5, MH_N=20000)
+# Run 'duos' on data sampled from a Normal(0, 1) distribution with 50 data points.
+y <- rnorm(50, 0, 1)
+# Run for 15,000 iterations and change the 'scale' values to 1.5*sd(y)
+duos_norm <- duos(y = y, scale_l = 1.5*sd(y), scale_u = 1.5*sd(y), MH_N = 15000)
 
-#Examine estimate of PDF
-duos_plot(duos_gamma, type="pdf", data=TRUE)
+# Examine estimate of PDF
+duos_plot(duos_norm, type = "pdf", data = TRUE)
 
-#Examine estimate of CDF
-duos_plot(duos_gamma, type="cdf", cri=TRUE)
+# Examine estimate of CDF
+duos_plot(duos_norm, type = "cdf", cri = TRUE)
 
-#Find probability of being greater than 90
-1-duos_cdf(c(90), duos_gamma)$cdf
+# Find probability of being greater than 2.5
+1-duos_cdf(c(2.5), duos_norm)$cdf
 
 ## --------------------------------------------------------------------------------
 ## Uniform Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Uniform(0, 1) distribution wiht 150 data points.
-# Based on the rule of thumb in the details, 6 cutpoints are used
-y <- runif(150)
-duos_unif <- duos(y, k=6, MH_N=20000)
+# Below is an example of using the 'start' variable to calculate the Gelman and Rubin diagnostic
 
-#Examine estimate of PDF
-duos_plot(duos_unif, type="pdf", data=TRUE)
+# First run 'duos' on data sampled from a Uniform(0, 1) distribution with 50 data points.
+y <- runif(50)
 
-#Examine estimate of CDF
-duos_plot(duos_unif, type="cdf", cri=TRUE)
+# Use 4 cutpoints
+# Create three runs with diverse starting values
+duos_unif1 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 0, 1/3))
+duos_unif2 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 1/3, 2/3))
+duos_unif3 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 2/3, 1))
 
-#Find probability of being less than 0.3
-duos_cdf(c(.3), duos_unif)$cdf
+# Load package coda
+library(coda)
+
+# Turn matrices of cut-points into mcmc objects
+C1 <- mcmc(duos_unif1$C)
+C2 <- mcmc(duos_unif2$C)
+C3 <- mcmc(duos_unif3$C)
+
+# Turn into mcmc list
+all_chains <- mcmc.list(C1, C2, C3)
+
+#Get Gelman and Rubin diagnostic
+gelman.diag(all_chains)[[1]][,1]
+
+#Examine estimate of PDF's from each run
+duos_plot(duos_unif1, type="pdf", data=TRUE)
+duos_plot(duos_unif2, type="pdf", data=TRUE)
+duos_plot(duos_unif3, type="pdf", data=TRUE)
 }

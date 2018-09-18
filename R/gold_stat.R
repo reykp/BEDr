@@ -105,10 +105,13 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA,scale=FALSE){
     stop("p specified, but quantile not requested as the statistic.")
   }
 
+  # Get the original data
   y_orig <- gold_output$y
+  # Find max and minimums
   min_y <<- min(y_orig)
   max_y <<- max(y_orig)
 
+  # Get points at which to 
   x_gold <- gold_output$x
 
   G_burnin <- G[burnin:nrow(G),]

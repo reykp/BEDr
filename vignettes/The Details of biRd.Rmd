@@ -1,0 +1,396 @@
+---
+title: "The Details of biRd"
+author: "Kathleen P. Rey"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    fig_width: 8
+    fig_height: 4
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Introduction
+
+Bayesian!
+
+Nonparametric!!!!
+
+Ease of implementation!!!
+
+## Methodology
+
+### DUOS
+
+#### Introduction
+
+The Bayesian density estimator in this section is designed to have little to know input necessary from the user. Although, knowledge of the complexity of the density and the size of the data can definitley and should influence choices in the input, this method can make reasonable choices without user input other than the data. This method is a histogram-like density estimate, but rather than the widths being fixed or the widths varying, but the midpoints being fixed, the end points of the bins are random. The number of bins is chosen by the user, or as seen later, can be left to the default.
+
+The positions of the bin end points (or cut-points as they are refered to throughout the vignette) are random order statistics on unif(0,1). From here on, this method will be refered to as DUOS: Distribution of Uniform Order Statistics.
+
+Before going into detail, an example of what `duos` is creating is below. The resultin gposterior mean density (in red) is a mean of many different step functions (in blue). These are both0 overalayed over a histogram of the actual data. 
+ 
+```{r, echo = FALSE}
+# Read in sample data
+y <- read.csv("Data/Data_Vshape_Size300_Rep4.csv")
+y <- y$x
+
+# Cut- points from a set of test data
+C <- read.csv("Data/C_Vshape_300_c7_Rep4.csv", header=TRUE)
+# Bin proporitions from the same set of test data
+P <- read.csv("Data/P_Vshape_300_c7_Rep4.csv", header=TRUE)
+
+# Remove the first column with is row numbers
+C <- C[,-1]
+P <- P[,-1]
+
+# Set the burnin so not plotting too much output
+Burnin <- 19800
+# Set the number of cut-points to a global parameters
+k <<- ncol(C)
+
+# Create a grid to estimate the densities on
+input <<- seq(0.01,.99, by=.01)
+
+# Pdf function
+pdf <- function(x){
+    pi <- rep(0,length(input))
+    c_full <- c(0, x[1:k],1)
+    p <- x[{k+1}:length(x)]
+    for (j in 1:(k+1)){
+      pi[which(input<c_full[(j+1)] & input>=c_full[j])]<- p[j]/(c_full[(j+1)]-c_full[j])
+    }
+    return(pi)
+  }
+
+# Get subsets of iterations
+C_sub <- C[Burnin:nrow(C),]
+P_sub <- P[Burnin:nrow(C),]
+
+# Estimate the density at each iteration 
+pdf_y_matrix <- apply(cbind(C_sub,P_sub), 1, pdf)
+
+# Data to plot
+pdf_plot <- data.frame(X=input, pdf_y_matrix)
+
+# Stack data
+pdf_plot <- pdf_plot %>% gather(Run, Density, -X) %>% filter(Density<5)
+
+# Data to use as histogram
+j_hist <- data.frame(y=y)
+
+# Calculate the mean density estimate
+pdf_mean <- data.frame(X=input, PDF= apply(pdf_y_matrix, 1, mean))
+
+ggplot(data=j_hist, aes(y))+
+  geom_line(data=pdf_plot, aes(X, Density,group=Run, color="blue"),alpha=.9)+
+    geom_histogram(aes(y=..density..),fill="grey", color="black",alpha=.9)+
+  geom_line(data=pdf_mean, aes(X, PDF, color="red"), size=1)+
+  theme_bw()+ylab("Posterior Mean Density")+xlab("X")+
+  theme(text = element_text(size=15),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_manual(name = '',
+  values =c('blue'='blue','red'='red'), labels = c('Single Iteration','Posterior Mean'))
+
+```
+
+The particular results from above were simulated from a distribution that lies between 0 and 1. `duos` is designed to work on data that is in the range (0,1). If the data is not between 0 and 1, is is standardize using the options in section [Density Estimation](#duos-density-estimation). As mentioned above, the data model is a step function as specified below:
+
+* Let $k$ = the number of cut-points.
+* Let $\gamma_j$ represent a cut-point: j = 1,..k.
+* Let $\pi_j$ represent the proportion associated with the bin ($\gamma_{j-1}, \gamma_j$)
+
+$f_{\boldsymbol\gamma,\boldsymbol\pi}(x)$ = \left\
+        \begin{array}{ll}
+            \frac{\pi_1}{(\gamma_1)} & \quad 0 \leq x  < \gamma_1 \\
+            \frac{\pi_2}{(\gamma_2-\gamma_1)} & \quad \gamma_1 \leq x  < \gamma_2 \\
+            \frac{\pi_3}{(\gamma_3-\gamma_2)} & \quad \gamma_2 \leq x  < \gamma_3 \\
+            ... & \quad ... \leq x  < ... \\
+            \frac{\pi_k}{(\gamma_k-\gamma_{k-1})} & \quad \gamma_{k-1} \leq x  < \gamma_k \\
+            \frac{\pi_{k+1}}{(1-\gamma_k)} & \quad \gamma_k \leq x  < 1 \\
+        \end{array}
+
+$k$ : the number of cut points \newline
+\indent
+$\boldsymbol\gamma : 0 < \gamma_1 < \gamma_2 < ... < \gamma_{k-1} < \gamma_k < 1$ \newline
+\indent
+$\boldsymbol\pi : \pi_k \geq 0$ and  $\sum_{j=1}^{k+1} \pi_j = 1$
+
+$\boldsymbol\gamma$ and $\boldsymbol\pi$ are the unknown parameters and therefore, require priors.
+
+Assume $boldsymbol\gamma$ and  $boldsymbol\pi$ are independent (i.e. $p(\boldsymbol\gamma, \boldsymbol\pi) = p(\boldsymbol\gamma)p(\boldsymbol\pi)$).
+
+**Priors:**
+
+$\boldsymbol\gamma \sim$ *DUOS prior*
+
+i.e. Draw k values from $unif(0,1)$ and order: $0 < \gamma_1 < \gamma_2 < ... < \gamma_{k-1} < \gamma_k < 1$.
+
+$\boldsymbol\pi \sim Dir(\boldsymbol\alpha)$
+
+where $\alpha_j = 1$ for $j = 1,2,...,k,k+1$ 
+
+Noninformative priors were chosen so that little informational input is required from the user.
+
+Let $x_1, x_2,...,x_n$ be independent and identical samples from some unknown distribution.
+
+`duos` implements a Gibbs algorithm using the following full conditionals:
+
+$p(\boldsymbol\pi|\textbf x,\boldsymbol\gamma) \sim Dir(\alpha^*)$
+
+where $\alpha^* =(1+\sum_{i=1}^{n} \mathrm{I}(0\leq x_i<\gamma_1), 1+\sum_{i=1}^{n} \mathrm{I}(\gamma_1\leq x_i<\gamma_2),..., 1+\sum_{i=1}^{n}\mathrm{I}(\gamma_k\leq x_i<1))$
+
+Note the meaning of the notation $\boldsymbol\gamma_{-j}$ used below. This indicates the $\gamma_j$ is conditioning on all other $\gamma_j$'s except $\gamma_j$. Thus, the full conditional for each $\gamma_j$ is as follows:
+
+$p(\gamma_j|\textbf x,\boldsymbol\pi,\boldsymbol\gamma_{-j}) \propto {\frac{\pi_j}{\gamma_j-\gamma_{j-1}}}^{\sum_{i=1}^{n}\mathrm{I}(\gamma_{j-1}\leq x_i<\gamma_j)}\frac{\pi_{j+1}}{\gamma_{j+1}-\gamma_j}^{\sum_{i=1}^{n}\mathrm{I}(\gamma_j \leq x_i<\gamma_{j+1})}$
+where $\gamma_j \in [\gamma_{j-1}, \gamma_{j+1})$
+
+Although the full conditional for the bin probability parameters is a known distribution, the full conditional for the cut-point parameters is not.  
+
+```{r, echo = FALSE}
+
+fullc <- function(w, row, nsim){
+y <- read.csv("Data/Data_Vshape_Size300_Rep4.csv")
+y <- y$x
+ys <- y
+
+C <- read.csv("Data/C_Vshape_300_c7_Rep4.csv", header=TRUE)
+P <- read.csv("Data/P_Vshape_300_c7_Rep4.csv", header=TRUE)
+C <- C[,-1]
+P <- P[,-1]
+#w <-2
+c <- as.numeric(C[row,])
+Q_C_extra <- c(0, c, 1)
+w_p2 <- w+2
+xm <- c(Q_C_extra[w], ys[ys>=Q_C_extra[w]&ys<Q_C_extra[{w+2}]], Q_C_extra[{w+2}])
+#find number of observatiosn between C[w-1] and C[w+1]
+m <- length(xm)-2
+
+
+#Initialize vector to contains maximums on each interval
+c_max <- NA
+#Initialize vector to contain minimums on each interval
+#Get for first interval in the vector
+c_max_choices <- c(xm[1], xm[2])
+#The maximum from derivatives is Q_C_extra[w] which is xm[1]
+#Pairs (c(1/2), c(1/3), c(2/3))
+#Create to contain ratios of the pdf's
+
+#option1/option2
+c_max_maxes <- (Q_C_extra[w_p2]-c_max_choices[1])^(-m)/((Q_C_extra[w_p2]-c_max_choices[2])^(-m))
+
+if (c_max_maxes>1){
+  c_max[1] <- c_max_choices[1]
+} else{
+  c_max[1] <- c_max_choices[2]
+}
+
+if (m >1){
+
+  for (q in 2:m){
+
+
+    q_p1 <- q+1
+    #Counter for data as upper bound, negative since power for denominator
+
+    m1_p1 <- -q+1
+    mm_pq_m1 <- -m+q-1
+    c_max_choices <- c(xm[q], xm[q_p1], (((m-q+1)*Q_C_extra[w]+(q-1)*Q_C_extra[w_p2])/m))
+
+    #c_max_maxes <- exp((-q+1)*log(c_max_choices-Q_C_extra[w])+(-m+q-1)*log(Q_C_extra[{w+2}]-c_max_choices))
+    #Pairs (c(1/2), c(1/3), c(2/3))
+    c_max_maxes <- NA
+    #option1/option2
+    c_max_maxes[1] <- exp(m1_p1*log(c_max_choices[1]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[1])-m1_p1*log(c_max_choices[2]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[2]))
+    #Option1/option3
+    c_max_maxes[2] <- exp(m1_p1*log(c_max_choices[1]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[1])-m1_p1*log(c_max_choices[3]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[3]))
+    #Option2/option3
+    c_max_maxes[3] <- exp(m1_p1*log(c_max_choices[2]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[2])-m1_p1*log(c_max_choices[3]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[3]))
+
+    if (c_max_choices[3] >= xm[q] & c_max_choices[3] < xm[q_p1]){
+
+      if (c_max_maxes[1] > 1 & c_max_maxes[2] > 1) {
+
+        c_max[q] <- c_max_choices[1]
+      } else if (c_max_maxes[1] < 1 & c_max_maxes[3] > 1) {
+
+        c_max[q] <- c_max_choices[2]
+      } else {
+        c_max[q] <- c_max_choices[3]
+      }
+    } else if ( c_max_maxes[1] > 1) {
+
+      c_max[q] <- c_max_choices[1]
+    } else {
+      c_max[q] <- c_max_choices[2]
+    }
+
+
+  }
+}
+
+#GET for last
+c_max_choices <- c(xm[m+1], xm[m+2])
+
+#Pairs (c(1/2), c(1/3), c(2/3))
+#option1/option2
+c_max_maxes <- (c_max_choices[1]-Q_C_extra[w])^(-m)/((c_max_choices[2]-Q_C_extra[w])^(-m))
+
+if (c_max_maxes[1] > 1){
+
+  c_max[m+1] <- c_max_choices[1]
+} else {
+  c_max[m+1] <- c_max_choices[2]
+}
+
+l_r <- NA
+for (i in 1:{length(xm)-1}){
+  if (xm[i]==c_max[i]){
+    l_r[i] <- "L"
+  } else {
+    l_r[i] <- "U"
+  }
+}
+
+p <- P[row,]
+x <- runif(nsim, c[{w-1}], c[{w+1}])
+
+pdf_kernel <- NA
+for (i in 1:length(x)){
+  n1 <- length(which(ys>=c[{w-1}]&ys<x[i]))
+  n2 <- length(which(ys<c[{w+1}]&ys>=x[i]))
+
+  pdf_kernel[i] <- (p[w]/(x[i]-c[{w-1}]))^n1*(p[{w+1}]/(c[{w+1}]-x[i]))^n2
+   #print(i)
+}
+bound_plot <- NA
+
+for (i in 1:{length(xm)-1}){
+  # n1 <- length(which(ys>=c[2]&ys<c_max[i]))
+  # n2 <- length(which(ys<c[4]&ys>=c_max[i]))
+  n1 <- i-1
+  n2 <- length(xm)-2-i+1
+
+  bound_plot[which(x>=xm[i]&x<xm[{i+1}])] <- (p[w]/(c_max[i]-c[{w-1}]))^n1*(p[{w+1}]/(c[{w+1}]-c_max[i]))^n2
+  #print(i)
+}
+
+d2 <- data.frame(x,pdf_kernel, bound_plot)
+d2 <- d2 %>% arrange(x)
+locations <- NA
+index <- 1
+
+for (i in 1:{length(xm)-1}){
+  if (length(which(d2$x>=xm[{i+1}])>0)){
+    locations[index] <- min(which(d2$x>=xm[{i+1}]))
+    index <- index+1
+  }
+}
+
+# locations <- NA
+#
+# for (i in 1:{length(xm)}){
+#   locations[i] <- min(which(x>xm[{i}]))
+# }
+#
+d2$disc <- "Cont"
+d2$disc[locations] <- "Disc"
+
+options(digits=4)
+
+# jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\FullC.jpg", width=width, height=height)
+ggplot(d2)+geom_point(aes(x,pdf_kernel, shape=disc, size=disc))+
+  theme_bw()+xlab("x")+ylab("Full Conditional Kernel")+
+  theme(text = element_text(size=15),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        legend.position = "none")+
+  scale_shape_manual(values=c(16,1))+
+  scale_size_manual(values=c(2,6))
+# dev.off()
+}
+fullc(3, 15000, 10000)
+```
+
+### GOLD
+
+## R Package: biRD (Bayesian Implimention in R for Density estimation)
+
+### DUOS
+
+#### Density Estimation {#duos-density-estimation}
+
+#### Convergence Diagnostics
+
+#### CDF and PDF plots
+
+#### Additional statistics
+
+### Gold
+
+#### Density Estimation
+
+#### Convergence Diagnostics
+
+#### CDF and PDF plots
+
+#### Additional statistics
+
+Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+
+- Never uses retina figures
+- Has a smaller default figure size
+- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))

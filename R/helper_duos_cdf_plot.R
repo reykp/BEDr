@@ -2,12 +2,25 @@
 
 
 
-helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
+helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
 
   if(is.na(burnin)){
-    burnin <- nrow(duos_output$C)/2
+    burnin <- ceiling(nrow(duos_output$C)/2)
   }
 
+  if(burnin>nrow(C)){
+    stop("The specified burnin is greater than the number of iterations.")
+  }
+  # Check if burnin is an integer
+  if(burnin/ceiling(burnin) < 1){
+    stop("burnin should be an integer greater than zero.")
+  }
+  
+  # Check if burnin is an positive number
+  if(burnin <= 0){
+    stop("burnin should be an integer greater than zero.")
+  }
+  
   scale_l <- duos_output$scale_l
   scale_u <- duos_output$scale_u
   
@@ -18,10 +31,10 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
 
   if(min_y<0 | max_y>1){
     input <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_CDF <- duos_cdf(input,duos_output,burnin)
+    duos_CDF <- duos_cdf(input,duos_output,burnin, scale)
   }else{
     input <- 1:999/1000
-    duos_CDF <- duos_cdf(input,duos_output,burnin)
+    duos_CDF <- duos_cdf(input,duos_output,burnin, scale)
   }
 
   #Get x
@@ -38,8 +51,14 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
   crdble$x <- duos_CDF$x
 
 
-  data_y <- data.frame(y_orig)
-  names(data_y) <- "data"
+  if(scale == TRUE){
+    data_y <- data.frame(duos_output$y)
+    names(data_y) <- "data"
+    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+  }else{
+    data_y <- data.frame(duos_output$y)
+    names(data_y) <- "data"
+  }
 
   g <- ggplot()+
     theme(axis.title = element_text(size = 12))+
@@ -58,6 +77,13 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE){
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }
 
-  g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
-    xlab("X")
+  if(interact == TRUE){
+    
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+                       xlab("X")))
+    
+  }else{
+    g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+      xlab("X")
+  }
 }

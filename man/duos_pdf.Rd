@@ -2,25 +2,25 @@
 % Please edit documentation in R/duos_pdf.R
 \name{duos_pdf}
 \alias{duos_pdf}
-\title{Estimate of PDF from DUOS.}
+\title{Estimate of PDF from \code{duos}}
 \usage{
 duos_pdf(x, duos_output, burnin = NA, scale = FALSE)
 }
 \arguments{
-\item{x}{A single value or vector of values at which to calculate the PDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).}
+\item{x}{A single value or vector of values at which to calculate the PDF. These values should be entered on the scale of the data (i.e. values can fall outside of 0 and 1 if data does).}
 
 \item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
 
-\item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
+\item{burnin}{The desired burnin to discard from the results. If no value is entered, the default is half the number of iterations.}
 
-\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
 \value{
-\code{duos_pdf} returns a list of the PDF results from DUOS.
+\code{duos_pdf} returns a list of the PDF results from \code{duos}.
 
-\item{\code{pdf}}{A vector of the posterior mean PDF values at each value in \code{x}.}
-\item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the PDF at each of the points in \code{x}.}
-\item{\code{mat}}{A matrix containing the PDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
+\item{\code{pdf}}{A vector of the posterior mean PDF at each value in \code{x}.}
+\item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
+\item{\code{mat}}{A matrix containing the PDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
 \item{\code{x}}{A vector containing the values at which to estimate the PDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
 }
 \description{
@@ -30,7 +30,7 @@ or vector of values.
 \details{
 The function \code{duos_pdf} returns the posterior mean PDF. The PDF is calculated based on the following equation at each iteration:
 
-\deqn{f(x) =}
+\eqn{f(x) =}
 
 \deqn{(\pi_1) / (\gamma_1) , 0 \le x < \gamma_1}
 \deqn{(\pi_2) / (\gamma_2-\gamma_1) , \gamma_1 \le x  < \gamma_2}
@@ -38,38 +38,48 @@ The function \code{duos_pdf} returns the posterior mean PDF. The PDF is calculat
 \deqn{...  , ... \le x  < ...}
 \deqn{(\pi_k) / (\gamma_k-\gamma_{k-1}) , \gamma_{k-1} \le x  < \gamma_k}
 \deqn{(\pi_{k+1}) / (1-\gamma_k) , \gamma_k \le x  < 1}
+
+where \eqn{\gamma_1 < \gamma_2 < ... < \gamma_k  is in (0,1) and \pi_1 + \pi_2 + ... + \pi_{k+1} = 1}
 }
 \examples{
 ## --------------------------------------------------------------------------------
 ## Uniform Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Unif(0,1) distribution wiht 70 data points.
+# First run \\code{duos} on data sampled from a Unif(0,1) distribution with 70 data points.
 y <- runif(70)
-duos_unif <- duos(y, k=4, MH_N=20000)
+duos_unif <- duos(y = y, k = 4, MH_N = 20000)
+
+# Estimate the PDF at a vector of values
 pdf_unif <- duos_pdf(x = c(.1, .5, .65, .98), duos_unif)
 
-#Examine the PDF at 'x'
+# Examine the PDF at \\code{x}
 pdf_unif$pdf
 
-#Examine the credibal intervals of the PDF at 'x'
-pdf_unif$pri
+# Examine the credible intervals of the PDF at \\code{x}
+pdf_unif$cri
 
 ## --------------------------------------------------------------------------------
-## Normal Distribution
+## Gamma Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Normal(2,2) distribution with 90 data points.
-y <- rnorm(90, 2, 2)
-duos_norm <- duos(y, k=5, MH_N=20000)
-pdf_norm <- duos_pdf(x=c(-1.5, -.3, 0, .3, 2.1), duos_norm)
+# First run \\code{duos} on data sampled from a Gamma(2,2) distribution with 90 data points.
+y <- rgamma(90, 2, 2)
+duos_gamma <- duos(y = y, MH_N = 20000)
 
-#Examine the PDF at 'x'
-pdf_norm$pdf
+# Estimate the PDF at a vector of values
+pdf_gamma <- duos_pdf(x = c(0.4, 1, 2, 3), duos_gamma)
 
-#Examine the credibal intervals of the PDF at 'x'
-pdf_norm$cri
+# Examine the PDF at \\code{x}
+pdf_gamma$pdf
 
-#Histogram of distribution of the PDF density estimate at -0.3
-hist(pdf_norm$mat[,2])
+# Examine the credible intervals of the PDF at \\code{x}
+pdf_gamma$cri
+
+#Plot a histogram of distribution of the posterior draws for the CDF estimate at 1
+hist(pdf_gamma$mat[,2])
+
+# Data is scaled between 0 and 1 for the density estimation.
+# If \\code{scale} = TRUE is requested, the \\code{x} is returned on the scaled range.
+duos_pdf(x = c(0.4, 1, 2, 3), duos_gamma, scale = TRUE)$x1
 }

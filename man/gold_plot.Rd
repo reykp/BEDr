@@ -5,7 +5,7 @@
 \title{Plot PDF or CDF}
 \usage{
 gold_plot(gold_output, type = "pdf", burnin = NA, cri = FALSE,
-  data = FALSE)
+  data = FALSE, interact = FALSE, scale = FALSE)
 }
 \arguments{
 \item{gold_output}{The list returned by \code{gold} containing the density estimate results.}
@@ -17,6 +17,8 @@ gold_plot(gold_output, type = "pdf", burnin = NA, cri = FALSE,
 \item{cri}{An option to include credible intervals.}
 
 \item{data}{An option to include data in the graph (see details).}
+
+\item{interact}{An option to make the plots interactive.}
 }
 \value{
 A plot of the PDF or CDF estimate.
@@ -54,7 +56,7 @@ The input from \code{gold} can be used to plot a Bayesian estimate of the PDF or
 Credibal intervals can also be added to the plot of the PDF or CDF.
 \itemize{
     \item \code{"FALSE"}: No credible intervals lines are plotted (DEFAULT).
-    \item \code{"TRUE"}: Credible interval lines are plotted in red on the PDF or CDF. These are calculated by taking the 0.025th and 0.975th quantiles of the iterations from \code{duos} after burnin.
+    \item \code{"TRUE"}: Credible interval lines are plotted in red on the PDF or CDF. These are calculated by taking the 0.025th and 0.975th quantiles of the iterations from \code{gold} after burnin.
   }
 
 \strong{Options for} \code{data}
@@ -62,7 +64,7 @@ Credibal intervals can also be added to the plot of the PDF or CDF.
 Incoproates the data into the PDF and CDF.
 \itemize{
     \item \code{"FALSE"}: The data is not included (DEFAULT).
-    \item \code{"TRUE"}: If the PDF is plotted, a histogram is overlayed with the density estimate. If the CDF is plotted, the empirical CDF is overlayed with the \code{duos} CDF estimate.
+    \item \code{"TRUE"}: If the PDF is plotted, a histogram is overlayed with the density estimate. If the CDF is plotted, the empirical CDF is overlayed with the \code{gold} CDF estimate.
   }
 }
 \examples{
@@ -71,7 +73,7 @@ Incoproates the data into the PDF and CDF.
 ## Uniform Distribution
 ## --------------------------------------------------------------------------------
 
-# First run 'duos' on data sampled from a Uniform(0,1) distribution with 50 data points.
+# First run 'gold' on data sampled from a Uniform(0,1) distribution with 50 data points.
 y <- runif(50)
 gold_unif <- gold(y, s1 = 1, c1 = 1, s2 = 0.9, c2 = 0.8, MH_N = 20000)
 
@@ -109,7 +111,7 @@ for(i in 1:150){
    y[i] = rnorm(1,4,1)
   }
 }
-# First run 'duos' on data sampled from a bimodal distribution with 150 data points.
+# First run 'gold' on data sampled from a bimodal distribution with 150 data points.
 gold_bimodal <- gold(y, s1 = 1, c1 = 5, s2 = .4, c2 = 3, MH_N = 20000)
 
 #Plot the PDF

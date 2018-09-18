@@ -7,6 +7,7 @@
 #' @param burnin The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.
 #' @param cri An option to include credible intervals.
 #' @param data An option to include data in the graph (see details).
+#' @param interact An option to make the plots interactive.
 #'
 #' @export
 #'
@@ -41,7 +42,7 @@
 #' Credibal intervals can also be added to the plot of the PDF or CDF.
 #' \itemize{
 #'     \item \code{"FALSE"}: No credible intervals lines are plotted (DEFAULT).
-#'     \item \code{"TRUE"}: Credible interval lines are plotted in red on the PDF or CDF. These are calculated by taking the 0.025th and 0.975th quantiles of the iterations from \code{duos} after burnin.
+#'     \item \code{"TRUE"}: Credible interval lines are plotted in red on the PDF or CDF. These are calculated by taking the 0.025th and 0.975th quantiles of the iterations from \code{gold} after burnin.
 #'   }
 #'
 #' \strong{Options for} \code{data}
@@ -49,7 +50,7 @@
 #' Incoproates the data into the PDF and CDF.
 #' \itemize{
 #'     \item \code{"FALSE"}: The data is not included (DEFAULT).
-#'     \item \code{"TRUE"}: If the PDF is plotted, a histogram is overlayed with the density estimate. If the CDF is plotted, the empirical CDF is overlayed with the \code{duos} CDF estimate.
+#'     \item \code{"TRUE"}: If the PDF is plotted, a histogram is overlayed with the density estimate. If the CDF is plotted, the empirical CDF is overlayed with the \code{gold} CDF estimate.
 #'   }
 #'
 #' @return A plot of the PDF or CDF estimate.
@@ -60,7 +61,7 @@
 #' ## Uniform Distribution
 #' ## --------------------------------------------------------------------------------
 #'
-#' # First run 'duos' on data sampled from a Uniform(0,1) distribution with 50 data points.
+#' # First run 'gold' on data sampled from a Uniform(0,1) distribution with 50 data points.
 #' y <- runif(50)
 #' gold_unif <- gold(y, s1 = 1, c1 = 1, s2 = 0.9, c2 = 0.8, MH_N = 20000)
 #'
@@ -98,7 +99,7 @@
 #'    y[i] = rnorm(1,4,1)
 #'   }
 #' }
-#' # First run 'duos' on data sampled from a bimodal distribution with 150 data points.
+#' # First run 'gold' on data sampled from a bimodal distribution with 150 data points.
 #' gold_bimodal <- gold(y, s1 = 1, c1 = 5, s2 = .4, c2 = 3, MH_N = 20000)
 #'
 #' #Plot the PDF
@@ -112,12 +113,12 @@
 #'
 
 
-gold_plot <- function(gold_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE){
+gold_plot <- function(gold_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact = FALSE, scale = FALSE){
 
   #Check if call is to plot pdf or cdf
   if(type=="pdf"){
-    helper_gold_pdf_plot(gold_output, burnin, cri, data)
+    helper_gold_pdf_plot(gold_output, burnin, cri, data, interact, scale)
   }else if (type=="cdf"){
-    helper_gold_cdf_plot(gold_output, burnin, cri, data)
+    helper_gold_cdf_plot(gold_output, burnin, cri, data, interact, scale)
   }
 }

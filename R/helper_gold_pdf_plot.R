@@ -1,6 +1,6 @@
 # Plot Probability Density from gold.
 
-helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
+helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
 
   if(is.na(burnin)){
     burnin <- nrow(gold_output$G)/2
@@ -43,8 +43,14 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
   #   crdble$upper <- crdble$upper/(max_y+.00001-(min_y-.00001))
   # }
 
-  data_y <- data.frame(gold_output$y)
-  names(data_y) <- "data"
+  if(scale == TRUE){
+    data_y <- data.frame(gold_output$y)
+    names(data_y) <- "data"
+    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
+  }else{
+    data_y <- data.frame(gold_output$y)
+    names(data_y) <- "data"
+  }
 
   g <- ggplot(data_y, aes(x=data))+
     theme(axis.title = element_text(size = 12))+
@@ -59,6 +65,11 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE){
       geom_line(data=crdble, aes(x,upper), color="red", size=.6)
   }
 
-  g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
-    xlab("X")
+  if(interact == TRUE){
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+    xlab("X")))
+  }else{
+    g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+      xlab("X")
+  }
 }
