@@ -46,7 +46,7 @@ There are several options on which convergence plots to create.
 There are several options on how to display the trace plots.
 \itemize{
     \item \code{"all"}: Overlays all trace plots in one plot (works well for the cut-point parameters) (DEFAULT).
-    \item \code{"indiv"}: Create a grid of trace plots where each plot contains a single parameter's trace plot. Nine plots are allowed in a grid so multiple graphs are created if there are more than 9 parameters.
+    \item \code{"indiv"}: Create a grid of trace plots where each plot contains a single parameter's trace plot. Six plots are allowed in a grid so multiple graphs are created if there are more than 9 parameters.
   }
 }
 \examples{
@@ -59,10 +59,11 @@ There are several options on how to display the trace plots.
 y <- runif(50)
 duos_unif <- duos(y = y)
 
-# Plot the trace plots of the cut-points on a single graph
-duos_traceplot(duos_unif)
-# Plot the trace plots of the cut-points on separate graphs
-duos_traceplot(duos_unif, plots = "indiv")
+# Plot the trace plots of the cut-points on a single graph (trace plot is the default)
+duos_mcmcplots(duos_unif)
+
+# Plot the acf plots of the cut-points on separate graphs
+duos_mcmcplots(duos_unif, type = "acf", plots = "indiv", burnin = 10000)
 
 ## --------------------------------------------------------------------------------
 ## Beta Distribution
@@ -72,9 +73,13 @@ duos_traceplot(duos_unif, plots = "indiv")
 y <- rbeta(300, 0.5, 0.5)
 duos_arcsin <- duos(y = y, k = 10, MH_N = 20000)
 
+#Plot the trace plots for the cut-points as individual graphs
+#Note: The plots are printed six at a time so multiple panels are printed
+duos_mcmcplots(duos_arcsin, plots = "indiv")
+
 #Plot the trace plots for the bin proportions as individual graphs
-#Note: The plots are printed nine at a time so multiple panels are printed
-duos_traceplot(duos_arcsin, parameters = "p", plots = "indiv")
+#Note: The plots are printed six at a time so multiple panels are printed
+duos_mcmcplots(duos_arcsin, parameters = "p", plots = "indiv")
 
 ## --------------------------------------------------------------------------------
 ## Bimodal Distribution
@@ -94,9 +99,9 @@ for(i in 1:150){
 # First run 'duos' on data sampled from a bimodal distribution with 150 data points.
 duos_bimodal <- duos(y = y, k = 8, MH_N = 20000)
 
-# Plot the individual trace plots for the bin proportion parameters
-duos_traceplot(duos_bimodal, parameters = "p", plots = "indiv")
+# Plot the running mean plots for the cut-point parameters 
+duos_mcmcplots(duos_bimodal, type = "rm", parameters = "c")
 
-# Plot the individual trace plots for the cut-points parameters with a burnin of 10,000
-duos_traceplot(duos_bimodal, parameters = "c", burnin = 10000)
+# Plot the autocorrelation plots for the bin proportions with a burnin of 10,000
+duos_mcmcplots(duos_bimodal, type = "acf", parameters = "p", burnin = 10000)
 }

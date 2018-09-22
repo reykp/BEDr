@@ -4,6 +4,7 @@
 
 helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
 
+  C <- duos_output$C
   if(is.na(burnin)){
     burnin <- ceiling(nrow(duos_output$C)/2)
   }

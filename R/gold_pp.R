@@ -53,11 +53,10 @@ gold_pp <- function(gold_output, npar=9, burnin=NA){
   }
   parameters <<- parameters
   
-  G <- data.frame(G_output[(burnin+1):nrow(G_output),])
-  G <- G[,parameters]
-  
+  G <- data.frame(G_output[(burnin+1):nrow(G_output),parameters])
+
+  names(G) <- parameters
   G_plot <- G %>% gather(Parameter, Simulation)
-  G_plot$Parameter <- as.factor(gsub("X", "", G_plot$Parameter))
   G_plot$Parameter <- as.numeric(as.character(G_plot$Parameter))
   G_plot$Source <- "Posterior"
   
@@ -83,12 +82,12 @@ gold_pp <- function(gold_output, npar=9, burnin=NA){
     }
   }
   
-cov_prior <- cov_prior
+  cov_prior <- cov_prior[parameters, parameters]
   
-      n_x <<- length(gold_output$x)
+      n_x <<- length(gold_output$x[parameters])
 
       n <- 1
-      mu <- rep(0, length(x))
+      mu <- rep(0, n_x)
       tol = 1e-06
       p <- length(mu)
       eS <- svd(cov_prior)
@@ -105,7 +104,7 @@ cov_prior <- cov_prior
         rw <- matrix(rnorm(n_x * 1), 1)
         prior_sim <- mvrnorm_calc %*% t(rw)
         
-        return(prior_sim[parameters])
+        return(prior_sim)
       }
       
       G_prior <- cbind(G_prior,t(apply(G_prior, 1, gold_prior)))
@@ -115,7 +114,7 @@ cov_prior <- cov_prior
       
       G_plot <- rbind(G_plot, G_plot_prior)
       
-      G_plot$Parameter <- as.factor(gsub("X", "", G_plot$Parameter))
+      #G_plot$Parameter <- as.factor(gsub("X", "", G_plot$Parameter))
       
       G_plot$Parameter <- as.factor(parameters)
       G_plot$Parameter <- factor(G_plot$Parameter, levels=c(parameters))
@@ -124,7 +123,7 @@ cov_prior <- cov_prior
       for (i in 1:graph_index) {
         
         print(ggplot(G_plot, aes(Simulation,fill=Source, color=Source))+
-                geom_histogram(position = "identity", alpha = .5)+
+                geom_histogram(position = "identity", alpha = .5, bins = 60)+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
                 facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i, scales="free"))
         

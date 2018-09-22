@@ -696,6 +696,5 @@ List duos(NumericVector y, double k=NA_REAL, double MH_N=20000, double alpha=1, 
     _["alpha"] = alpha,
     _["scale_l"] = scale_l,
     _["scale_u"] = scale_u,
-    _["temp"] = temp
-  );
+    _["temp"] = temp);
 }
