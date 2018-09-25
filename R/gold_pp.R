@@ -39,7 +39,7 @@ gold_pp <- function(gold_output, npar=9, burnin=NA){
   G_output <- gold_output$G
   
   if(is.na(burnin)){
-    burnin <- ceiling(nrow(C_output)/2)
+    burnin <- ceiling(nrow(G_output)/2)
   }
   
   npar_intervals <- floor(ncol(G_output)/npar)
@@ -125,7 +125,7 @@ gold_pp <- function(gold_output, npar=9, burnin=NA){
         print(ggplot(G_plot, aes(Simulation,fill=Source, color=Source))+
                 geom_histogram(position = "identity", alpha = .5, bins = 60)+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i, scales="free"))
+                facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i))
         
         
             }

@@ -16,11 +16,12 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(eval = FALSE)
 
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(gridExtra)
+library(biRd)
 ```
 
 ## Introduction
@@ -44,6 +45,7 @@ The positions of the bin end points (or cut-points as they are refered to throug
 Before going into detail, an example of what `duos` is creating is below. The resultin gposterior mean density (in red) is a mean of many different step functions (in blue). These are both0 overalayed over a histogram of the actual data. 
  
 ```{r, echo = FALSE}
+
 # Read in sample data
 y <- read.csv("Data/Data_Vshape_Size300_Rep4.csv")
 y <- y$x
@@ -161,65 +163,78 @@ where $\gamma_j \in [\gamma_{j-1}, \gamma_{j+1})$
 Although the full conditional for the bin probability parameters is a known distribution, the full conditional for the cut-point parameters is not.  
 
 ```{r, echo = FALSE}
+# Code to creatae plot of what a full conditional distribution for a cut-point might look like
+# w is cut-point, row is with row want to create plot from, and nsim is how many values to calculate kernel at 
 
-fullc <- function(w, row, nsim){
+w <- 3
+row <- 15000
+nsim <- 1000
+
+# Read in data sample
 y <- read.csv("Data/Data_Vshape_Size300_Rep4.csv")
-y <- y$x
-ys <- y
+ys <- y$x
 
+# Read in cut-points and bin probabilities
 C <- read.csv("Data/C_Vshape_300_c7_Rep4.csv", header=TRUE)
 P <- read.csv("Data/P_Vshape_300_c7_Rep4.csv", header=TRUE)
+# Remove first column that contains row numberes
 C <- C[,-1]
 P <- P[,-1]
-#w <-2
+
+# Get cut-points
 c <- as.numeric(C[row,])
+# Add in - and 1
 Q_C_extra <- c(0, c, 1)
+# index parameter
 w_p2 <- w+2
+# Get data between bordering cut-points
 xm <- c(Q_C_extra[w], ys[ys>=Q_C_extra[w]&ys<Q_C_extra[{w+2}]], Q_C_extra[{w+2}])
-#find number of observatiosn between C[w-1] and C[w+1]
+# find number of observatiosn between C[w-1] and C[w+1]
 m <- length(xm)-2
 
-
-#Initialize vector to contains maximums on each interval
+# Initialize vector to contains maximums on each interval
 c_max <- NA
-#Initialize vector to contain minimums on each interval
-#Get for first interval in the vector
+# Initialize vector to contain minimums on each interval
+# Get for first interval in the vector
 c_max_choices <- c(xm[1], xm[2])
-#The maximum from derivatives is Q_C_extra[w] which is xm[1]
-#Pairs (c(1/2), c(1/3), c(2/3))
-#Create to contain ratios of the pdf's
+# The maximum from derivatives is Q_C_extra[w] which is xm[1]
+# Pairs (c(1/2), c(1/3), c(2/3))
+# Create to contain ratios of the pdf's
 
-#option1/option2
+# option1/option2
 c_max_maxes <- (Q_C_extra[w_p2]-c_max_choices[1])^(-m)/((Q_C_extra[w_p2]-c_max_choices[2])^(-m))
 
+# Compare ratio to 1 to find maximum
 if (c_max_maxes>1){
   c_max[1] <- c_max_choices[1]
 } else{
   c_max[1] <- c_max_choices[2]
 }
 
+# If more than one observation between cut-points
 if (m >1){
 
   for (q in 2:m){
 
 
     q_p1 <- q+1
-    #Counter for data as upper bound, negative since power for denominator
+    # Counter for data as upper bound, negative since power for denominator
 
     m1_p1 <- -q+1
     mm_pq_m1 <- -m+q-1
+    # Choices for maximum
     c_max_choices <- c(xm[q], xm[q_p1], (((m-q+1)*Q_C_extra[w]+(q-1)*Q_C_extra[w_p2])/m))
 
-    #c_max_maxes <- exp((-q+1)*log(c_max_choices-Q_C_extra[w])+(-m+q-1)*log(Q_C_extra[{w+2}]-c_max_choices))
-    #Pairs (c(1/2), c(1/3), c(2/3))
+    # Pairs (c(1/2), c(1/3), c(2/3))
     c_max_maxes <- NA
-    #option1/option2
+    # option1/option2
     c_max_maxes[1] <- exp(m1_p1*log(c_max_choices[1]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[1])-m1_p1*log(c_max_choices[2]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[2]))
-    #Option1/option3
+    # Option1/option3
     c_max_maxes[2] <- exp(m1_p1*log(c_max_choices[1]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[1])-m1_p1*log(c_max_choices[3]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[3]))
-    #Option2/option3
+    # Option2/option3
     c_max_maxes[3] <- exp(m1_p1*log(c_max_choices[2]-Q_C_extra[w])+mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[2])-m1_p1*log(c_max_choices[3]-Q_C_extra[w])-mm_pq_m1*log(Q_C_extra[w_p2]-c_max_choices[3]))
 
+    # Compare ratio to 1 to find maximum
     if (c_max_choices[3] >= xm[q] & c_max_choices[3] < xm[q_p1]){
 
       if (c_max_maxes[1] > 1 & c_max_maxes[2] > 1) {
@@ -242,32 +257,25 @@ if (m >1){
   }
 }
 
-#GET for last
+# GET for last
 c_max_choices <- c(xm[m+1], xm[m+2])
 
-#Pairs (c(1/2), c(1/3), c(2/3))
+#  Pairs (c(1/2), c(1/3), c(2/3))
 #option1/option2
 c_max_maxes <- (c_max_choices[1]-Q_C_extra[w])^(-m)/((c_max_choices[2]-Q_C_extra[w])^(-m))
 
 if (c_max_maxes[1] > 1){
-
   c_max[m+1] <- c_max_choices[1]
 } else {
   c_max[m+1] <- c_max_choices[2]
 }
 
-l_r <- NA
-for (i in 1:{length(xm)-1}){
-  if (xm[i]==c_max[i]){
-    l_r[i] <- "L"
-  } else {
-    l_r[i] <- "U"
-  }
-}
-
+# Get bin probabilities
 p <- P[row,]
+# Values at which to calculate kernel
 x <- runif(nsim, c[{w-1}], c[{w+1}])
 
+# Calculate the kernel of the density
 pdf_kernel <- NA
 for (i in 1:length(x)){
   n1 <- length(which(ys>=c[{w-1}]&ys<x[i]))
@@ -276,23 +284,23 @@ for (i in 1:length(x)){
   pdf_kernel[i] <- (p[w]/(x[i]-c[{w-1}]))^n1*(p[{w+1}]/(c[{w+1}]-x[i]))^n2
    #print(i)
 }
-bound_plot <- NA
 
+# Calculate what bounding function would look like
+bound_plot <- NA
 for (i in 1:{length(xm)-1}){
-  # n1 <- length(which(ys>=c[2]&ys<c_max[i]))
-  # n2 <- length(which(ys<c[4]&ys>=c_max[i]))
   n1 <- i-1
   n2 <- length(xm)-2-i+1
 
   bound_plot[which(x>=xm[i]&x<xm[{i+1}])] <- (p[w]/(c_max[i]-c[{w-1}]))^n1*(p[{w+1}]/(c[{w+1}]-c_max[i]))^n2
-  #print(i)
 }
 
+# Make and sort data frame
 d2 <- data.frame(x,pdf_kernel, bound_plot)
 d2 <- d2 %>% arrange(x)
+
+# Create data set to identify discontinuities in graph
 locations <- NA
 index <- 1
-
 for (i in 1:{length(xm)-1}){
   if (length(which(d2$x>=xm[{i+1}])>0)){
     locations[index] <- min(which(d2$x>=xm[{i+1}]))
@@ -300,37 +308,400 @@ for (i in 1:{length(xm)-1}){
   }
 }
 
-# locations <- NA
-#
-# for (i in 1:{length(xm)}){
-#   locations[i] <- min(which(x>xm[{i}]))
-# }
-#
 d2$disc <- "Cont"
 d2$disc[locations] <- "Disc"
 
 options(digits=4)
 
-# jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\FullC.jpg", width=width, height=height)
 ggplot(d2)+geom_point(aes(x,pdf_kernel, shape=disc, size=disc))+
   theme_bw()+xlab("x")+ylab("Full Conditional Kernel")+
   theme(text = element_text(size=15),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         legend.position = "none")+
   scale_shape_manual(values=c(16,1))+
-  scale_size_manual(values=c(2,6))
-# dev.off()
-}
-fullc(3, 15000, 10000)
+  scale_size_manual(values=c(1,4))
+
+```
+
+Not the open circles where discontinuities exist. The breaks in the kernel of the full conditional for a cut-point occur at the data points. This is because, between two data points from the sample, the counts in the powers in the full conditional are constant. 
+
+Given the complecated nature of this density, it is numerically difficult to find the normalizing constant, not to mention simulating from this distribution. Thus, in order to obtain samples from this distribution, rejection sampling was implemented. The proposal (and boudning) distribution used is depicted in red in the graph below.
+
+```{r, echo = FALSE}
+ggplot(d2)+geom_point(aes(x,pdf_kernel, shape=disc, size=disc))+
+  geom_point(aes(x, bound_plot), color="red",size=1.5)+
+  theme_bw()+xlab("x")+ylab("Kernel")+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        legend.position = "none")+
+  scale_shape_manual(values=c(16,1))+
+  scale_size_manual(values=c(1,4))
+
 ```
 
 ### GOLD
 
 ## R Package: biRD (Bayesian Implimention in R for Density estimation)
 
+Demonstrations of the functions for `duos` and `gold` are demonstrated on a wide variety of distributions. These are depicted in the plot below.
+
+
+```{r, echo = FALSE}
+# Grid to estimate densities on
+x <- seq(from=.001, to=.999, by=.001)
+# Unif
+Uniform <- rep(1, length(x))
+
+# Exponential
+Exponential <- dexp(x, 1)
+
+# Arcsin
+Arcsin <- dbeta(x, .5,.5)
+
+# Beta(2,5)
+Beta <- dbeta(x, 2,5)
+
+# Jagged
+Jagged <- NA
+Jagged[x>=0 & x <.2] <- 1.5-5*x[x>=0 & x<.2]
+Jagged[x>=.2 & x <.4] <- -0.5+5*x[x>=.2 & x<.4]
+Jagged[x>=.4 & x <.6] <- 3.5-5*x[x>=.4 & x<.6]
+Jagged[x>=.6 & x <.8] <- -2.5+5*x[x>=.6 & x<.8]
+Jagged[x>=.8 & x <1] <- 5.5-5*x[x>=.8 & x<1]
+
+# Normal
+y <- x*(3.999+3.999)+-3.999
+Normal <- dnorm(y)
+
+# Bimodal
+# Sample from uniform
+u <- runif(100000)
+
+# Variable to store the samples from the mixture distribution
+rs <- rep(NA,100000)
+
+#Sampling from the mixture
+for(i in 1:100000){
+  if(u[i]<.3){
+    rs[i] <- rnorm(1,0,1)
+  }else {
+    rs[i] <- rnorm(1,4,1)
+  }
+}
+# Rescale
+y <- x*(max(rs)-min(rs))+min(rs)
+Bimodal <- .3*dnorm(y,0,1) + .7*dnorm(y,4,1)
+
+# Claw
+# Sample from uniform
+u <- runif(100000)
+
+# Variable to store the samples from the mixture distribution
+rs <- rep(NA,100000)
+
+#Sampling from the mixture
+for(i in 1:100000){
+  if(u[i]<.5){
+    rs[i] <- rnorm(1,0,1)
+  }else if(u[i]<.6){
+    rs[i] <- rnorm(1,-1,.1)
+  }else if (u[i] < .7){
+    rs[i] <- rnorm(1,-.5,.1)
+  }else if (u[i]<.8){
+    rs[i] <- rnorm(1,0,.1)
+  }else if (u[i] < .9){
+    rs[i] <- rnorm(1,.5,.1)
+  }else {
+    rs[i] <- rnorm(1,1,.1)
+  }
+}
+
+# Rescale
+y <- x*(max(rs)-min(rs))+min(rs)
+Claw <- .5*dnorm(y)+.1*dnorm(y,-1,.1)+.1*dnorm(y,-.5,.1)+.1*dnorm(y,0,.1)+.1*dnorm(y,.5,.1)+.1*dnorm(y,1,.1)
+
+# Trimodal
+# Sample from uniform
+u <- runif(100000)
+# Variable to store the samples from the mixture distribution
+rs <- rep(NA,100000)
+
+# Sampling from the mixture
+for(i in 1:100000){
+  if(u[i]<.2){
+    rs[i] <- rnorm(1,0,1)
+  }else if(u[i]<.5){
+    rs[i] <- rnorm(1,6,1)
+  }else{
+    rs[i] <- rnorm(1,2,.1)
+  }
+}
+
+y <- x*(max(rs)-min(rs))+min(rs)
+Trimodal = .2*dnorm(y,0,1) + .5*dnorm(y,6,1) + .3*dnorm(y,2,.1)
+
+distributions <- data.frame(x, Uniform, Arcsin, Beta, Exponential, Jagged, Normal, Bimodal,Trimodal, Claw)
+
+d_melt <- gather(distributions, variable, value, -x)
+d_melt$variable <- factor(d_melt$variable, levels=c("Uniform", "Beta","Normal","Exponential", "Arcsin",
+                                                    "Bimodal","Jagged", "Trimodal","Claw"))
+
+ggplot(d_melt, aes(x, value))+geom_line(size=1,color="dodgerblue4")+
+  facet_wrap(~variable, nrow=3, scales="free_y")+
+  theme_bw()+
+  theme(text = element_text(size=25),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")
+  #scale_color_viridis(discrete=TRUE,option="magma",end=.8)
+  #scale_color_brewer(palette = "Set1")
+
+```
+
 ### DUOS
 
+The package is desinged to:
+* Run Gibbs algorithm to sample from the posterior distributions for the cut-points and bin probabilities
+* Provide useful convergence diagnostic plots
+* Plot the Bayesian estimate of the PDF and CDF
+* Give estimates of the PDF and CDF at new values
+* Estimate a variety of statistics 
+
+All of the functionally of the package is demonstrated by walking through the analysis of several sets of simulated data.
+
 #### Density Estimation {#duos-density-estimation}
+
+The code below creates data from each of the nine densitites described above. For the purposes of demonstration, a sample set of size 100 is used for proceed with most results. However, plots will be used to demonstrate overall how the estimate changes as the sample size increases. The plot below shows the histograms of the sampled data.
+
+```{r, echo = FALSE}
+# # Sample size
+# n <- 100
+# 
+# # Uniform
+# y_unif <-  runif(n, 0, 1)
+# y_unif_500 <- runif(500, 0, 1)
+# 
+# # Beta
+# y_beta <- rbeta(n, 2, 5)
+# 
+# # Normal
+# y_norm <- rnorm(n, 0, 1)
+# 
+# # Exponential
+# y_exp <- rexp(n, 1)
+# 
+# # Arcsin
+# y_arcsin <- rbeta(n, 0.5, 0.5)
+# 
+# y_arcsin_500 <- rbeta(500, 0.5, 0.5)
+# # Bimodal
+#   # Sample from uniform
+#   u <- runif(n)
+#   
+#   # Variable to store data                                        
+#   y_bimodal <- rep(NA,n)
+#   
+#   # Sampling from the mixture
+#   for(i in 1:n){
+#       if(u[i]<.3){
+#         y_bimodal[i] <- rnorm(1, 0, 1)
+#       }else {
+#         y_bimodal[i] <- rnorm(1, 4, 1)
+#       }
+#   }
+# 
+# # Jagged
+#   y1 = 1.5
+#   y2 = .5
+#     
+#   m1 = (y2-y1)/.2
+#   m2 = (y1-y2)/.2
+#   m3 = (y2-y1)/.2
+#   m4 = (y1-y2)/.2
+#   m5 = (y2-y1)/.2
+#   
+#   b1 = y1
+#   b2 = 2*y2-y1
+#   b3 = 3*y1-2*y2
+#   b4 = 4*y2-3*y1
+#   b5 = 5*y1-4*y2
+#     
+#   x_jag = runif(n, 0, 1)
+#     
+#   y_jagged <- NA
+#   y_jagged[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
+#   y_jagged[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
+#   y_jagged[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
+#   y_jagged[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
+#   y_jagged[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
+#   
+#   
+#   # Trimodal
+#     u <- runif(n)
+#                                          
+#     y_trimodal <- rep(NA,n)
+#     
+#     #Sampling from the mixture
+#     for(i in 1:n){
+#       if(u[i]<.2){
+#         y_trimodal[i] <- rnorm(1, 0, 1)
+#       }else if(u[i]<.5){
+#         y_trimodal[i] <- rnorm(1, 6, 1)
+#       }else{
+#         y_trimodal[i] <- rnorm(1, 2, 0.1)
+#       }
+#     }
+#   
+# # Claw
+#     u <- runif( n)
+#     
+#     y_claw = rep(NA, n)
+#     
+#     # Sampling from the mixture
+#     for(i in 1: n){
+#       if(u[i]<.5){
+#         y_claw[i] <- rnorm(1, 0, 1)
+#       }else if(u[i]<.6){
+#         y_claw[i] <- rnorm(1, -1, 0.1)
+#       }else if (u[i] < .7){
+#         y_claw[i] <- rnorm(1, -0.5, 0.1)
+#       }else if (u[i]<.8){
+#         y_claw[i] <- rnorm(1, 0, 0.1)
+#       }else if (u[i] < .9){
+#         y_claw[i] <- rnorm(1, 0.5, 0.1)
+#       }else {
+#         y_claw[i] <- rnorm(1, 1, 0.1)
+#       }
+#     }
+# 
+#     
+# distributions <- data.frame(Uniform = y_unif, Beta = y_beta, Normal= y_norm, Exponential = y_exp, Arcsin = y_arcsin, Bimodal = y_bimodal, Jagged = y_jagged, Trimodal = y_trimodal,Claw = y_claw)
+# 
+# distr_gather <- gather(distributions, variable, value)
+# distr_gather$variable <- factor(distr_gather$variable, levels=c("Uniform", "Beta","Normal","Exponential",
+#                                                                 "Arcsin","Bimodal","Jagged", "Trimodal","Claw"))
+
+distr_gather <- read.csv("Data/distr_gather.csv")
+
+ distr_gather$variable <- factor(distr_gather$variable, levels=c("Uniform", "Beta","Normal","Exponential", "Arcsin","Bimodal","Jagged","Trimodal","Claw"))
+ggplot(distr_gather, aes(value))+geom_histogram(color="black", fill = "grey", bins = 15)+
+  facet_wrap(~variable, nrow=3, scales="free")+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")
+
+y_unif <- distr_gather$value[distr_gather$variable=="Uniform"]
+y_beta <- distr_gather$value[distr_gather$variable=="Beta"]
+y_normal <- distr_gather$value[distr_gather$variable=="Normal"]
+y_Exp <- distr_gather$value[distr_gather$variable=="Exponential"]
+y_arcsin <- distr_gather$value[distr_gather$variable=="Arcsin"]
+y_bimodal <- distr_gather$value[distr_gather$variable=="Bimodal"]
+y_jagged <- distr_gather$value[distr_gather$variable=="Jagged"]
+y_trimodal <- distr_gather$value[distr_gather$variable=="Trimodal"]
+y_claw <- distr_gather$value[distr_gather$variable=="Claw"]
+
+y_unif_500 <- read.csv("Data/y_unif_500.csv")[,1]
+y_arcsin_500 <- read.csv("Data/y_arcsin_500.csv")[,1]
+
+
+```
+
+The function to start with is `duos`. This is the function that runs the actual Gibbs algorithm. Prior values are set in this function as well as the number of iterations. 
+
+`k`: 
+
+This is the number of cut-points to have `duos` use. If k cut-points are chosen, there are k+1 bins. \textbf{More cut-points} are needs as the sample size increases. Typically, this is an additional cut-point for each additional 50 data points. It is recommended that you start with at least $k = 3$. This default is incorporated in to the function. Note that a counter is printed every 1000 iterations to notify you on the process of `duos`.
+
+```{r, eval=FALSE}
+# If you run 'duos' with all defaults, it automatically chooses the number of cutpoints based on the sample size
+
+duos_unif <- duos(y = y_unif)
+
+```
+
+```{r, echo=FALSE}
+load("R Objects/duos_unif.RData")
+```
+
+```{r}
+duos_unif$k
+
+```
+
+However, for some densities, more cut-points might be needed based on prior knowledge of the data.
+
+```{r, eval = FALSE}
+# If you run 'duos' with all defaults, it automatically chooses the number of cutpoints based on the sample size
+
+duos_claw <- duos(y = y_claw, k = 10)
+```
+
+```{r, echo=FALSE}
+load("R Objects/duos_claw.RData")
+```
+
+`MH_N`: 
+
+This variable represents the number of iterations. For small data sets (i.e. data sets around 100 or less data points), less than 20,000 iterations is most likely enough, but for larger data sets, more iterations sometimes need to be run (See the next section).
+
+```{r, eval = FALSE}
+# Run 10,000 iterations on data from Beta(2,5) with the default number of cut-points
+duos_beta <- duos(y = y_beta, MH_N = 10000)
+
+# Run 30,000 iterations on data from Beta(0.5, 0.5) with the default number of cut-points
+duos_arcsin_500 <- duos(y = y_arcsin_500, MH_N = 30000)
+
+```
+
+```{r, echo=FALSE}
+
+load("R Objects/duos_beta.RData")
+
+load("R Objects/duos_arcsin_500.RData")
+
+```
+
+`alpha`: The prior parameter for the Dirichlet distribution on the bin probabilities. This value is constant, given the bin widths are not knonw, this value is contstant. The recommend and default value is `1`, but the user is allowed to change it.
+
+
+`scale_l` and `scale_u`:
+
+Any data not between 0 and 1, is scaled before the `duos` algorithm is implemented. By default, these values are both 0.0001, however if the user wants to extend the area where the density can be estimted slightly beyond the range of the data, these values allow for this:
+
+$(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))$
+
+```{r, eval = FALSE}
+# Use one standard deviation of the data to scale
+duos_norm_scale <- duos(y = y_norm, scale_l = sd(y_norm), scale_u = sd(y_norm))
+
+# For comparison, also run with the default
+# Use one standard deviation of the data to scale
+duos_norm <- duos(y = y_norm)
+
+```
+
+```{r, echo=FALSE}
+load("R Objects/duos_norm_scale.RData")
+load("R Objects/duos_norm.RData")
+```
+
+`start`: 
+
+Start values are automatically chosen to be `k` random numbers between 0 and 1, and are then sorted. However, the user can specify starting values for the cut-points. This is especially useful for calculating the Gelman-Rubin diagnostic for assessing convergence.
+
+
 
 #### Convergence Diagnostics
 
