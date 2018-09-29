@@ -12,7 +12,7 @@
 #' @export
 #' @details
 #' 
-#' The results are designed to plot of a 3X3 grid. If there are more than 9 parameters, separate plots are created and printed and can be viewed by clicking the arrow through the results in the 'Plots' window.
+#' The results are designed to plot of a 3X2 grid. If there are more than 6 parameters, separate plots are created and printed and can be viewed by clicking the arrow through the results in the 'Plots' window.
 #'
 #' \strong{Options for} \code{parameters}
 #'
@@ -92,13 +92,13 @@ duos_pp <- function(duos_output, parameters="c", burnin=NA){
       C_plot$Parameter <- factor(C_plot$Parameter, levels=c(1:ncol(C)))
       
       # Create an index for the loop
-      graph_index <- ceiling(ncol(C_output)/9)
+      graph_index <- ceiling(ncol(C_output)/6)
       for (i in 1:graph_index) {
         
         print(ggplot(C_plot, aes(Simulation,fill=Source, color=Source))+
-                geom_histogram(position = "identity", alpha = .5, bins = 60)+
+                geom_histogram(position = "identity", alpha = .5, bins = 80)+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i, scales="free"))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
         
         
             }
@@ -107,19 +107,25 @@ duos_pp <- function(duos_output, parameters="c", burnin=NA){
     P_plot <- P %>% gather(Parameter, Simulation)
     P_plot$Source <- "Posterior"
     
-    k_p <<- ncol(P)
+    k_p <- ncol(P)
     
     P_prior <- data.frame(Source = rep("Prior", nrow(P)))
     
+    alphas <- duos_output$alpha
     # Simulate from the Dirichleet distribution using a gamma distribution
-    duos_prior <- function(x){
-      prior_sim <- rgamma(k_p, 1, 1)
+    duos_prior <- function(x, alphas, k_p){
+      
+      prior_sim <- NA
+      for(i in 1:k_p){
+        prior_sim[i] <- rgamma(1, alphas[i], 1)
+      }
+      
       prior_sum <- sum(prior_sim)
       
       return(prior_sim/prior_sum)
     }
     
-    P_prior <- cbind(P_prior,t(apply(P_prior, 1, duos_prior)))
+    P_prior <- cbind(P_prior,t(apply(P_prior, 1, duos_prior, k_p = k_p, alphas  = alphas)))
     names(P_prior)[2:ncol(P_prior)] <- names(P)
     
     P_plot_prior <- P_prior %>% gather(Parameter, Simulation, -Source)
@@ -131,14 +137,14 @@ duos_pp <- function(duos_output, parameters="c", burnin=NA){
     P_plot$Parameter <- as.factor(P_plot$Parameter)
     P_plot$Parameter <- factor(P_plot$Parameter, levels=c(1:ncol(P)))
     
-    graph_index <- ceiling(ncol(P_output)/9)
+    graph_index <- ceiling(ncol(P_output)/6)
     for (i in 1:graph_index) {
       
 
       print(ggplot(P_plot, aes(Simulation,fill=Source, color=Source))+
-              geom_histogram(position = "identity", alpha = .5, bins = 60)+
+              geom_histogram(position = "identity", alpha = .5, bins = 80)+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i, scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
       
       
     }

@@ -40,7 +40,7 @@
 #' There are several options on how to display the trace plots.
 #' \itemize{
 #'     \item \code{"all"}: Overlays all trace plots in one plot (works well for the cut-point parameters) (DEFAULT).
-#'     \item \code{"indiv"}: Create a grid of trace plots where each plot contains a single parameter's trace plot. Six plots are allowed in a grid so multiple graphs are created if there are more than 9 parameters.
+#'     \item \code{"indiv"}: Create a grid of trace plots where each plot contains a single parameter's trace plot. Six plots are allowed in a grid so multiple graphs are created if there are more than 6 parameters.
 #'   }
 #'
 #'
@@ -103,13 +103,18 @@
 #' duos_mcmcplots(duos_bimodal, type = "acf", parameters = "p", burnin = 10000)
 
 
-duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plots="all", burnin=1){
+duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plots="all", burnin=NA){
   
   # Get cut-point parameters
   C_output <- duos_output$C
   # Get bin proportion parameters
   P_output <- duos_output$P
 
+  burnin_na <- FALSE
+  if(is.na(burnin)){
+    burnin_na <- TRUE
+    burnin <- 1
+  }
   
   if(burnin>nrow(C_output)){
     stop("The specified burnin is greater than the number of iterations.")
@@ -218,6 +223,9 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
   }
   }else if (type == "acf"){
     
+    if(burnin_na){
+      burnin <- nrow(C_output)/2
+    }
     if(parameters %in% c("c", "C")){
     # Create data set to plot
     acf_plot <- data.frame(0, 0, 0)
@@ -321,9 +329,9 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
       C_RM <- data.frame(C_RM)
       # Add iteration
       if(burnin>1){
-        C_RM$Iteration <- {burnin+1}:20000
+        C_RM$Iteration <- {burnin+1}:nrow(C_output)
       }else{
-        C_RM$Iteration <- burnin:20000
+        C_RM$Iteration <- burnin:nrow(C_output)
       }
       
       
@@ -370,9 +378,9 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
     P_RM <- data.frame(P_RM)
     # Add iteration
     if(burnin>1){
-      P_RM$Iteration <- {burnin+1}:20000
+      P_RM$Iteration <- {burnin+1}:nrow(P_output)
     }else{
-      P_RM$Iteration <- burnin:20000
+      P_RM$Iteration <- burnin:nrow(P_output)
     }
     
     

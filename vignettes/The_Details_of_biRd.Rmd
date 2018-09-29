@@ -16,12 +16,14 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(eval = FALSE)
 
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(gridExtra)
-library(biRd)
+
+# library(ggplot2)
+# library(dplyr)
+# library(tidyr)
+# library(gridExtra)
+#library(biRd)
 ```
 
 ## Introduction
@@ -323,7 +325,7 @@ ggplot(d2)+geom_point(aes(x,pdf_kernel, shape=disc, size=disc))+
 
 ```
 
-Not the open circles where discontinuities exist. The breaks in the kernel of the full conditional for a cut-point occur at the data points. This is because, between two data points from the sample, the counts in the powers in the full conditional are constant. 
+Note the open circles where discontinuities exist. The breaks in the kernel of the full conditional for a cut-point occur at the data points. This is because, between two data points from the sample, the counts in the powers in the full conditional are constant. 
 
 Given the complecated nature of this density, it is numerically difficult to find the normalizing constant, not to mention simulating from this distribution. Thus, in order to obtain samples from this distribution, rejection sampling was implemented. The proposal (and boudning) distribution used is depicted in red in the graph below.
 
@@ -460,7 +462,6 @@ ggplot(d_melt, aes(x, value))+geom_line(size=1,color="dodgerblue4")+
         legend.position = "none")
   #scale_color_viridis(discrete=TRUE,option="magma",end=.8)
   #scale_color_brewer(palette = "Set1")
-
 ```
 
 ### DUOS
@@ -485,7 +486,7 @@ The code below creates data from each of the nine densitites described above. Fo
 # # Uniform
 # y_unif <-  runif(n, 0, 1)
 # y_unif_500 <- runif(500, 0, 1)
-# 
+# y_unif_50 <- runif(50, 0, 1)
 # # Beta
 # y_beta <- rbeta(n, 2, 5)
 # 
@@ -498,6 +499,7 @@ The code below creates data from each of the nine densitites described above. Fo
 # # Arcsin
 # y_arcsin <- rbeta(n, 0.5, 0.5)
 # 
+# y_arcsin_50 <- rbeta(50, 0.5, 0.5)
 # y_arcsin_500 <- rbeta(500, 0.5, 0.5)
 # # Bimodal
 #   # Sample from uniform
@@ -539,6 +541,13 @@ The code below creates data from each of the nine densitites described above. Fo
 #   y_jagged[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
 #   y_jagged[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
 #   y_jagged[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
+  # x_jag = runif(350, 0, 1)
+  # y_jagged_350 <- NA
+  # y_jagged_350[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
+  # y_jagged_350[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
+  # y_jagged_350[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
+  # y_jagged_350[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
+  # y_jagged_350[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
 #   
 #   
 #   # Trimodal
@@ -556,6 +565,22 @@ The code below creates data from each of the nine densitites described above. Fo
 #         y_trimodal[i] <- rnorm(1, 2, 0.1)
 #       }
 #     }
+  # # Trimodal
+  #   u <- runif(200)
+  # 
+  #   y_trimodal_200 <- rep(NA,200)
+  # 
+  #   #Sampling from the mixture
+  #   for(i in 1:200){
+  #     if(u[i]<.2){
+  #       y_trimodal_200[i] <- rnorm(1, 0, 1)
+  #     }else if(u[i]<.5){
+  #       y_trimodal_200[i] <- rnorm(1, 6, 1)
+  #     }else{
+  #       y_trimodal_200[i] <- rnorm(1, 2, 0.1)
+  #     }
+  #   }
+  # 
 #   
 # # Claw
 #     u <- runif( n)
@@ -578,6 +603,27 @@ The code below creates data from each of the nine densitites described above. Fo
 #         y_claw[i] <- rnorm(1, 1, 0.1)
 #       }
 #     }
+# Claw
+    # u <- runif(400)
+    # 
+    # y_claw_400 = rep(NA, 400)
+    # 
+    # # Sampling from the mixture
+    # for(i in 1:400){
+    #   if(u[i]<.5){
+    #     y_claw_400[i] <- rnorm(1, 0, 1)
+    #   }else if(u[i]<.6){
+    #     y_claw_400[i] <- rnorm(1, -1, 0.1)
+    #   }else if (u[i] < .7){
+    #     y_claw_400[i] <- rnorm(1, -0.5, 0.1)
+    #   }else if (u[i]<.8){
+    #     y_claw_400[i] <- rnorm(1, 0, 0.1)
+    #   }else if (u[i] < .9){
+    #     y_claw_400[i] <- rnorm(1, 0.5, 0.1)
+    #   }else {
+    #     y_claw_400[i] <- rnorm(1, 1, 0.1)
+    #   }
+    # }
 # 
 #     
 # distributions <- data.frame(Uniform = y_unif, Beta = y_beta, Normal= y_norm, Exponential = y_exp, Arcsin = y_arcsin, Bimodal = y_bimodal, Jagged = y_jagged, Trimodal = y_trimodal,Claw = y_claw)
@@ -588,8 +634,10 @@ The code below creates data from each of the nine densitites described above. Fo
 
 distr_gather <- read.csv("Data/distr_gather.csv")
 
+
  distr_gather$variable <- factor(distr_gather$variable, levels=c("Uniform", "Beta","Normal","Exponential", "Arcsin","Bimodal","Jagged","Trimodal","Claw"))
-ggplot(distr_gather, aes(value))+geom_histogram(color="black", fill = "grey", bins = 15)+
+
+ ggplot(distr_gather, aes(value))+geom_histogram(color="black", fill = "grey", bins = 15)+
   facet_wrap(~variable, nrow=3, scales="free")+
   theme_bw()+
   theme(text = element_text(size=20),
@@ -605,51 +653,142 @@ ggplot(distr_gather, aes(value))+geom_histogram(color="black", fill = "grey", bi
 y_unif <- distr_gather$value[distr_gather$variable=="Uniform"]
 y_beta <- distr_gather$value[distr_gather$variable=="Beta"]
 y_normal <- distr_gather$value[distr_gather$variable=="Normal"]
-y_Exp <- distr_gather$value[distr_gather$variable=="Exponential"]
+y_exp <- distr_gather$value[distr_gather$variable=="Exponential"]
 y_arcsin <- distr_gather$value[distr_gather$variable=="Arcsin"]
 y_bimodal <- distr_gather$value[distr_gather$variable=="Bimodal"]
 y_jagged <- distr_gather$value[distr_gather$variable=="Jagged"]
 y_trimodal <- distr_gather$value[distr_gather$variable=="Trimodal"]
 y_claw <- distr_gather$value[distr_gather$variable=="Claw"]
 
+y_claw_400 <- read.csv("Data/y_claw_400.csv")[,1]
+y_unif_50 <- read.csv("Data/y_unif_50.csv")[,1]
 y_unif_500 <- read.csv("Data/y_unif_500.csv")[,1]
 y_arcsin_500 <- read.csv("Data/y_arcsin_500.csv")[,1]
+y_jagged_350 <- read.csv("Data/y_jagged_350.csv")[,1]
+y_unif_500 <- read.csv("Data/y_unif_500.csv")[,1]
+y_arcsin_50 <- read.csv("Data/y_arcsin_50.csv")[,1]
+y_trimodal_200 <- read.csv("Data/y_trimodal_200.csv")[,1]
 
+g1 <- ggplot(data.frame(y_unif_50), aes(y_unif_50))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Uniform: n = 50")
+
+g4 <- ggplot(data.frame(y_claw_400), aes(y_claw_400))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Claw: n = 400")
+
+g2 <- ggplot(data.frame(y_normal), aes(y_normal))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Normal: n = 100")
+
+g3 <- ggplot(data.frame(y_trimodal_200), aes(y_trimodal_200))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Trimodal: n = 200")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_DuosTest.jpg", width=1094, height=541)
+grid.arrange(g1, g2, g3, g4)
+dev.off()
 
 ```
 
 The function to start with is `duos`. This is the function that runs the actual Gibbs algorithm. Prior values are set in this function as well as the number of iterations. 
+`y`:
 
+```{r}
+# Demonstrate error if enter y with missing values
+y <- c(rnorm(50), NA)
+duos(y = y)
+```
 `k`: 
 
 This is the number of cut-points to have `duos` use. If k cut-points are chosen, there are k+1 bins. \textbf{More cut-points} are needs as the sample size increases. Typically, this is an additional cut-point for each additional 50 data points. It is recommended that you start with at least $k = 3$. This default is incorporated in to the function. Note that a counter is printed every 1000 iterations to notify you on the process of `duos`.
 
+
 ```{r, eval=FALSE}
-# If you run 'duos' with all defaults, it automatically chooses the number of cutpoints based on the sample size
-
-duos_unif <- duos(y = y_unif)
-
+# If you run 'duos' with all defaults, it automatically chooses the 
+# number of cut-points based on the sample size. 
+duos_unif_50 <- duos(y = y_unif_50)
+# Since y_unif_50 has 50 data points in it, the default is 4 cut-points. 
+# Use the dollar sign to print the 'k' from the 'duos' output.
+duos_unif_50$k
 ```
 
 ```{r, echo=FALSE}
-load("R Objects/duos_unif.RData")
+load("R Objects/duos_unif_50.RData")
 ```
 
 ```{r}
-duos_unif$k
+duos_unif_50$k
 
 ```
 
 However, for some densities, more cut-points might be needed based on prior knowledge of the data.
 
 ```{r, eval = FALSE}
-# If you run 'duos' with all defaults, it automatically chooses the number of cutpoints based on the sample size
+# The default for a data set of size 400 is 11, but more might be needed
+# given the complexity of the distribution. 
+# Specify 15 cut-points.
+duos_claw_400 <- duos(y = y_claw_400, k = 15)
 
-duos_claw <- duos(y = y_claw, k = 10)
+duos_claw_400_N <- duos(y = y_claw_400, k = 15, N = 50000)
+#save(duos_claw_400, file = "R Objects/duos_claw_400.csv")
+
+duos_claw_400_alt <- duos(y = y_claw_400, k = 15, scale_l = sd(y_claw_400), scale_u = sd(y_claw_400))
+
+```
+
+
+```{r, echo=FALSE}
+load("R Objects/duos_claw_400.RData")
+load("R Objects/duos_claw_400_N.RData")
+
+```
+
+```{r, eval = FALSE}
+duos_exp <- duos(y = y_exp, scale_u = sd(y_exp))
+save(duos_exp, file = "R Objects/duos_exp.RData")
+```
+
+```{r, eval = FALSE}
+# Run duos with 14 cut-points
+
+duos_jagged_350 <- duos(y = y_jagged_350, k = 14)
 ```
 
 ```{r, echo=FALSE}
-load("R Objects/duos_claw.RData")
+load("R Objects/duos_jagged_350.RData")
 ```
 
 `MH_N`: 
@@ -657,12 +796,34 @@ load("R Objects/duos_claw.RData")
 This variable represents the number of iterations. For small data sets (i.e. data sets around 100 or less data points), less than 20,000 iterations is most likely enough, but for larger data sets, more iterations sometimes need to be run (See the next section).
 
 ```{r, eval = FALSE}
+# Run 10,000 iterations on data from N(0, 1) with the default number of cut-points. 
+# This data set has 100 points.
+duos_norm <- duos(y = y_normal, N = 10000)
+
+# Run 30,000 iterations on data from the 'trimodal' data set
+# This data set has 200 data points
+duos_trimodal_200 <- duos(y = y_trimodal_200, N = 30000)
+```
+
+```{r, echo=FALSE}
+
+load("R Objects/duos_norm.RData")
+
+load("R Objects/duos_trimodal_200.RData")
+```
+
+
+```{r, eval = FALSE}
 # Run 10,000 iterations on data from Beta(2,5) with the default number of cut-points
-duos_beta <- duos(y = y_beta, MH_N = 10000)
+duos_beta <- duos(y = y_beta, N = 10000)
 
 # Run 30,000 iterations on data from Beta(0.5, 0.5) with the default number of cut-points
-duos_arcsin_500 <- duos(y = y_arcsin_500, MH_N = 30000)
+duos_arcsin_500 <- duos(y = y_arcsin_500, N = 30000)
 
+# For an example of using too few cut-points and iterations
+duos_arcsin_500_alt <- duos(y = y_arcsin_500, k = 4, N = 10000)
+
+duos_arcsin <- duos(y = y_arcsin)
 ```
 
 ```{r, echo=FALSE}
@@ -671,10 +832,41 @@ load("R Objects/duos_beta.RData")
 
 load("R Objects/duos_arcsin_500.RData")
 
+load("R Objects/duos_arcsin_500_alt.RData")
+
+load("R Objects/duos_arcsin.RData")
+
 ```
 
 `alpha`: The prior parameter for the Dirichlet distribution on the bin probabilities. This value is constant, given the bin widths are not knonw, this value is contstant. The recommend and default value is `1`, but the user is allowed to change it.
 
+```{r, eval = FALSE}
+# Run with user-specified alpha. 
+# The default for a data set with 200 points is 8 cut-points, so alpha
+# needs to have 9 values.
+duos_trimodal_200_alt <- duos(y = y_trimodal_200, alpha = c(1, 3, 1, 10, 1, 2, 3, 2, 1))
+```
+
+```{r, echo=FALSE}
+load("R Objects/duos_trimodal_200_alt.RData")
+```
+
+```{r, eval = FALSE}
+# Run with default alpha
+duos_trimodal <- duos(y = y_trimodal)
+
+# Run with user-specified alpha
+duos_trimodal_alpha <- duos(y = y_trimodal, alpha = c(1, 1, 5, 1, 1, 1))
+
+```
+
+```{r, echo=FALSE}
+
+load("R Objects/duos_trimodal.RData")
+
+load("R Objects/duos_trimodal_alpha.RData")
+
+```
 
 `scale_l` and `scale_u`:
 
@@ -701,9 +893,354 @@ load("R Objects/duos_norm.RData")
 
 Start values are automatically chosen to be `k` random numbers between 0 and 1, and are then sorted. However, the user can specify starting values for the cut-points. This is especially useful for calculating the Gelman-Rubin diagnostic for assessing convergence.
 
+```{r, eval = FALSE}
+# Run the algorithm three times. Start the algorithm with values in:
+#  (0, 1/3) for run 1, (1/3, 1/3) for run 2, and (2/3, 1) for run 3.  
+duos_unif1 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
+duos_unif2 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
+duos_unif3 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
 
+
+```
+
+
+
+```{r, echo=FALSE}
+load("R Objects/duos_unif1.RData")
+load("R Objects/duos_unif2.RData")
+load("R Objects/duos_unif3.RData")
+
+```
+
+```{r}
+# Lode the 'coda' package
+library(coda)
+
+# Get the cut-point iterations
+C1 <- mcmc(duos_unif1$C)
+C2 <- mcmc(duos_unif2$C)
+C3 <- mcmc(duos_unif3$C)
+
+# Turn into an MCMC list
+C <- mcmc.list(C1, C2, C3)
+
+# Run Gelman-Rubin diagnostic
+gelman.diag(C)
+
+# Get the bin probability iterations
+P1 <- mcmc(duos_unif1$P)
+P2 <- mcmc(duos_unif2$P)
+P3 <- mcmc(duos_unif3$P)
+
+# Turn into an MCMC list
+P <- mcmc.list(P1, P2, P3)
+
+# Run Gelman-Rubin diagnostic
+gelman.diag(P, multivariate = FALSE)
+
+```
 
 #### Convergence Diagnostics
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\duos_mcmcplots_unif.jpg", width=1094, height=541)
+duos_mcmcplots(duos_unif_50)
+dev.off()
+
+```
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Norm.jpg", width=1094, height=541)
+duos_mcmcplots(duos_norm)
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Norm_Scale.jpg", width=1094, height=541)
+duos_mcmcplots(duos_norm_scale)
+dev.off()
+
+```
+
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, type = "rm")
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_Alt.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, type = "rm")
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Trimodal.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, type = "acf")
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_acf_Trimodal_Alt.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, type = "acf")
+dev.off()
+```
+
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw.jpg", width=1094, height=541)
+duos_mcmcplots(duos_claw_400, type = "rm")
+dev.off()
+
+```
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Normal_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_norm, type = "rm", parameters = "p")
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Normal_Alt_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_norm_scale, type = "rm", parameters = "p")
+dev.off()
+
+```
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, type = "rm", parameters = "p")
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_Alt_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, type = "rm", parameters = "p")
+dev.off()
+
+```
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Claw_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_claw_400, type = "acf", parameters = "p")
+dev.off()
+
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Unif_P.jpg", width=1094, height=541)
+# Plot the trace plots of the bin probabilities on separate graphs
+#  from the unif(0, 1) data.
+duos_mcmcplots(duos_unif_50, parameters = "p", plots = "indiv")
+dev.off()
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Norm_C.jpg", width=1094, height=541)
+# Plot the ACF plots of the cut-points on separate graphs
+#  from the Norm(0, 1) data with the default scaling.
+duos_mcmcplots(duos_norm, type = "acf", plots = "indiv")
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Norm_Alt_C.jpg", width=1094, height=541)
+# Plot the ACF plots of the cut-points on separate graphs
+#  from the Norm(0, 1) data with the default scaling.
+duos_mcmcplots(duos_norm_scale, type = "acf",plots = "indiv")
+dev.off()
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Unif_P.jpg", width=1094, height=541)
+# Plot the autocorrelation pltos of the bin probabilities overlaid on a single graph
+#  from the unif(0, 1).
+duos_mcmcplots(duos_unif_50, parameters = "p", type = "acf")
+dev.off()
+```
+
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, parameters = "p", type = "rm")
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_Alt_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, parameters = "p", type = "rm")
+dev.off()
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw_C.jpg", width=1094, height=541)
+
+duos_mcmcplots(duos_claw_400, type = "rm", plots = "indiv")
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw_C.jpg", width=1094, height=541)
+
+duos_mcmcplots(duos_claw_400, type = "rm", plots = "indiv")
+dev.off()
+```
+
+```{r}
+#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, parameters = "p", plots = "indiv")
+#dev.off()
+
+
+#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_Alt_P.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, parameters = "p", plots = "indiv")
+#dev.off()
+```
+
+
+```{r}
+#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_C.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200, plots = "indiv", burnin = 15000)
+#dev.off()
+
+
+#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_Alt_C.jpg", width=1094, height=541)
+duos_mcmcplots(duos_trimodal_200_alt, plots = "indiv", burnin = 10000)
+#dev.off()
+```
+
+
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Claw_C.jpg", width=1094, height=541)
+# Plot the trace plots for the cut-point parameters on individual plots for the results with 13 cut-points. 
+duos_mcmcplots(duos_claw_400, plots = "indiv")
+dev.off()
+
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw_C.jpg", width=1094, height=541)
+# Plot the trace plots for the cut-point parameters on individual plots for the results with 13 cut-points. 
+duos_mcmcplots(duos_claw_400, type = "rm", plots = "indiv")
+dev.off()
+
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Unif_C.jpg", width=1094, height=541)
+# Posterior verses prior plots on the unif(0, 1) data
+duos_pp(duos_unif_50)
+dev.off()
+```
+
+```{r}
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Norm_C.jpg", width=1094, height=541)
+# Posterior verses prior plots on the N(0, 1) data
+# with the default scaling
+duos_pp(duos_norm)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Norm_Alt_C.jpg", width=1094, height=541)
+# Posterior verses prior plots on the unif(0, 1) data
+# with alternative scaling
+duos_pp(duos_norm_scale)
+dev.off()
+
+```
+
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Trimodal_P.jpg", width=1094, height=541)
+# Posterior verses prior plots on the 'trimodal' data
+# with the default 'alpha'
+duos_pp(duos_trimodal_200, parameters = "p")
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Trimodal_Alt_P.jpg", width=1094, height=541)
+# Posterior verses prior plots on the unif(0, 1) data
+# with alternative 'alpha'
+duos_pp(duos_trimodal_200_alt, parameters = "p")
+dev.off()
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw_C_N.jpg", width=1094, height=541)
+# Plot the trace plots for the cut-point parameters on individual plots for the results with 13 cut-points. 
+duos_mcmcplots(duos_claw_400_N, type = "rm", plots = "indiv")
+dev.off()
+
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Claw_C.jpg", width=1094, height=541)
+# Posterior verses prior plots on the 'trimodal' data
+# with the default 'alpha'
+duos_pp(duos_claw_400, burnin = 10000)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Claw_Alt_C_N.jpg", width=1094, height=541)
+# Posterior verses prior plots on the unif(0, 1) data
+# with alternative 'alpha'
+duos_pp(duos_claw_400_N, burnin = 25000)
+dev.off()
+```
+
+\subsubsection{duos\_plot}
+
+This function is designed to plot the PDF and CDF based on the output from \textit{duos}. A variety of options are provided to imporve usability and to compare to the original data.
+
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Unif.jpg", width=1094, height=541)
+duos_plot(duos_unif_50)
+dev.off()
+
+```
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Norm.jpg", width=1094, height=541)
+duos_plot(duos_norm)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Norm_Alt.jpg", width=1094, height=541)
+duos_plot(duos_norm_scale)
+dev.off()
+
+```
+
+```{r}
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Trimodal.jpg", width=1094, height=541)
+duos_plot(duos_trimodal_200_alt)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Claw.jpg", width=1094, height=541)
+duos_plot(duos_claw_400_N)
+dev.off()
+
+```
+
+```{r}
+
+
+c1 <- duos_plot(duos_unif_50, type = "cdf")+ggtitle("Uniform")
+c2 <- duos_plot(duos_norm_scale, type = "cdf")+ggtitle("Normal")
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf")+ggtitle("Trimodal")
+c4 <- duos_plot(duos_claw_400_N, type = "cdf")+ggtitle("Claw")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CDF_Grid.jpg", width=1094, height=541)
+grid.arrange(c1, c2, c3, c4)
+dev.off()
+
+```
+
 
 #### CDF and PDF plots
 

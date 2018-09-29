@@ -6,19 +6,19 @@
 using namespace Rcpp;
 
 // duos
-List duos(NumericVector y, double k, double MH_N, double alpha, double scale_l, double scale_u, NumericVector start);
-RcppExport SEXP _biRd_duos(SEXP ySEXP, SEXP kSEXP, SEXP MH_NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP, SEXP startSEXP) {
+List duos(NumericVector y, double k, double N, NumericVector alpha, double scale_l, double scale_u, NumericVector start);
+RcppExport SEXP _biRd_duos(SEXP ySEXP, SEXP kSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP scale_lSEXP, SEXP scale_uSEXP, SEXP startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type MH_N(MH_NSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type N(NSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type scale_l(scale_lSEXP);
     Rcpp::traits::input_parameter< double >::type scale_u(scale_uSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type start(startSEXP);
-    rcpp_result_gen = Rcpp::wrap(duos(y, k, MH_N, alpha, scale_l, scale_u, start));
+    rcpp_result_gen = Rcpp::wrap(duos(y, k, N, alpha, scale_l, scale_u, start));
     return rcpp_result_gen;
 END_RCPP
 }
