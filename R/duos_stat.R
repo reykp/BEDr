@@ -9,7 +9,7 @@
 #' @param stat A value indicating choice of statistic (see details).
 #' @param p A list of quantiles if quantiles are requested (see details).
 #' @param burnin The desired burnin to discard from the results. If no value is entered, the default is half the number of iterations.
-#' @param scale This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
+#' @param print By default, the posterior mean values and their credible intervals are printed. Change to FALSE if no printing is desired.
 #'
 #' @export
 #' @useDynLib biRd
@@ -112,7 +112,7 @@
 #' #Get an estimate of the quantiles and their credible intervals
 #' quant_norm <- duos_stat(duos_norm, stat = "q", p = c(0.1, 0.5, 0.9))
 
-duos_stat <- function(duos_output,stat, p=NA,burnin=NA,scale=FALSE){
+duos_stat <- function(duos_output,stat = "m", p=NA,burnin=NA,print=TRUE){
   
   # Get Cut-points
   C <- duos_output$C
@@ -240,18 +240,24 @@ duos_stat <- function(duos_output,stat, p=NA,burnin=NA,scale=FALSE){
   # Return results
   if(stat%in%c("mean", "m")){
     mean_list <- list(mean=mean(stats_matrix[1,]), cri=quantile(stats_matrix[1,],c(0.025, 0.975)), mat=stats_matrix[1,])
+    if(print == TRUE){
     print(mean_list[1])
     print(mean_list[2])
+    }
     return(mean_list)
   }else if (stat%in%c("var", "v")){
     var_list <- list(variance=mean(stats_matrix[2,]), cri=quantile(stats_matrix[2,],c(0.025, 0.975)),mat=stats_matrix[2,])
+    if(print == TRUE){
     print(var_list[1])
     print(var_list[2])
+    }
     return(var_list)
   }else{
     quant_list <- list(quantiles=quantiles, cri=quantiles_cri, mat = quant_matrix)
+    if(print == TRUE){
     print(quant_list[1])
     print(quant_list[2])
+    }
     return(quant_list)
   }
 

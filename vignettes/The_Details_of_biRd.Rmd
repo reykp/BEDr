@@ -849,6 +849,8 @@ duos_trimodal_200_alt <- duos(y = y_trimodal_200, alpha = c(1, 3, 1, 10, 1, 2, 3
 
 ```{r, echo=FALSE}
 load("R Objects/duos_trimodal_200_alt.RData")
+load("R Objects/duos_trimodal_alpha.RData")
+
 ```
 
 ```{r, eval = FALSE}
@@ -1241,10 +1243,239 @@ dev.off()
 
 ```
 
+```{r}
 
-#### CDF and PDF plots
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_claw_BI.jpg", width=1094, height=541)
+duos_plot(duos_claw_400_N, burnin = 30000)
+dev.off()
+```
 
+```{r}
+
+
+c1 <- duos_plot(duos_unif_50, cri = TRUE)+ggtitle("Uniform")
+c2 <- duos_plot(duos_norm_scale, cri = TRUE)+ggtitle("Normal")
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", cri = TRUE)+ggtitle("Trimodal")
+c4 <- duos_plot(duos_claw_400_N, type = "cdf", cri = TRUE)+ggtitle("Claw")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CRI_Grid.jpg", width=1094, height=541)
+grid.arrange(c1, c2, c3, c4)
+dev.off()
+```
+
+
+
+```{r}
+
+
+c1 <- duos_plot(duos_unif_50, data = TRUE)+ggtitle("Uniform")
+c2 <- duos_plot(duos_norm_scale, data = TRUE)+ggtitle("Normal")
+c3 <- duos_plot(duos_trimodal_200_alt, data = TRUE)+ggtitle("Trimodal")
+c4 <- duos_plot(duos_claw_400_N, data = TRUE)+ggtitle("Claw")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_PDF_Grid.jpg", width=1094, height=541)
+grid.arrange(c1, c2, c3, c4)
+dev.off()
+```
+
+```{r}
+
+
+c1 <- duos_plot(duos_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")
+c2 <- duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", data = TRUE)+ggtitle("Trimodal")
+c4 <- duos_plot(duos_claw_400_N, type = "cdf", data = TRUE)+ggtitle("Claw")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_CDF_Grid.jpg", width=1094, height=541)
+grid.arrange(c1, c2, c3, c4)
+dev.off()
+```
+
+```{r}
+
+
+duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_PDF_Data_CRI.jpg", width=1094, height=541)
+duos_plot(duos_norm_scale, cri = TRUE, data = TRUE)+ggtitle("Normal")
+dev.off()
+```
+
+```{r}
+duos_plot(duos_trimodal_200_alt, type = "cdf", interact = TRUE)
+```
+
+
+```{r}
+duos_plot(duos_unif_50, cri = TRUE, interact = TRUE)
+```
+
+
+```{r}
+duos_plot(duos_norm_scale, data = TRUE, cri = TRUE, interact = TRUE)
+```
+
+```{r}
+duos_plot(duos_claw_400_N, type = "cdf", data = TRUE, cri = TRUE, interact = TRUE)
+```
+
+
+#### duos_pdf
+
+```{r}
+duos_pdf(x = c(.2, .4, 1.2),duos_output = duos_unif_50)
+```
+
+
+
+```{r}
+
+duos_pdf(x = c(0, 1.5, -2.9,-3.1, 4),duos_output = duos_claw_400_N)
+
+
+```
+
+```{r}
+
+# Estimated the density at (0.2, 0.4, 0.6, 0.8) for
+# the unif(0, 1) data
+duos_pdf_unif <- duos_pdf(x = c(0.2, 0.4, 0.6, 0.8), duos_output = duos_unif_50)
+
+duos_pdf_unif$pdf
+
+duos_pdf_unif$cri
+
+```
+
+```{r}
+data.frame(duos_pdf_unif$mat) %>% gather(Variable, Value) %>%
+  ggplot(aes(Value, fill = Variable, color = Variable))+
+  geom_histogram(position = "identity", alpha = 0.5, bins = 40)+
+  theme_bw()+theme(axis.title =  element_text(size = 12))
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_MAT_Unif.jpg", width=1094, height=541)
+data.frame(duos_pdf_unif$mat) %>% gather(Variable, Value) %>%
+  ggplot(aes(Value, fill = Variable, color = Variable))+
+  geom_histogram(alpha = 0.5, bins = 40)+
+  theme_bw()+theme(axis.title =  element_text(size = 12))+
+  facet_wrap(~Variable, nrow = 4)+xlim(c(0, 3))
+dev.off()
+  
+```
+
+```{r}
+# User iteractive identify locations of possible modes
+duos_plot(duos_norm_scale, interact = TRUE)
+```
+
+
+```{r}
+# User iteractive identify range of values to check for mode
+duos_plot(duos_norm_scale, interact = TRUE)
+
+# Estimated the density at seq(from = -.6, to = .65, by = 0.001) for
+# the 'claw' data
+x_seq <- seq(from = -.6, to = .65, by = 0.001)
+duos_pdf_norm <- duos_pdf(x = x_seq, duos_output = duos_norm_scale)
+
+find_max <- which(duos_pdf_norm$pdf==max(duos_pdf_norm$pdf))
+x_seq[find_max]
+
+duos_pdf_norm$cri[find_max,]
+
+```
+
+```{r}
+# Estimated the density at (-1, -0.5, .025, 0.54, 1) for
+# the 'claw' data
+duos_pdf_claw <- duos_pdf(x = c(-2.5, -2, 2.5, 3), duos_output = duos_claw_400_N)
+
+duos_pdf_claw$pdf
+
+duos_pdf_claw$cri
+
+```
+
+#### cdf
+
+```{r}
+duos_cdf_unif <- duos_cdf(x = c(0.25, 0.5, 0.75), duos_output = duos_unif_50)
+
+duos_cdf_unif$cdf
+
+duos_cdf_unif$cri
+
+```
+
+
+
+```{r}
+duos_cdf_norm <- duos_cdf(x = c(min(duos_norm_scale$y), max(duos_norm_scale$y)), duos_output = duos_norm_scale)
+
+# Find the probability of being less than the minimum value
+duos_cdf_norm$cdf[1]
+
+# Find the probability of being greater than the maximum value
+1-duos_cdf_norm$cdf[2]
+
+duos_cdf_norm$cri
+
+```
+
+```{r}
+duos_plot(duos_trimodal_200_alt, interact = TRUE)
+
+duos_cdf_trimodal <- duos_cdf(x = c(1.76, 2.3), duos_output = duos_trimodal_200_alt)
+
+# Find the probability of being between 1.76 and 2.3
+duos_cdf_trimodal$cdf[2]-duos_cdf_trimodal$cdf[1]
+
+# Find the credible interval using the matrix
+# of values
+quantile(duos_cdf_trimodal$mat[,2]-duos_cdf_trimodal$mat[,1], c(.025, .975))
+
+```
+
+```{r}
+duos_plot(duos_claw_400_N, interact = TRUE)
+
+duos_cdf_claw <- duos_cdf(x = c(-1.26, -0.7, -0.2, 0.25, 0.8, 1.3), duos_output = duos_claw_400_N)
+
+# Find the probability of being between each pair of points
+duos_cdf_claw$cdf[2]-duos_cdf_claw$cdf[1]
+duos_cdf_claw$cdf[3]-duos_cdf_claw$cdf[2]
+duos_cdf_claw$cdf[4]-duos_cdf_claw$cdf[3]
+duos_cdf_claw$cdf[5]-duos_cdf_claw$cdf[4]
+duos_cdf_claw$cdf[6]-duos_cdf_claw$cdf[5]
+
+# Find the credible interval using the matrix
+# of values
+quantile(duos_cdf_trimodal$mat[,2]-duos_cdf_trimodal$mat[,1], c(.025, .975))
+
+cdf_mat <- data.frame(Mode1 = duos_cdf_claw$mat[,2]-duos_cdf_claw$mat[,1],
+                      Mode2 = duos_cdf_claw$mat[,3]-duos_cdf_claw$mat[,2],
+                      Mode3 = duos_cdf_claw$mat[,4]-duos_cdf_claw$mat[,3],
+                      Mode4 = duos_cdf_claw$mat[,5]-duos_cdf_claw$mat[,4],
+                      Mode5 = duos_cdf_claw$mat[,6]-duos_cdf_claw$mat[,5])
+
+# Plot the histograms
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CDF_MAT_Claw.jpg", width=1094, height=541)
+  cdf_mat %>% gather(Variable, Value) %>%
+    ggplot(aes(Value, fill = Variable, color = Variable))+
+  geom_histogram(position = "identity", alpha = 0.5, bins = 40)+
+  theme_bw()+theme(axis.title =  element_text(size = 12))
+dev.off()
+
+
+
+
+```
 #### Additional statistics
+
+```{r}
+
+duos_unif_mean <- duos_stat(duos_unif_50)
+```
 
 ### Gold
 

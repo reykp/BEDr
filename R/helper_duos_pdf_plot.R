@@ -45,12 +45,13 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
 
   #Get data
   plot_density <- data.frame(x,PDF)
+  names(plot_density) <- c("X", "PDF")
 
   #Get credible intervals
   crdble <- data.frame(duos_density$cri)
   names(crdble) <- c("lower", "upper")
-  crdble$x <- duos_density$x
-
+  crdble$X <- duos_density$x
+  
   if(scale == TRUE){
     data_y <- data.frame(duos_output$y)
     names(data_y) <- "data"
@@ -60,22 +61,28 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
     names(data_y) <- "data"
   }
 
+  data_y$y <- rep(0, nrow(data_y))
+  data_y$Data <- data_y$data
+    ## Creation of Plot ---------------------------------------------------------------
+  
   g <- ggplot(data_y, aes(x=data))+
     theme(axis.title = element_text(size = 12))+
     theme_bw()+expand_limits(y=0)
 
 
   if(data==TRUE){
-    g <- g+geom_histogram(aes(y=..density..), fill="grey", color="black")
+    g <- g+geom_histogram(aes(y=..density..), fill="grey", color="black")+
+     geom_point(aes(x = Data, y = y), alpha = 0)
   }
   if(cri==TRUE){
-    g <- g+geom_line(data=crdble, aes(x,lower), color="red",size=.6)+
-      geom_line(data=crdble, aes(x,upper), color="red", size=.6)
+    g <- g+geom_line(data=crdble, aes(X,lower), color="red",size=.6)+
+      geom_line(data=crdble, aes(X,upper), color="red", size=.6)
   }
 
   if(interact == TRUE){
-    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
-                       xlab("X")))
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(X, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+                       xlab("X"), tooltip=c("X","PDF", "lower", "upper", "Data")))
+    
     
   }else{
     g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+

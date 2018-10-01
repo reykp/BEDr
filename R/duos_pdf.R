@@ -31,7 +31,7 @@
 #' @return \code{duos_pdf} returns a list of the PDF results from \code{duos}.
 #'
 #' \item{\code{pdf}}{A vector of the posterior mean PDF at each value in \code{x}.}
-#' \item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
+#' \item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the PDF at each point in \code{x}.}
 #' \item{\code{mat}}{A matrix containing the PDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
 #' \item{\code{x}}{A vector containing the values at which to estimate the PDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
 
@@ -71,7 +71,7 @@
 #' # Examine the credible intervals of the PDF at \code{x}
 #' pdf_gamma$cri
 #'
-#' #Plot a histogram of distribution of the posterior draws for the CDF estimate at 1
+#' #Plot a histogram of distribution of the posterior draws for the PDF estimate at 1
 #' hist(pdf_gamma$mat[,2])
 #' 
 #' # Data is scaled between 0 and 1 for the density estimation.
@@ -110,28 +110,31 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
   if(max(duos_output$y)>1 | min(duos_output$y)< 0){
   
   outside_range_u <- which(x > (max(duos_output$y)+duos_output$scale_u))
-  if(length(outside_range_u)>0){
+  outside_range_l <- which(x < (min(duos_output$y)-duos_output$scale_l))
+  if((length(outside_range_u)>0) &(length(outside_range_l)==0)){
     print(x[outside_range_u])
-    stop("The requested 'x' vector contains a value outside the range of max(y)+scale_u.")
+    stop("The requested 'x' vector contains the above value(s) outside the range of max(y)+scale_u.")
   }
   
-  outside_range_l <- which(x < (min(duos_output$y)-duos_output$scale_l))
-  if(length(outside_range_l)>0){
+  if((length(outside_range_l)>0) &(length(outside_range_u)==0)){
     print(x[outside_range_l])
-    stop("The requested 'x' vector contains a value outside the range of min(y)-scale_l.")
+    stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l.")
   }
+  
+  if((length(outside_range_l)>0) &(length(outside_range_u)>0)){
+    print(x[c(outside_range_l, outside_range_u)])
+    stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l and max(y)+scale_u.")
+  }
+  
+  
   }else{
     outside_range_u <- which(x > 1)
-    if(length(outside_range_u)>0){
-      print(x[outside_range_u])
-      stop("The requested 'x' vector contains a value outside the range of (0, 1).")
-    }
-    
     outside_range_l <- which(x < 0)
-    if(length(outside_range_l)>0){
-      print(x[outside_range_l])
-      stop("The requested 'x' vector contains a value outside the range of (0, 1).")
+    if((length(outside_range_u)>0)|(length(outside_range_l)>0)){
+      print(x[c(outside_range_u, outside_range_l)])
+      stop("The requested 'x' vector contains the above value(s) outside the range of (0, 1).")
     }
+   
   }
   
   

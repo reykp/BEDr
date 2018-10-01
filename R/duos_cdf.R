@@ -116,28 +116,31 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   if(max(duos_output$y)>1 | min(duos_output$y)< 0){
     
     outside_range_u <- which(x > (max(duos_output$y)+duos_output$scale_u))
-    if(length(outside_range_u)>0){
+    outside_range_l <- which(x < (min(duos_output$y)-duos_output$scale_l))
+    if((length(outside_range_u)>0) &(length(outside_range_l)==0)){
       print(x[outside_range_u])
-      stop("The requested 'x' vector contains a value outside the range of max(y)+scale_u.")
+      stop("The requested 'x' vector contains the above value(s) outside the range of max(y)+scale_u.")
     }
     
-    outside_range_l <- which(x < (min(duos_output$y)-duos_output$scale_l))
-    if(length(outside_range_l)>0){
+    if((length(outside_range_l)>0) &(length(outside_range_u)==0)){
       print(x[outside_range_l])
-      stop("The requested 'x' vector contains a value outside the range of min(y)-scale_l.")
+      stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l.")
     }
+    
+    if((length(outside_range_l)>0) &(length(outside_range_u)>0)){
+      print(x[c(outside_range_l, outside_range_u)])
+      stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l and max(y)+scale_u.")
+    }
+    
+    
   }else{
     outside_range_u <- which(x > 1)
-    if(length(outside_range_u)>0){
-      print(x[outside_range_u])
-      stop("The requested 'x' vector contains a value outside the range of (0, 1).")
+    outside_range_l <- which(x < 0)
+    if((length(outside_range_u)>0)|(length(outside_range_l)>0)){
+      print(x[c(outside_range_u, outside_range_l)])
+      stop("The requested 'x' vector contains the above value(s) outside the range of (0, 1).")
     }
     
-    outside_range_l <- which(x < 0)
-    if(length(outside_range_l)>0){
-      print(x[outside_range_l])
-      stop("The requested 'x' vector contains a value outside the range of (0, 1).")
-    }
   }
   
   # Number of cutpoints
