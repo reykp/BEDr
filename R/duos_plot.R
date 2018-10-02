@@ -15,7 +15,7 @@
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes labs theme_bw theme geom_histogram
-#' geom_line expand_limits ylab xlab element_text
+#' geom_line expand_limits ylab xlab element_text geom_point
 #' @importFrom plotly ggplotly
 #' @importFrom gridExtra grid.arrange
 #'
