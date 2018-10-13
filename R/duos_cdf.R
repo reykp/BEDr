@@ -34,7 +34,7 @@
 #' \item{\code{cdf}}{A vector of the posterior mean CDF at each value in \code{x}.}
 #' \item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
 #' \item{\code{mat}}{A matrix containing the CDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
-#' \item{\code{x}}{A vector containing the values at which to estimate the CDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
+#' \item{\code{x}}{A vector containing the values at which to estimate the CDF. }
 
 #' @examples
 
@@ -76,12 +76,9 @@
 #' # Find probability of being greater than 2
 #' 1 - duos_cdf(2, duos_norm)$cdf
 #' 
-#' # Data is scaled between 0 and 1 for the density estimation.
-#' # If 'scale' = TRUE is requested, the 'x' is returned on the scaled range.
-#' duos_cdf(x = c(-2, -1, 0, .8, 1.8), duos_norm, scale = TRUE)$x
-#' 
 
-duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
+
+duos_cdf <- function(x, duos_output, burnin=NA){
 
   # Initial set up ##############
   
@@ -163,12 +160,7 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   # If the data is not between 0 and 1, scale 'x' to be on the same scale the density was estimated on
   if((min_y<0 | max_y>1)){
     input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
-  }else{
-    if(scale == TRUE){
-      stop("Scaling requested when no scaling was used.")
-    }
   }
-
   # Function that calculates CDF
   # input and k are global paramters
   cdf_forapply <- function(x){
@@ -205,7 +197,7 @@ duos_cdf <- function(x, duos_output, burnin=NA, scale=FALSE){
   #If data is outside (0,1) and scaling was not requested, return all results on data scale, else
   #return scaled values
 
-  if(scale==FALSE & (min_y<0 | max_y>1)){
+  if((min_y<0 | max_y>1)){
     return(list(cdf=cdf_y, cri=t(cdf_y_perc), mat=t(cdf_matrix),x=x))
   }else{
     return(list(cdf=cdf_y, cri=t(cdf_y_perc), mat=t(cdf_matrix), x=input))

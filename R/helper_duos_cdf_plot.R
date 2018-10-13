@@ -2,7 +2,7 @@
 
 
 
-helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
+helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact){
 
   C <- duos_output$C
   if(is.na(burnin)){
@@ -32,10 +32,10 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
 
   if(min_y<0 | max_y>1){
     input <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_CDF <- duos_cdf(input,duos_output,burnin, scale)
+    duos_CDF <- duos_cdf(input,duos_output,burnin)
   }else{
     input <- 1:999/1000
-    duos_CDF <- duos_cdf(input,duos_output,burnin, scale)
+    duos_CDF <- duos_cdf(input,duos_output,burnin)
   }
 
   #Get x
@@ -52,14 +52,9 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
   crdble$x <- duos_CDF$x
 
 
-  if(scale == TRUE){
-    data_y <- data.frame(duos_output$y)
+   data_y <- data.frame(duos_output$y)
     names(data_y) <- "data"
-    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
-  }else{
-    data_y <- data.frame(duos_output$y)
-    names(data_y) <- "data"
-  }
+  
 
   g <- ggplot()+
     theme(axis.title = element_text(size = 12))+

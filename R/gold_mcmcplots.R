@@ -1,30 +1,16 @@
 #' Plots a Variety of Convergence Diagnostic Plots
 #'
-#' Plots the convergence plots on the parameters from \code{duos}.
+#' Plots the convergence plots on the parameters from \code{gold}.
 #'
 #' @usage 
-#' duos_mcmcplots(duos_output, type = "traceplot", parameters = "c", plots = "all", burnin = 1)
+#' gold_mcmcplots(duos_output, type = "traceplot", plots = "all", burnin = 1)
 #'
-#' @param duos_output The list returned by \code{duos} containing the density estimate results.
+#' @param gold_output The list returned by \code{duos} containing the density estimate results.
 #' @param type The type of convergent plot to create (see details).
-#' @param parameters The group of parameters to plot (see details).
-#' @param plots An option to plot parameters on the same plot or as individuals in a grid (see details).
+#' @param npar The number of paramters to plot. 3X3 grids of tracepltos are created (DEFAULT is 9).
 #' @param burnin The desired burnin to discard from the results. By default, it is 1 so that all iterations are plotted.
 #'
-#' @export
-#' @importFrom ggforce facet_wrap_paginate
-#' @importFrom dplyr group_by summarise %>%
-#' @importFrom tidyr gather
 #' @details
-#'
-#'
-#' \strong{Options for} \code{parameters}
-#'
-#' There are two sets of parameters that can plotted in the trace plots: the cut-points and the bin proportion parameters.
-#' \itemize{
-#'     \item \code{"c"}: Plots the trace plots of the cut-points that are ordered and between 0 and 1 (DEFAULT).
-#'     \item \code{"p"}: Plots the trace plots of the proportion parameters that sum to one.
-#'   }
 #'
 #' \strong{Options for} \code{type}
 #'
@@ -35,14 +21,7 @@
 #'     \item \code{"rm"}: Creates running mean plots on the parameters.
 #'   }
 #'   
-#' \strong{Options for} \code{plots}
-#'
-#' There are several options on how to display the trace plots.
-#' \itemize{
-#'     \item \code{"all"}: Overlays all trace plots in one plot (works well for the cut-point parameters) (DEFAULT).
-#'     \item \code{"indiv"}: Create a grid of trace plots where each plot contains a single parameter's trace plot. Six plots are allowed in a grid so multiple graphs are created if there are more than 6 parameters.
-#'   }
-#'
+#' If \code{npar} is specified to be 9, 9 paramters (as equally spaced as possible) are chosen to plot.
 #'
 #' @return A plot of trace plots, acf plots, or running mean pltos.
 #'
@@ -103,20 +82,18 @@
 #' duos_mcmcplots(duos_bimodal, type = "acf", parameters = "p", burnin = 10000)
 
 
-duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plots="all", burnin=NA){
+gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA){
   
-  # Get cut-point parameters
-  C_output <- duos_output$C
-  # Get bin proportion parameters
-  P_output <- duos_output$P
-
+  G_output <- gold_output$G
+  
+  
   burnin_na <- FALSE
   if(is.na(burnin)){
     burnin_na <- TRUE
     burnin <- 1
   }
   
-  if(burnin>nrow(C_output)){
+  if(burnin>nrow(G_output)){
     stop("The specified burnin is greater than the number of iterations.")
   }
   
@@ -130,109 +107,53 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
     stop("burnin should be an integer greater than zero.")
   }
   
-  if(type == "traceplot"){
-  # Plot for cut-points
-  if(parameters%in%c("c", "C")){
-    # Single plot
-    if(plots=="all"){
-    
-    # Remove burnin
-    if(burnin>1){
-    C <- data.frame(C_output[{burnin+1}:nrow(C_output),])
-    # Create iteration variable for x-axs
-    C$Iteration <- {burnin+1}:nrow(C_output)
-    }else{
-      C <- data.frame(C_output[{burnin}:nrow(C_output),])
-      # Create iteration variable for x-axs
-      C$Iteration <- burnin:nrow(C_output)
-      
-    }
-    # Stack all variables into one column
-    C_plot <- C %>% gather(Parameter, Simulation,-Iteration)
-    # Remove X from the name
-    C_plot$Parameter <- gsub("X", "", C_plot$Parameter)
-
-    # Order parameters correctly
-    C_plot$Parameter <- as.factor(C_plot$Parameter)
-    C_plot$Parameter <- factor(C_plot$Parameter, levels=c(1:ncol(C)))
-
-    # Print plot
-    print(ggplot(C_plot)+
-      geom_line(aes(Iteration, Simulation, group=Parameter, color=Parameter))+
-      theme_bw()+theme(axis.title = element_text(size = 12)))
-    }else if (plots=="indiv"){
-      # Same as above with a facet_wrap
-      C <- data.frame(C_output[burnin:nrow(C_output),])
-      C$Iteration <- burnin:nrow(C_output)
-      C_plot <- C %>% gather(Parameter, Simulation,-Iteration)
-      C_plot$Parameter <- as.factor(gsub("X", "", C_plot$Parameter))
-
-      C_plot$Parameter <- as.factor(C_plot$Parameter)
-      C_plot$Parameter <- factor(C_plot$Parameter, levels=c(1:ncol(C)))
-
-      graph_index <- ceiling(ncol(C_output)/6)
-      for (i in 1:graph_index) {
-
-        print(ggplot(C_plot)+
-                geom_line(aes(Iteration, Simulation))+
-                theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
-
-
-      }
-    }
-  }else if(parameters=="p"){
-    # Repeate the  same process for P
-    if(plots=="all"){
-      if(burnin>1){
-      P <- data.frame(P_output[{burnin+1}:nrow(P_output),])
-      P$Iteration <- {burnin+1}:nrow(P_output)
-      }else{
-        P <- data.frame(P_output[burnin:nrow(P_output),])
-        P$Iteration <- burnin:nrow(P_output)
-      }
-      P_plot <- P %>% gather(Parameter, Simulation,-Iteration)
-      P_plot$Parameter <- gsub("X", "", P_plot$Parameter)
-
-      P_plot$Parameter <- as.factor(P_plot$Parameter)
-      P_plot$Parameter <- factor(P_plot$Parameter, levels=c(1:ncol(P)))
-
-      print(ggplot(P_plot)+
-        geom_line(aes(Iteration, Simulation, group=Parameter, color=Parameter))+
-        theme_bw()+theme(axis.title = element_text(size = 12)))
-    }else if (plots=="indiv"){
-      P <- data.frame(P_output[burnin:nrow(P_output),])
-      P$Iteration <- burnin:nrow(P_output)
-      P_plot <- P %>% gather(Parameter, Simulation,-Iteration)
-      P_plot$Parameter <- as.factor(gsub("X", "", P_plot$Parameter))
-
-      P_plot$Parameter <- as.factor(P_plot$Parameter)
-      P_plot$Parameter <- factor(P_plot$Parameter, levels=c(1:ncol(P)))
-
-      graph_index <- ceiling(ncol(P_output)/6)
-      for (i in 1:graph_index) {
-
-        print(ggplot(P_plot)+
-                geom_line(aes(Iteration, Simulation))+
-                theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
-
-
-      }
+  
+  npar_intervals <- floor(ncol(G_output)/npar)
+  
+  parameters <- NA
+  parameters[1] <- 1
+  for(i in 2:npar){
+    if((parameters[{i-1}] +npar_intervals)<ncol(G_output)){
+      parameters[i] <- parameters[{i-1}] +npar_intervals
     }
   }
+  
+  
+  G <- data.frame(G_output[(burnin+1):nrow(G_output),])
+  G <- G[,parameters]
+  G$Iteration <- (burnin+1):nrow(G_output)
+  
+  
+  
+  G_plot <- G %>% gather(Parameter, Simulation,-Iteration)
+  G_plot$Parameter <- as.factor(gsub("X", "", G_plot$Parameter))
+  G_plot$Parameter <- as.numeric(as.character(G_plot$Parameter))
+  
+
+  
+  if(type == "traceplot"){
+    graph_index <- ceiling((ncol(G)-1)/9)
+    for (i in 1:graph_index) {
+      
+      
+      print(ggplot(G_plot)+
+              geom_line(aes(Iteration, Simulation))+
+              #geom_point(aes(Iteration, Simulation))+
+              theme_bw()+theme(axis.title = element_text(size = 12))+
+              facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i,scales="free"))
+      
+    }
   }else if (type == "acf"){
     
     if(burnin_na){
-      burnin <- nrow(C_output)/2
+      burnin <- nrow(G_output)/2
     }
-    if(parameters %in% c("c", "C")){
     # Create data set to plot
     acf_plot <- data.frame(0, 0, 0)
     names(acf_plot) <- c("Parameter", "Lag", "ACF")
     
-    for(i in 1:ncol(C_output)){
-      get_acf <- acf(C_output[burnin:nrow(C_output),i], plot = FALSE, lag = 1000)
+    for(i in parameters){
+      get_acf <- acf(G_output[burnin:nrow(G_output),i], plot = FALSE, lag = 1000)
       acf_plot_add <- data.frame(rep(i, 1001), with(get_acf, data.frame(lag, acf)))
       names(acf_plot_add) <- c("Parameter", "Lag", "ACF")
       
@@ -244,10 +165,10 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
     
     # Convert parameter to factor
     acf_plot$Parameter <- as.factor(acf_plot$Parameter)
-    acf_plot$Parameter <- factor(acf_plot$Parameter, levels = c(1:ncol(C_output)))
+    acf_plot$Parameter <- factor(acf_plot$Parameter, levels = c(parameters))
     
-    if(plots == "indiv"){
-    graph_index <- ceiling(ncol(C_output)/6)
+    graph_index <- ceiling((ncol(G)-1)/9)
+    
     for (i in 1:graph_index) {
       
       print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
@@ -258,59 +179,9 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
       
       
     }
-      }else if (plots == "all"){
-          
-         ggplot(acf_plot,aes(x = Lag, y = ACF))+
-                  geom_hline(aes(yintercept = 0)) +
-                  geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
-                  theme_bw()+theme(axis.title = element_text(size = 12))
-          
-    }
+      
     
-    }else if(parameters %in% c("p", "P")){
-      # Create data set to plot
-      acf_plot <- data.frame(0, 0, 0)
-      names(acf_plot) <- c("Parameter", "Lag", "ACF")
-      
-      for(i in 1:ncol(P_output)){
-        get_acf <- acf(P_output[burnin:nrow(P_output),i], plot = FALSE, lag = 1000)
-        acf_plot_add <- data.frame(rep(i, 1001), with(get_acf, data.frame(lag, acf)))
-        names(acf_plot_add) <- c("Parameter", "Lag", "ACF")
-        
-        acf_plot <- rbind(acf_plot, acf_plot_add)
-      }
-      
-      # Remove the row with zeros
-      acf_plot <- acf_plot[-1,]
-      
-      # Convert parameter to factor
-      acf_plot$Parameter <- as.factor(acf_plot$Parameter)
-      acf_plot$Parameter <- factor(acf_plot$Parameter, levels = c(1:ncol(P_output)))
-      
-      if(plots == "indiv"){
-        graph_index <- ceiling(ncol(P_output)/6)
-        for (i in 1:graph_index) {
-          
-          print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
-                  geom_hline(aes(yintercept = 0)) +
-                  geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
-                  theme_bw()+theme(axis.title = element_text(size = 12))+
-                  facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
-          
-          
-        }
-      }else if (plots == "all"){
-        
-        
-        ggplot(acf_plot,aes(x = Lag, y = ACF))+
-          geom_hline(aes(yintercept = 0)) +
-          geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
-          theme_bw()+theme(axis.title = element_text(size = 12))
-        
-      }
-      
-    }
-  }else if (type %in% c("rm", "RM")){
+ }else if (type %in% c("rm", "RM")){
     
       
       if(parameters %in% c("c", "C")){

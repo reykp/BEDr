@@ -1,6 +1,6 @@
 # Plot Probability Density from DUOS.
 
-helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
+helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact){
 
   
   if(is.na(burnin)){
@@ -30,9 +30,9 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
   
   if(min_y<0 | max_y>1){
     x <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_density <- duos_pdf(x,duos_output,burnin, scale)
+    duos_density <- duos_pdf(x,duos_output,burnin)
   }else{
-    duos_density <- duos_pdf(1:999/1000,duos_output,burnin, scale)
+    duos_density <- duos_pdf(1:999/1000,duos_output,burnin)
   }
 
 
@@ -52,14 +52,10 @@ helper_duos_pdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
   names(crdble) <- c("lower", "upper")
   crdble$X <- duos_density$x
   
-  if(scale == TRUE){
+
     data_y <- data.frame(duos_output$y)
     names(data_y) <- "data"
-    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
-  }else{
-    data_y <- data.frame(duos_output$y)
-    names(data_y) <- "data"
-  }
+  
 
   data_y$y <- rep(0, nrow(data_y))
   data_y$Data <- data_y$data

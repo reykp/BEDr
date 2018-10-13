@@ -19,7 +19,7 @@ duos_pdf(x, duos_output, burnin = NA, scale = FALSE)
 \code{duos_pdf} returns a list of the PDF results from \code{duos}.
 
 \item{\code{pdf}}{A vector of the posterior mean PDF at each value in \code{x}.}
-\item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
+\item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the PDF at each point in \code{x}.}
 \item{\code{mat}}{A matrix containing the PDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
 \item{\code{x}}{A vector containing the values at which to estimate the PDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
 }
@@ -76,7 +76,7 @@ pdf_gamma$pdf
 # Examine the credible intervals of the PDF at \\code{x}
 pdf_gamma$cri
 
-#Plot a histogram of distribution of the posterior draws for the CDF estimate at 1
+#Plot a histogram of distribution of the posterior draws for the PDF estimate at 1
 hist(pdf_gamma$mat[,2])
 
 # Data is scaled between 0 and 1 for the density estimation.

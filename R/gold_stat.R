@@ -6,7 +6,6 @@
 #' @param gold_output The list returned by \code{gold} containing the density estimate results.
 #' @param p A list of quantiles if quantiles are requested (see details).
 #' @param burnin The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.
-#' @param scale This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export
 #'
@@ -85,7 +84,7 @@
 
 
 
-gold_stat <- function(stat,gold_output, p=NA,burnin=NA,scale=FALSE){
+gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
 
 
 

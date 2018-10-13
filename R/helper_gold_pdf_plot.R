@@ -1,6 +1,6 @@
 # Plot Probability Density from gold.
 
-helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, interact, scale){
+helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, interact){
 
   if(is.na(burnin)){
     burnin <- nrow(gold_output$G)/2
@@ -43,14 +43,9 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, i
   #   crdble$upper <- crdble$upper/(max_y+.00001-(min_y-.00001))
   # }
 
-  if(scale == TRUE){
     data_y <- data.frame(gold_output$y)
     names(data_y) <- "data"
-    data_y$data <- (data_y$data-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
-  }else{
-    data_y <- data.frame(gold_output$y)
-    names(data_y) <- "data"
-  }
+  
 
   g <- ggplot(data_y, aes(x=data))+
     theme(axis.title = element_text(size = 12))+

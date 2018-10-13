@@ -4,14 +4,14 @@
 \alias{duos}
 \title{duos (Distribution of Uniform Order Statistics)}
 \usage{
-duos(y, k = ceiling(n/50) + 3, MH_N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001, start = NA)
+duos(y, k = ceiling(n/50) + 3, N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001, start = NA)
 }
 \arguments{
 \item{y}{A numeric vector. \code{duos} estimates the density on this data.}
 
 \item{k}{The number of cut-points for the density estimate. There is a default based on the size of \code{y} (see details).}
 
-\item{MH_N}{The number of iterations to run in the algorithm. The default is 20,000.}
+\item{N}{The number of iterations to run in the algorithm. The default is 20,000.}
 
 \item{alpha}{The parameter values for the Dirichlet prior. The parameter is constant and set to 1 by default.}
 
@@ -24,8 +24,8 @@ duos(y, k = ceiling(n/50) + 3, MH_N = 20000, alpha = 1, scale_l = 0.00001, scale
 \value{
 \code{duos} returns a list of density estimate results.
 
-\item{\code{C}}{A matrix containing the posterior draws for the cut-point parameters. The number of columns is \code{k}, and the number of rows is \code{MH_N}.}
-\item{\code{P}}{A matrix containing the posterior draws for the bin proportion parameters. The number of columns is \code{k}+1, and the number of rows is \code{MH_N}.}
+\item{\code{C}}{A matrix containing the posterior draws for the cut-point parameters. The number of columns is \code{k}, and the number of rows is \code{N}.}
+\item{\code{P}}{A matrix containing the posterior draws for the bin proportion parameters. The number of columns is \code{k}+1, and the number of rows is \code{N}.}
 \item{\code{y}}{A vector containing the data introduced to \code{duos} for density estimation.}
 \item{\code{k}}{The number of cut-points.}
 \item{\code{alpha}}{The parameter for the prior on the bin proportions.}
@@ -107,7 +107,7 @@ if(u[i] < 0.5){
      }
      
 # Choose 12 cutpoints
-duos_claw <- duos(y = y, k = 12, MH_N = 20000)
+duos_claw <- duos(y = y, k = 12, N = 20000)
 
 # Examine estimate of PDF
 duos_plot(duos_claw, type = "pdf", data = TRUE)
@@ -125,7 +125,7 @@ duos_plot(duos_claw, type = "cdf")
 # Run 'duos' on data sampled from a Normal(0, 1) distribution with 50 data points.
 y <- rnorm(50, 0, 1)
 # Run for 15,000 iterations and change the 'scale' values to 1.5*sd(y)
-duos_norm <- duos(y = y, scale_l = 1.5*sd(y), scale_u = 1.5*sd(y), MH_N = 15000)
+duos_norm <- duos(y = y, scale_l = 1.5*sd(y), scale_u = 1.5*sd(y), N = 15000)
 
 # Examine estimate of PDF
 duos_plot(duos_norm, type = "pdf", data = TRUE)
@@ -147,9 +147,9 @@ y <- runif(50)
 
 # Use 4 cutpoints
 # Create three runs with diverse starting values
-duos_unif1 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 0, 1/3))
-duos_unif2 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 1/3, 2/3))
-duos_unif3 <- duos(y = y, k = 4, MH_N = 20000, start = runif(4, 2/3, 1))
+duos_unif1 <- duos(y = y, k = 4, N = 20000, start = runif(4, 0, 1/3))
+duos_unif2 <- duos(y = y, k = 4, N = 20000, start = runif(4, 1/3, 2/3))
+duos_unif3 <- duos(y = y, k = 4, N = 20000, start = runif(4, 2/3, 1))
 
 # Load package coda
 library(coda)

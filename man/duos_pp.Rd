@@ -20,7 +20,7 @@ A plot of overlaid histograms.
 Plots the histograms of simulations from the prior verses the posterior from \code{duos}.
 }
 \details{
-The results are designed to plot of a 3X3 grid. If there are more than 9 parameters, separate plots are created and printed and can be viewed by clicking the arrow through the results in the 'Plots' window.
+The results are designed to plot of a 3X2 grid. If there are more than 6 parameters, separate plots are created and printed and can be viewed by clicking the arrow through the results in the 'Plots' window.
 
 \strong{Options for} \code{parameters}
 

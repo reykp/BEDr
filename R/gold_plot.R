@@ -113,12 +113,12 @@
 #'
 
 
-gold_plot <- function(gold_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact = FALSE, scale = FALSE){
+gold_plot <- function(gold_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact = FALSE){
 
   #Check if call is to plot pdf or cdf
   if(type=="pdf"){
-    helper_gold_pdf_plot(gold_output, burnin, cri, data, interact, scale)
+    helper_gold_pdf_plot(gold_output, burnin, cri, data, interact)
   }else if (type=="cdf"){
-    helper_gold_cdf_plot(gold_output, burnin, cri, data, interact, scale)
+    helper_gold_cdf_plot(gold_output, burnin, cri, data, interact)
   }
 }

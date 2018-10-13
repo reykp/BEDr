@@ -15,7 +15,7 @@ duos_stat(duos_output, stat = "m", p = NA, burnin = NA, scale = FALSE)
 
 \item{burnin}{The desired burnin to discard from the results. If no value is entered, the default is half the number of iterations.}
 
-\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
+\item{print}{By default, the posterior mean values and their credible intervals are printed. Change to FALSE if no printing is desired.}
 }
 \value{
 \code{duos_stat} the statistic of choice and the credible intervals associated with it.

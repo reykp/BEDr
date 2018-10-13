@@ -3,7 +3,7 @@
 #' Plots the posterior mean PDF or CDF based on the output from \code{duos}.
 #'
 #' @usage
-#' duos_plot(duos_output, type = "pdf", burnin = NA, cri = FALSE, data = FALSE, interact = FALSE, scale = FALSE)
+#' duos_plot(duos_output, type = "pdf", burnin = NA, cri = FALSE, data = FALSE, interact = FALSE)
 #' 
 #' @param duos_output The list returned by \code{duos} containing the density estimate results.
 #' @param type The desired type of graph (see details).
@@ -11,7 +11,6 @@
 #' @param cri An option to include credible intervals. The default is FALSE.
 #' @param data An option to include data in the graph (see details).
 #' @param interact An option to make the plots interactive. The default is FALSE.
-#' @param scale This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes labs theme_bw theme geom_histogram
@@ -51,13 +50,6 @@
 #' \itemize{
 #'     \item \code{"FALSE"}: No interactivity (DEFAULT).
 #'     \item \code{"TRUE"}: Allows for zooming in on locations and running mouse over plot to see PDF or CDF values.
-#'   }
-#'
-#' \strong{Options for} \code{scale}
-#' The data is scaled between 0 and 1 to estimate the density. The plot can be created on the scale of the data or the scaled version (if scaling was necessary).
-#' \itemize{
-#'     \item \code{"FALSE"}: Plots are created on the scale of \code{y}.
-#'     \item \code{"TRUE"}: The x-axis on the plot is scaled to be between 0 and 1.
 #'   }
 #'
 #' @return A plot of the PDF or CDF estimate.
@@ -123,11 +115,9 @@
 #' # Plot the CDF interactively
 #' duos_plot(duos_bimodal, type = "cdf", interact = TRUE)
 #' 
-#' # Plot the PDF on the scale between 0 and 1
-#' duos_plot(duos_bimodal, type = "pdf", scale = TRUE, data = TRUE)
 
 
-duos_plot <- function(duos_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact=FALSE, scale = FALSE){
+duos_plot <- function(duos_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact=FALSE){
   
   if(!(type%in%c("pdf","Pdf", "PDF", "cdf", "Cdf", "CDF"))){
     stop("Please choose from the available graph types: 'pdf' or 'cdf'.")
@@ -135,8 +125,8 @@ duos_plot <- function(duos_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, i
   
   # Plotting implemented in helper functions
   if(type=="pdf"){
-    helper_duos_pdf_plot(duos_output, burnin, cri, data, interact, scale)
+    helper_duos_pdf_plot(duos_output, burnin, cri, data, interact)
   }else if (type=="cdf"){
-    helper_duos_cdf_plot(duos_output, burnin, cri, data, interact, scale)
+    helper_duos_cdf_plot(duos_output, burnin, cri, data, interact)
   }
 }

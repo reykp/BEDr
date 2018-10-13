@@ -3,7 +3,7 @@
 #' Calculates a variety of statistics from the \code{duos} density estimate.
 #'
 #' @usage 
-#' duos_stat(duos_output, stat = "m", p = NA, burnin = NA, scale = FALSE)
+#' duos_stat(duos_output, stat = "m", p = NA, burnin = NA)
 #' 
 #' @param duos_output The list returned by \code{duos} containing the density estimate results.
 #' @param stat A value indicating choice of statistic (see details).

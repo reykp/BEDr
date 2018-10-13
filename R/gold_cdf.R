@@ -6,7 +6,6 @@
 #' @param x A single value or vector of values at which to calculate the CDF. These values are to be entered on the scale of the data (i.e. values can fall outside of 0 and 1).
 #' @param gold_output The list returned by \code{gold} containing the density estimate results.
 #' @param burnin The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.
-#' @param scale This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).
 #'
 #' @export
 #'
@@ -30,7 +29,7 @@
 #' \item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
 #' \item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
 #' \item{\code{mat}}{A matrix containing the CDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
-#' \item{\code{x}}{A vector containing the values at which to estimate the CDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
+#' \item{\code{x}}{A vector containing the values at which to estimate the CDF. }
 #'
 #' @examples
 #'
@@ -69,7 +68,7 @@
 #' hist(cdf_norm$mat[, 4])
 
 
-gold_cdf <- function(x, gold_output, burnin=NA,scale=FALSE){
+gold_cdf <- function(x, gold_output, burnin=NA){
 
   #Get paramters
   G <- gold_output$G
@@ -216,7 +215,7 @@ gold_cdf <- function(x, gold_output, burnin=NA,scale=FALSE){
   # }
 
   #return results with original 'x' or 'x' after scaling
-  if(scale==FALSE & (min_y<0 | max_y>1)){
+  if((min_y<0 | max_y>1)){
     return(list(cdf=cdf_y_return, cri=cdf_y_perc_return, mat=G_CDF_return, x=input))
 
   }else{

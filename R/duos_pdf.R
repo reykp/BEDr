@@ -33,7 +33,7 @@
 #' \item{\code{pdf}}{A vector of the posterior mean PDF at each value in \code{x}.}
 #' \item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the PDF at each point in \code{x}.}
 #' \item{\code{mat}}{A matrix containing the PDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
-#' \item{\code{x}}{A vector containing the values at which to estimate the PDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
+#' \item{\code{x}}{A vector containing the values at which to estimate the PDF.}
 
 #' @examples
 
@@ -74,11 +74,8 @@
 #' #Plot a histogram of distribution of the posterior draws for the PDF estimate at 1
 #' hist(pdf_gamma$mat[,2])
 #' 
-#' # Data is scaled between 0 and 1 for the density estimation.
-#' # If \code{scale} = TRUE is requested, the \code{x} is returned on the scaled range.
-#' duos_pdf(x = c(0.4, 1, 2, 3), duos_gamma, scale = TRUE)$x1
 
-duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
+duos_pdf <- function(x, duos_output, burnin=NA){
 
   # Get the cut-point matrix
   C <- duos_output$C
@@ -160,10 +157,6 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
   # Scale 'x' to be between 0 and 1 if necessary
   if((min_y<0 | max_y>1)){
     input <<- (x-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
-  }else{
-    if(scale == TRUE){
-      stop("Scaling requested when no scaling was used.")
-    }
   }
 
   # Function to calculate pdf
@@ -197,7 +190,7 @@ duos_pdf <- function(x, duos_output, burnin=NA,scale=FALSE){
   pdf_y_perc <- apply(pdf_matrix, 1, quantile, probs=c(.025, .975))
 
   # PDF needs to be scaled correctly if data not between 0 and 1
-  if(scale==FALSE & (min_y<0 | max_y>1)){
+  if((min_y<0 | max_y>1)){
     pdf_y <- pdf_y/(max_y+scale_u-(min_y-scale_l))
     pdf_y_perc[1,] <- pdf_y_perc[1,]/(max_y+scale_u-(min_y-scale_l))
     pdf_y_perc[2,] <- pdf_y_perc[2,]/(max_y+scale_u-(min_y-scale_l))
