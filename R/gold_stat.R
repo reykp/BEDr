@@ -107,8 +107,14 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
   # Get the original data
   y_orig <- gold_output$y
   # Find max and minimums
-  min_y <<- min(y_orig)
-  max_y <<- max(y_orig)
+  #Find min and max of data
+  if(!is.null(gold_output[["poi"]])){
+    max_y <- max(y, gold_output$poi)
+    min_y <- min(y, gold_output$poi)
+  }else{
+    min_y <- min(y_orig)
+    max_y <- max(y_orig)
+  }
 
   # Get points at which to 
   x_gold <- gold_output$x

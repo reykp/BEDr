@@ -21,7 +21,7 @@ duos_cdf(x, duos_output, burnin = NA, scale = FALSE)
 \item{\code{cdf}}{A vector of the posterior mean CDF at each value in \code{x}.}
 \item{\code{cri}}{A matrix with 2 columns and a row for each value in \code{x}. It contains the 95\% credible interval for the CDF at each point in \code{x}.}
 \item{\code{mat}}{A matrix containing the CDF values for \code{x} at EACH iteration after the burnin is discarded. There is a column for each value in \code{x}.}
-\item{\code{x}}{A vector containing the values at which to estimate the CDF. If the data is not between 0 and 1 and scale=TRUE, the scaled version of \code{x} is returned.}
+\item{\code{x}}{A vector containing the values at which to estimate the CDF. }
 }
 \description{
 Calculates a posterior estimate of the CDF based on the output from \code{duos} for an individual
@@ -79,9 +79,5 @@ hist(cdf_norm$mat[, 4])
 
 # Find probability of being greater than 2
 1 - duos_cdf(2, duos_norm)$cdf
-
-# Data is scaled between 0 and 1 for the density estimation.
-# If 'scale' = TRUE is requested, the 'x' is returned on the scaled range.
-duos_cdf(x = c(-2, -1, 0, .8, 1.8), duos_norm, scale = TRUE)$x
 
 }

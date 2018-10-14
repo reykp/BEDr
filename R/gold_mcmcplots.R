@@ -10,6 +10,8 @@
 #' @param npar The number of paramters to plot. 3X3 grids of tracepltos are created (DEFAULT is 9).
 #' @param burnin The desired burnin to discard from the results. By default, it is 1 so that all iterations are plotted.
 #'
+#' @export
+#' 
 #' @details
 #'
 #' \strong{Options for} \code{type}
@@ -82,7 +84,7 @@
 #' duos_mcmcplots(duos_bimodal, type = "acf", parameters = "p", burnin = 10000)
 
 
-gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA){
+gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA){
   
   G_output <- gold_output$G
   
@@ -132,7 +134,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA
 
   
   if(type == "traceplot"){
-    graph_index <- ceiling((ncol(G)-1)/9)
+    graph_index <- ceiling((ncol(G)-1)/6)
     for (i in 1:graph_index) {
       
       
@@ -140,7 +142,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA
               geom_line(aes(Iteration, Simulation))+
               #geom_point(aes(Iteration, Simulation))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 3, nrow = 3, page = i,scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free"))
       
     }
   }else if (type == "acf"){
@@ -167,12 +169,12 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA
     acf_plot$Parameter <- as.factor(acf_plot$Parameter)
     acf_plot$Parameter <- factor(acf_plot$Parameter, levels = c(parameters))
     
-    graph_index <- ceiling((ncol(G)-1)/9)
+    graph_index <- ceiling((ncol(G)-1)/6)
     
     for (i in 1:graph_index) {
       
       print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
-              geom_hline(aes(yintercept = 0)) +
+              geom_hline(aes(yintercept = 0))+
               geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
               facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
@@ -184,48 +186,40 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA
  }else if (type %in% c("rm", "RM")){
     
       
-      if(parameters %in% c("c", "C")){
       # Remove burnin
       if(burnin>1){
-        C <- data.frame(C_output[{burnin+1}:nrow(C_output),])
+        G <- data.frame(G_output[{burnin+1}:nrow(G_output),])[,parameters]
       }else{
-        C <- data.frame(C_output[{burnin}:nrow(C_output),])
+        G <- data.frame(G_output[{burnin}:nrow(G_output),])[,parameters]
         
       }
       
       # Calculate running means
-      C_RM <- apply(C, 2, function(x) cumsum(x)/seq_along(x))
+      G_RM <- apply(G, 2, function(x) cumsum(x)/seq_along(x))
       
       # Convert to data frame
-      C_RM <- data.frame(C_RM)
+      G_RM <- data.frame(G_RM)
       # Add iteration
       if(burnin>1){
-        C_RM$Iteration <- {burnin+1}:nrow(C_output)
+        G_RM$Iteration <- {burnin+1}:nrow(G_output)
       }else{
-        C_RM$Iteration <- burnin:nrow(C_output)
+        G_RM$Iteration <- burnin:nrow(G_output)
       }
       
-      
+    
       # Stack all variables into one column
-      C_plot <- C_RM %>% gather(Parameter, RunningMean,-Iteration)
+      G_plot <- G_RM %>% gather(Parameter, RunningMean,-Iteration)
       # Remove X from the name
-      C_plot$Parameter <- gsub("X", "", C_plot$Parameter)
+      G_plot$Parameter <- gsub("X", "", G_plot$Parameter)
       
       # Order parameters correctly
-      C_plot$Parameter <- as.factor(C_plot$Parameter)
-      C_plot$Parameter <- factor(C_plot$Parameter, levels=c(1:ncol(C)))
+      G_plot$Parameter <- as.factor(G_plot$Parameter)
+      G_plot$Parameter <- factor(G_plot$Parameter, levels=c(parameters))
       
-      if(plots=="all"){  
-      # Print plot
-      print(ggplot(C_plot)+
-              geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
-              theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean"))
-    }else if (plots=="indiv"){
-      
-      graph_index <- ceiling(ncol(C)/6)
+      graph_index <- ceiling(ncol(G)/6)
       for (i in 1:graph_index) {
         
-        print((ggplot(C_plot)+
+        print((ggplot(G_plot)+
                    geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
                 facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
@@ -233,58 +227,5 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 9, burnin=NA
         
       }
     }
-  }else if(parameters %in% c("p", "P")){
-    # Remove burnin
-    if(burnin>1){
-      P <- data.frame(P_output[{burnin+1}:nrow(P_output),])
-    }else{
-      P <- data.frame(P_output[{burnin}:nrow(P_output),])
-      
-    }
-    
-    # Calculate running means
-    P_RM <- apply(P, 2, function(x) cumsum(x)/seq_along(x))
-    
-    # Convert to data frame
-    P_RM <- data.frame(P_RM)
-    # Add iteration
-    if(burnin>1){
-      P_RM$Iteration <- {burnin+1}:nrow(P_output)
-    }else{
-      P_RM$Iteration <- burnin:nrow(P_output)
-    }
-    
-    
-    # Stack all variables into one column
-    P_plot <- P_RM %>% gather(Parameter, RunningMean,-Iteration)
-    # Remove X from the name
-    P_plot$Parameter <- gsub("X", "", P_plot$Parameter)
-    
-    # Order parameters correctly
-    P_plot$Parameter <- as.factor(P_plot$Parameter)
-    P_plot$Parameter <- factor(P_plot$Parameter, levels=c(1:ncol(P)))
-    
-    if(plots=="all"){  
-      # Print plot
-      print(ggplot(P_plot)+
-              geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
-              theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean"))
-    }else if (plots=="indiv"){
-      
-      graph_index <- ceiling(ncol(P)/6)
-      for (i in 1:graph_index) {
-        
-        print((ggplot(P_plot)+
-                 geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
-                 theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                 facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
-        
-        
-      }
-    
-      }
   }
-  }
-}
-  
 

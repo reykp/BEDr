@@ -4,38 +4,38 @@
 \alias{gold}
 \title{Bayesian Density Estimation Using \code{gold} (Gaussian process On a Log Density).}
 \usage{
-gold(y, s1, c1, s2, c2, MH_N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
+gold(y, s1, c1, s2, c2, N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
 }
 \arguments{
 \item{y}{A numeric vector. \code{gold} estimates the density on this data.}
 
 \item{s1}{The standard deviation of the Gaussian prior.}
 
-\item{c1}{The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure.}
+\item{c1}{The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure and smoothness in the density estimate.}
 
 \item{s2}{The standard deviation of the Gaussian proposal distribution.}
 
 \item{c2}{The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.}
 
-\item{MH_N}{he number of iterations to run in the algorithm. The default is 20,000.}
+\item{N}{The number of iterations to run in the algorithm. The default is 20,000.}
 
 \item{graves}{An option to have the standard deviation of the proposal distribution (s1) chosen using an automatic step size selection (See Graves (2011)) (DEFAULT is FALSE).}
 
 \item{scale_l}{A value >= 0 controlling the scaling based on the minimum data value. The default is 0.00001 (see details).}
 
-\item{poi}{Points of interest to estimate the density at. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf}  and \code{gold_cdf} only return the posterior draws if the density is estimated at that point.}
+\item{scale_u}{value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).}
 
-\item{A}{value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).}
+\item{poi}{Points of interest at which to estimate the density. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf}  and \code{gold_cdf} only return the posterior draws if the density is estimated at that point.}
 }
 \value{
 \code{gold} returns a list containing the density estimate results.
 
-\item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations.}
-\item{\code{widths}}{A vector with the widths around each x used for g(x). These are the widths used in the weighted average used to estimate the integral in the normalizing constant.}
+\item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations. The number of columns is the number of data points plus the grid points.}
+\item{\code{widths}}{A vector with the widths around each x used for g(x). These are the widths used in the weighted average to estimate the integral in the normalizing constant.}
 \item{\code{x}}{A vector with the points at which g(x) was estimated.}
 \item{\code{y}}{A vector containing the data introduced to \code{gold} for density estimation.}
 \item{\code{ar}}{The acceptance rate from the random walk proposals.}
-\item{\code{prior}}{A vector of all prior parameter values.}
+\item{\code{prior}}{A vector of all prior and proposal parameter values.}
 \item{\code{poi}}{The points of interest if \code{poi} is non-missing.}
 }
 \description{
@@ -55,7 +55,7 @@ This density operates on data between 0 and 1. Thus, if the input is not between
 
  \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
  
- Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.0001.
+ Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.00001 since some densities cannot be estimated at 0 and 1.
 }
 \examples{
 
@@ -66,10 +66,10 @@ This density operates on data between 0 and 1. Thus, if the input is not between
 # First run 'gold' on data sampled from a Beta(5, 1) distribution with 200 data points.
 y <- rbeta(200, 5, 1)
 # Specify all prior parameters and tune s2 until a reasonable acceptance rate is achieved
-gold_beta <- gold(y = y, s1 = 1, c1 = 0.8, s2 = 0.2, c2 = 0.5, MH_N = 20000)
+gold_beta <- gold(y = y, s1 = 1, c1 = 2, s2 = 0.2, c2 = 0.5, N = 20000)
 
 # Check trace plots
-gold_traceplot(gold_beta)
+gold_mcmcplots(gold_beta)
 
 # Examine the estimate of the PDF
 gold_plot(gold_beta, data = TRUE)
@@ -85,13 +85,13 @@ gold_plot(gold_beta, type = "cdf", data = TRUE)
 y <- rnorm(100, 0, 1)
 # Specify all prior parameters except s2. Use graves instead to choose s2 to achieve a reasonable acceptance rate
 # Set the upper and lower scaling parameters to the standard deviation of the data
-gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, MH_N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
+gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
 
 # Check what s2 was chosen
 gold_norm$prior
 
-# Check trace plots
-gold_traceplot(gold_norm)
+# Check acf plots
+gold_mcmcplots(gold_norm, type = "acf")
 
 # Examine the estimate of the PDF with credible intervals
 gold_plot(gold_norm, cri = TRUE)
@@ -119,8 +119,8 @@ for(i in 1:400){
 # Specify several points of interest
 gold_bimodal <- gold(y = y, s1 = 1, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5))
 
-# Check the trace plots
-gold_traceplot(gold_bimodal)
+# Check the running mean plots
+gold_mcmcplots(gold_bimodal, type = "rm")
 
 # Plot the PDF with the data and credible intervals
 gold_plot(gold_bimodal, data = TRUE, cri = TRUE)

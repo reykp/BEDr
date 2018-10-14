@@ -4,7 +4,7 @@
 \alias{duos_stat}
 \title{Statistics for \code{duos}}
 \usage{
-duos_stat(duos_output, stat = "m", p = NA, burnin = NA, scale = FALSE)
+duos_stat(duos_output, stat = "m", p = NA, burnin = NA)
 }
 \arguments{
 \item{duos_output}{The list returned by \code{duos} containing the density estimate results.}

@@ -5,7 +5,7 @@
 \title{Plot PDF or CDF}
 \usage{
 gold_plot(gold_output, type = "pdf", burnin = NA, cri = FALSE,
-  data = FALSE, interact = FALSE, scale = FALSE)
+  data = FALSE, interact = FALSE)
 }
 \arguments{
 \item{gold_output}{The list returned by \code{gold} containing the density estimate results.}

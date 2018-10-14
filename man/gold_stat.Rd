@@ -4,7 +4,7 @@
 \alias{gold_stat}
 \title{Statistics from GOLD.}
 \usage{
-gold_stat(stat, gold_output, p = NA, burnin = NA, scale = FALSE)
+gold_stat(stat, gold_output, p = NA, burnin = NA)
 }
 \arguments{
 \item{stat}{A value indicating choice of statistic (see details).}
@@ -14,8 +14,6 @@ gold_stat(stat, gold_output, p = NA, burnin = NA, scale = FALSE)
 \item{p}{A list of quantiles if quantiles are requested (see details).}
 
 \item{burnin}{The desired burnin to discard from the results. If no values is entered, the default is half the number of iterations.}
-
-\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscalled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
 \value{
 \code{gold_stat} the statistic of choice and the credible intervals associated with it.

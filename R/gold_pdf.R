@@ -81,8 +81,13 @@ gold_pdf <- function(x, gold_output, burnin = NA){
   input <- x
 
   #Find min and max of data
-  min_y <- min(y_orig)
-  max_y <- max(y_orig)
+  if(!is.null(gold_output[["poi"]])){
+    max_y <- max(y, gold_output$poi)
+    min_y <- min(y, gold_output$poi)
+  }else{
+    min_y <- min(y_orig)
+    max_y <- max(y_orig)
+  }
 
   scale_l <- gold_output$scale_l
   scale_u <- gold_output$scale_u

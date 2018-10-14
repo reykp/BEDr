@@ -13,7 +13,7 @@
 #'
 #' @export
 #' @importFrom ggforce facet_wrap_paginate
-#' @importFrom dplyr group_by summarise %>%
+#' @importFrom dplyr group_by summarise %>% filter
 #' @importFrom tidyr gather
 #' @details
 #'

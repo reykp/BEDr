@@ -4,7 +4,7 @@
 \alias{duos_plot}
 \title{Plot PDF or CDF}
 \usage{
-duos_plot(duos_output, type = "pdf", burnin = NA, cri = FALSE, data = FALSE, interact = FALSE, scale = FALSE)
+duos_plot(duos_output, type = "pdf", burnin = NA, cri = FALSE, data = FALSE, interact = FALSE)
 }
 \arguments{
 \item{duos_output}{The list returned by \code{duos} containing the density estimate results.}
@@ -18,8 +18,6 @@ duos_plot(duos_output, type = "pdf", burnin = NA, cri = FALSE, data = FALSE, int
 \item{data}{An option to include data in the graph (see details).}
 
 \item{interact}{An option to make the plots interactive. The default is FALSE.}
-
-\item{scale}{This value TRUE/FALSE indicates whether to return scaled or unscaled results IF the original data does not fall between 0 and 1. The default is FALSE (i.e. returns results on the original data scale).}
 }
 \value{
 A plot of the PDF or CDF estimate.
@@ -58,13 +56,6 @@ Provides the PDF or CDF plot in an interactive setting using \code{plotly}.
 \itemize{
     \item \code{"FALSE"}: No interactivity (DEFAULT).
     \item \code{"TRUE"}: Allows for zooming in on locations and running mouse over plot to see PDF or CDF values.
-  }
-
-\strong{Options for} \code{scale}
-The data is scaled between 0 and 1 to estimate the density. The plot can be created on the scale of the data or the scaled version (if scaling was necessary).
-\itemize{
-    \item \code{"FALSE"}: Plots are created on the scale of \code{y}.
-    \item \code{"TRUE"}: The x-axis on the plot is scaled to be between 0 and 1.
   }
 }
 \examples{
@@ -128,6 +119,4 @@ duos_plot(duos_bimodal, cri=TRUE, data=TRUE)
 # Plot the CDF interactively
 duos_plot(duos_bimodal, type = "cdf", interact = TRUE)
 
-# Plot the PDF on the scale between 0 and 1
-duos_plot(duos_bimodal, type = "pdf", scale = TRUE, data = TRUE)
 }

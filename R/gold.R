@@ -3,18 +3,18 @@
 #' Estimates a density from Bayesian techniques using a Gaussian process on a log density.
 #' 
 #' @usage 
-#' gold(y, s1, c1, s2, c2, MH_N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
+#' gold(y, s1, c1, s2, c2, N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
 #'
 #' @param y A numeric vector. \code{gold} estimates the density on this data.
 #' @param s1 The standard deviation of the Gaussian prior.
-#' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure.
+#' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure and smoothness in the density estimate.
 #' @param s2 The standard deviation of the Gaussian proposal distribution.
 #' @param c2 The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.
-#' @param MH_N he number of iterations to run in the algorithm. The default is 20,000.
+#' @param N The number of iterations to run in the algorithm. The default is 20,000.
 #' @param graves An option to have the standard deviation of the proposal distribution (s1) chosen using an automatic step size selection (See Graves (2011)) (DEFAULT is FALSE).
 #' @param scale_l A value >= 0 controlling the scaling based on the minimum data value. The default is 0.00001 (see details).
-#' @param A value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).
-#' @param poi Points of interest to estimate the density at. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf}  and \code{gold_cdf} only return the posterior draws if the density is estimated at that point.
+#' @param scale_u value >= 0 controlling the scaling based on the maximum data value. The default is 0.00001 (see details).
+#' @param poi Points of interest at which to estimate the density. \code{gold_pdf} will produce estimates and credible intervals of the density at any point, but \code{mat} returned by \code{gold_pdf}  and \code{gold_cdf} only return the posterior draws if the density is estimated at that point.
 #'
 #' @export
 #' @importFrom matrixcalc svd.inverse
@@ -35,18 +35,18 @@
 #'
 #'  \deqn{(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))}.
 #'  
-#'  Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.0001.
+#'  Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.00001 since some densities cannot be estimated at 0 and 1.
 #'   
 #' @return
 #'
 #' \code{gold} returns a list containing the density estimate results.
 #'
-#' \item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations.}
-#' \item{\code{widths}}{A vector with the widths around each x used for g(x). These are the widths used in the weighted average used to estimate the integral in the normalizing constant.}
+#' \item{\code{G}}{A matrix with the posterior draws for g(x) at a finite number of points. The number of rows is the number of iterations. The number of columns is the number of data points plus the grid points.}
+#' \item{\code{widths}}{A vector with the widths around each x used for g(x). These are the widths used in the weighted average to estimate the integral in the normalizing constant.}
 #' \item{\code{x}}{A vector with the points at which g(x) was estimated.}
 #' \item{\code{y}}{A vector containing the data introduced to \code{gold} for density estimation.}
 #' \item{\code{ar}}{The acceptance rate from the random walk proposals.}
-#' \item{\code{prior}}{A vector of all prior parameter values.}
+#' \item{\code{prior}}{A vector of all prior and proposal parameter values.}
 #' \item{\code{poi}}{The points of interest if \code{poi} is non-missing.}
 #'
 #' @references 
@@ -62,10 +62,10 @@
 #' # First run 'gold' on data sampled from a Beta(5, 1) distribution with 200 data points.
 #' y <- rbeta(200, 5, 1)
 #' # Specify all prior parameters and tune s2 until a reasonable acceptance rate is achieved
-#' gold_beta <- gold(y = y, s1 = 1, c1 = 0.8, s2 = 0.2, c2 = 0.5, MH_N = 20000)
+#' gold_beta <- gold(y = y, s1 = 1, c1 = 2, s2 = 0.2, c2 = 0.5, N = 20000)
 #'
 #' # Check trace plots
-#' gold_traceplot(gold_beta)
+#' gold_mcmcplots(gold_beta)
 #'
 #' # Examine the estimate of the PDF
 #' gold_plot(gold_beta, data = TRUE)
@@ -81,13 +81,13 @@
 #' y <- rnorm(100, 0, 1)
 #' # Specify all prior parameters except s2. Use graves instead to choose s2 to achieve a reasonable acceptance rate
 #' # Set the upper and lower scaling parameters to the standard deviation of the data
-#' gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, MH_N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
+#' gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
 #'
 #' # Check what s2 was chosen
 #' gold_norm$prior
 #' 
-#' # Check trace plots
-#' gold_traceplot(gold_norm)
+#' # Check acf plots
+#' gold_mcmcplots(gold_norm, type = "acf")
 #'
 #' # Examine the estimate of the PDF with credible intervals
 #' gold_plot(gold_norm, cri = TRUE)
@@ -113,10 +113,10 @@
 #' 
 #' # First run 'gold' on data sampled from a bimodal distribution with 200 data points.
 #' # Specify several points of interest
-#' gold_bimodal <- gold(y = y, s1 = 1, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5))
+#' gold_bimodal <- gold(y = y, s1 = 1, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5), scale_l = .5, scale_u = .5)
 #'
-#' # Check the trace plots
-#' gold_traceplot(gold_bimodal)
+#' # Check the running mean plots
+#' gold_mcmcplots(gold_bimodal, type = "rm")
 #' 
 #' # Plot the PDF with the data and credible intervals
 #' gold_plot(gold_bimodal, data = TRUE, cri = TRUE)
@@ -132,24 +132,35 @@
 #' # x = 6.5
 #' hist(bimodal_cdf$mat[,2])
 
-gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001, poi = NA){
+gold <- function(y, s1, c1, s2, c2, N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001, poi = NA){
   
   # All error checking ********************************************************************
     
-  # Error check for appropriate range of parameters
-  if(s1<=0){
-    stop("s1 needs to be greater than 0.")
+  # No missing values in y
+  if(length(which(is.na(y))) > 0){
+    stop(" 'y' cannot contain missing values.")
   }
   
+  # Error check for appropriate range of parameters
+  if(s1<=0){
+    stop(" 's1' should be > 0.")
+  }
+
   if(c1 < 0){
-    stop("c1 cannot be negative.")
+    stop(" 'c1' should be >= 0.")
   }
   
   
   if(c2 < 0){
-    stop("c2 cannot be negative.")
+    stop(" 'c2' should be >= 0.")
   }
   
+  if (scale_l < 0.0) {
+    stop(" 'scale_l' should be >= 0.")
+  }
+  if (scale_u < 0.0) {         	# scale paramter needs to be greater than or equal to 0
+    stop(" 'scale_u' should be >= 0.")
+  }
   
   # Make sure numbers in 'poi' are unique, otherwise throws algorithm off  
   if(!is.na(poi[1])){
@@ -157,29 +168,34 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
     if(length(unique(poi))!=length(poi)){
       stop("The values in 'poi' are not unique.")
     }
+    
+    # Check for missing values
+    if(length(which(is.na(poi))) > 0){
+      stop(" 'poi' cannot contain missing values.")
+    }
   }else{
     total_length <- length(y)
   }
   
+  # Print a warning if choose graves, but also specify a value for 's2'
+  if(graves == TRUE){
+  if(!is.na(s2)){
+    warning(" 'graves' == TRUE. Specified value for 's2' will be ignored.")
+  }
+  }
     
-  # Scale paramters needs to be greater than or equal to 0
-  if (scale_l < 0.0) {
-    stop("Scale parameter should be >= 0.")
-  }
-  if (scale_u < 0.0) {         	# scale paramter needs to be greater than or equal to 0
-    stop("Scale parameter should be >= 0.")
-  }
-
-  # Make sure MH_N is an integer 
-  if(MH_N/ceiling(MH_N)<1){
-    stop("MH_N should be an integer value.")
+  # Make sure N is an integer 
+  if(N/ceiling(N)<1){
+    stop(" 'N' should be an integer value.")
   }
   
-  # Make sure MH_N is greater than 0
-  if(MH_N<=0){
-    stop("MH_N should be an integer greater than zero.")
+  # Make sure N is greater than 0
+  if(N<=0){
+    stop(" 'N' should be an integer greater than zero.")
   }
   
+  
+  #### end of error checking
   
   # Create vector to contain original data
   y_orig <- NA
@@ -189,9 +205,18 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
 
   # Sort the data
   y_orig <- sort(y_orig)
+  
   # Find the maximum and minimum
-  max_y <- max(y)
-  min_y <- min(y)
+  # If points of interest are specified outside the range of the data, 
+  # This needs to be incorporated into the max and min otherwise the standardized
+  # valeus for 'poi' might be greater than 1 or less than 0
+  if(!is.na(poi[1])){
+    max_y <- max(y, poi)
+    min_y <- min(y, poi)
+  }else{
+    max_y <- max(y)
+    min_y <- min(y)
+  }
 
   # Mark positions that are data
   names(y_orig) <- rep("data", length(y_orig))
@@ -202,12 +227,12 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
   } else{
     names(poi) <- rep("poi", length(poi))
     y_all_orig <- sort(c(y_orig, poi))
-    
   }
   
-  # y_all becomes the scaled data
+  # y_all becomes the scaled data between 0 and 1 to use in the algorithm
   y_all <- y_all_orig
-  # Check if data is outside (0,1) range
+  
+  # Check if data is outside (0,1) range and scale it if it is
   if((max_y>1)|(min_y<0)){
     for(j in 1:length(y_all_orig)){
       y_all[j] <- (y_all_orig[j]-(min_y-scale_l))/(max_y+scale_u-(min_y-scale_l))
@@ -222,7 +247,7 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
   x_full <- x_full/100
 
   # Will eventually remove end points, but just need for calculating bin widths
-  # Mark positions that are the grid
+  # Mark positions that are the grid and the end points
   names(x_full) <- rep("grid", length(x_full))
   names(x_full)[1] <- "end"
   names(x_full)[length(x_full)] <- "end"
@@ -233,14 +258,15 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
 
   # Get summary of data to count how many times each data point appeared
   y_d <- data.frame(y_all_orig,y_all, names(y_all_orig))
+  names(y_d) <- c("y_all_orig", "y_all", "names.y_all_orig.")
   y_d <- y_d %>% group_by(y_all_orig,y_all, names.y_all_orig.) %>% summarise(n=n()) 
 
   # Data to add to grid
   y_add <- y_d$y_all
-  # Maintain "data" and "poi"
+  # Maintain names of data points: "data" and "poi"
   names(y_add) <- y_d$names.y_all_orig.
 
-  # if contains "poi", remove rows from y_d that are 'poi' since y_d used in likelihood
+  # if contains "poi", remove rows since this data set should contain only the 'y' input
   if(length(which(y_d$names.y_all_orig.=="poi"))!=0){
     y_d <- y_d %>% filter(names.y_all_orig. != "poi")
   }
@@ -282,7 +308,6 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
   }
   x_full <- c(0,x,1)
 
-
   # Calculate the midpoints of the remaining points
   midpoints <- NA
   for (i in 1:(length(x)+1)){
@@ -314,7 +339,7 @@ gold <- function(y, s1, c1, s2, c2, MH_N = 20000, graves=FALSE, scale_l = .00001
 
   # Use SVD
   cov_prior_inv <- matrixcalc::svd.inverse(cov_prior)
-  G <- matrix(0, nrow=MH_N, ncol=length(x))
+  G <- matrix(0, nrow=N, ncol=length(x))
   
   # Starting values
   G[1,] <-rep(0, ncol(G))
@@ -425,7 +450,7 @@ for (i in 1:ncol(cov_x)){
   cov_x[i,i] <- cov_x[i,i]+.0000000000001
 }
 
-####SVD#####################
+####SVD for multivariate proposals#####################
 n <- 1
 mu <- rep(0, length(x))
 tol = 1e-06
@@ -444,7 +469,7 @@ ar_G <- NA
 which_x <- which(names(x)=="data")
 
 # Metropolis-Hastings algorithm
-for (i in 2:MH_N){
+for (i in 2:N){
 
     # Simulate length(x) values from standard normal
     rw <- matrix(rnorm(p * n), n)

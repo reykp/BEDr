@@ -83,8 +83,14 @@ gold_cdf <- function(x, gold_output, burnin=NA){
   input <- x
 
   #Calculate minimum and maximum
-  min_y <- min(y_orig)
-  max_y <- max(y_orig)
+  #Find min and max of data
+  if(!is.null(gold_output[["poi"]])){
+    max_y <- max(y, gold_output$poi)
+    min_y <- min(y, gold_output$poi)
+  }else{
+    min_y <- min(y_orig)
+    max_y <- max(y_orig)
+  }
 
   scale_l <- gold_output$scale_l
   scale_u <- gold_output$scale_u
