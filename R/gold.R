@@ -3,11 +3,11 @@
 #' Estimates a density from Bayesian techniques using a Gaussian process on a log density.
 #' 
 #' @usage 
-#' gold(y, s1, c1, s2, c2, N = 20000, graves = FALSE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
+#' gold(y, s1 = 2, c1 = max([n/50], 1), s2 = NA, c2 = c1/2, N = 20000, graves = TRUE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
 #'
 #' @param y A numeric vector. \code{gold} estimates the density on this data.
-#' @param s1 The standard deviation of the Gaussian prior.
-#' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure and smoothness in the density estimate.
+#' @param s1 The standard deviation of the Gaussian prior. The default is 2..
+#' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure and smoothness in the density estimate. See details for the defaul value.
 #' @param s2 The standard deviation of the Gaussian proposal distribution.
 #' @param c2 The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.
 #' @param N The number of iterations to run in the algorithm. The default is 20,000.
@@ -37,6 +37,11 @@
 #'  
 #'  Values of 0 for the scale parameters indicates the density will only be the edges of the data in \code{y}. The default for \code{scale_l} and \code{scale_u} is 0.00001 since some densities cannot be estimated at 0 and 1.
 #'   
+#' There is a default recommendation based on the size of \code{y}. The recommendation starts and 1 and then increases by 1 for each additional 50 data points:
+#' 
+#' Default: c1 = max(round(n/50), 1)
+#' 
+#' 
 #' @return
 #'
 #' \code{gold} returns a list containing the density estimate results.
@@ -61,8 +66,9 @@
 #'
 #' # First run 'gold' on data sampled from a Beta(5, 1) distribution with 200 data points.
 #' y <- rbeta(200, 5, 1)
-#' # Specify all prior parameters and tune s2 until a reasonable acceptance rate is achieved
-#' gold_beta <- gold(y = y, s1 = 1, c1 = 2, s2 = 0.2, c2 = 0.5, N = 20000)
+#' # Use all defaults: this also uses Graves method to tune the standard deviation for the proposal
+#' # distribution.
+#' gold_beta <- gold(y = y)
 #'
 #' # Check trace plots
 #' gold_mcmcplots(gold_beta)
@@ -79,9 +85,8 @@
 #'
 #' # First run 'gold' on data sampled from a Normal(0, 1) distribution with 100 data points.
 #' y <- rnorm(100, 0, 1)
-#' # Specify all prior parameters except s2. Use graves instead to choose s2 to achieve a reasonable acceptance rate
-#' # Set the upper and lower scaling parameters to the standard deviation of the data
-#' gold_norm <- gold(y = y, s1 = 1, c1 = 1, c2 = 0.5, N = 20000, graves = TRUE, scale_l = sd(y), scale_u = sd(y))
+#' # Specify all prior parameters: tune until achieve desired acceptance rate
+#' gold_norm <- gold(y = y, s1 = 2, c1 = 1, s2 = 2, c2 = 0.5, N = 20000, graves = FALSE, scale_l = 2*sd(y), scale_u = 2*sd(y))
 #'
 #' # Check what s2 was chosen
 #' gold_norm$prior
@@ -113,7 +118,8 @@
 #' 
 #' # First run 'gold' on data sampled from a bimodal distribution with 200 data points.
 #' # Specify several points of interest
-#' gold_bimodal <- gold(y = y, s1 = 1, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5), scale_l = .5, scale_u = .5)
+#' # USe graves, but use less correlation then default by making 'c1' large.
+#' gold_bimodal <- gold(y = y, s1 = 2, c1 = 15, c2 = 7, graves = TRUE, poi = c(0, 6.5), scale_l = .5, scale_u = .5)
 #'
 #' # Check the running mean plots
 #' gold_mcmcplots(gold_bimodal, type = "rm")
@@ -132,10 +138,19 @@
 #' # x = 6.5
 #' hist(bimodal_cdf$mat[,2])
 
-gold <- function(y, s1, c1, s2, c2, N = 20000, graves=FALSE, scale_l = .00001, scale_u = .00001, poi = NA){
+gold <- function(y, s1 = 2, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, scale_l = .00001, scale_u = .00001, poi = NA){
+  
+  # Specify default for c1 if missing
+  if(is.na(c1)){
+    c1 <- max(round(length(y)/50),1)
+  }
+  
+  if(is.na(c2)){
+    c2 <- c1/2
+  }
   
   # All error checking ********************************************************************
-    
+  
   # No missing values in y
   if(length(which(is.na(y))) > 0){
     stop(" 'y' cannot contain missing values.")

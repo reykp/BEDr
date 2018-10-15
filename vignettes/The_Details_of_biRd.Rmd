@@ -495,6 +495,8 @@ The code below creates data from each of the nine densitites described above. Fo
 # 
 # # Exponential
 # y_exp <- rexp(n, 1)
+# # Exponential
+# y_exp_200 <- rexp(200, 1)
 # 
 # # Arcsin
 # y_arcsin <- rbeta(n, 0.5, 0.5)
@@ -516,6 +518,24 @@ The code below creates data from each of the nine densitites described above. Fo
 #         y_bimodal[i] <- rnorm(1, 4, 1)
 #       }
 #   }
+
+# Bimodal
+# n <- 400
+#   # Sample from uniform
+#   u <- runif(n)
+# 
+#   # Variable to store data
+#   y_bimodal_400 <- rep(NA,n)
+# 
+#   # Sampling from the mixture
+#   for(i in 1:n){
+#       if(u[i]<.3){
+#         y_bimodal_400[i] <- rnorm(1, 0, 1)
+#       }else {
+#         y_bimodal_400[i] <- rnorm(1, 4, 1)
+#       }
+#   }
+# write.csv(y_bimodal_400, "Data/y_bimodal_400.csv", row.names=FALSE)
 # 
 # # Jagged
 #   y1 = 1.5
@@ -668,6 +688,60 @@ y_jagged_350 <- read.csv("Data/y_jagged_350.csv")[,1]
 y_unif_500 <- read.csv("Data/y_unif_500.csv")[,1]
 y_arcsin_50 <- read.csv("Data/y_arcsin_50.csv")[,1]
 y_trimodal_200 <- read.csv("Data/y_trimodal_200.csv")[,1]
+y_bimodal_400 <- read.csv("Data/y_bimodal_400.csv")[,1]
+y_exp_200 <- read.csv("Data/y_exp_200.csv")[,1]
+g1 <- ggplot(data.frame(y_unif_50), aes(y_unif_50))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Uniform: n = 50")
+
+g4 <- ggplot(data.frame(y_bimodal_400), aes(y_bimodal_400))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Bimodal: n = 400")
+
+g2 <- ggplot(data.frame(y_normal), aes(y_normal))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Normal: n = 100")
+
+g3 <- ggplot(data.frame(y_exp_200), aes(y_exp_200))+geom_histogram(color="black", fill = "grey", bins = 20)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "none")+ggtitle("Exponential: n = 200")
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_GoldTest.jpg", width=1094, height=541)
+grid.arrange(g1, g2, g3, g4)
+dev.off()
+
 
 g1 <- ggplot(data.frame(y_unif_50), aes(y_unif_50))+geom_histogram(color="black", fill = "grey", bins = 20)+
   theme_bw()+
@@ -720,7 +794,6 @@ g3 <- ggplot(data.frame(y_trimodal_200), aes(y_trimodal_200))+geom_histogram(col
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_DuosTest.jpg", width=1094, height=541)
 grid.arrange(g1, g2, g3, g4)
 dev.off()
-
 ```
 
 The function to start with is `duos`. This is the function that runs the actual Gibbs algorithm. Prior values are set in this function as well as the number of iterations. 
@@ -1477,8 +1550,88 @@ dev.off()
 duos_unif_mean <- duos_stat(duos_unif_50)
 ```
 
+#### All distributions
+
+```{r, eval = FALSE}
+duos_unif_all <- duos(y = distr_gather$value[distr_gather$variable=="Uniform"], k = 3)
+#save(duos_unif_all, file = "R Objects/duos_unif_all.RData")
+duos_beta_all <- duos(y = distr_gather$value[distr_gather$variable=="Beta"])
+#save(duos_beta_all, file = "R Objects/duos_beta_all.RData")
+duos_normal_all <- duos(y = distr_gather$value[distr_gather$variable=="Normal"], 
+                        scale_l = 2*sd(distr_gather$value[distr_gather$variable=="Normal"]),
+                        scale_u = 2*sd(distr_gather$value[distr_gather$variable=="Normal"]))
+#save(duos_normal_all, file = "R Objects/duos_normal_all.RData")
+duos_exponential_all <- duos(y = distr_gather$value[distr_gather$variable=="Exponential"])
+#save(duos_beta_all, file = "R Objects/duos_beta_all.RData")
+
+duos_arcsin_all <- duos(y = distr_gather$value[distr_gather$variable=="Arcsin"])
+#save(duos_arcsin_all, file = "R Objects/duos_arcsin_all.RData")
+
+duos_bimodal_all <- duos(y = distr_gather$value[distr_gather$variable=="Bimodal"], k = 7)
+#save(duos_bimodal_all, file = "R Objects/duos_bimodal_all.RData")
+
+
+duos_jagged_all <- duos(y = distr_gather$value[distr_gather$variable=="Jagged"], k = 8)
+#save(duos_jagged_all, file = "R Objects/duos_jagged_all.RData")
+
+duos_trimodal_all <- duos(y = distr_gather$value[distr_gather$variable=="Trimodal"])
+#save(duos_trimodal_all, file = "R Objects/duos_trimodal_all.RData")
+
+duos_claw_all <- duos(y = distr_gather$value[distr_gather$variable=="Claw"], k = 10,
+                      scale_l = 0.5, scale_u = 0.5)
+#save(duos_claw_all, file = "R Objects/duos_claw_all.RData")
+
+```
+
+```{r}
+load("R Objects/duos_claw_all.RData")
+load("R Objects/duos_unif_all.RData")
+load("R Objects/duos_jagged_all.RData")
+load("R Objects/duos_trimodal_all.RData")
+load("R Objects/duos_beta_all.RData")
+load("R Objects/duos_bimodal_all.RData")
+load("R Objects/duos_arcsin_all.RData")
+load("R Objects/duos_normal_all.RData")
+load("R Objects/duos_exp.RData")
+
+p1 <- duos_plot(duos_unif_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform PDF")
+p2 <- duos_plot(duos_beta_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta PDF")
+p3 <- duos_plot(duos_normal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal PDF")
+p4 <- duos_plot(duos_exp, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential PDF")
+p5 <- duos_plot(duos_arcsin_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin PDF")
+p6 <- duos_plot(duos_bimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal PDF")
+p7 <- duos_plot(duos_jagged_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged PDF")
+p8 <- duos_plot(duos_trimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal PDF")
+p9 <- duos_plot(duos_claw_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw PDF")
+
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Duos_All_PDF.jpg", width=1094, height=541)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
+dev.off()
+
+p1 <- duos_plot(duos_unif_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform CDF")
+p2 <- duos_plot(duos_beta_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta CDF")
+p3 <- duos_plot(duos_normal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal CDF")
+p4 <- duos_plot(duos_exp, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential CDF")
+p5 <- duos_plot(duos_arcsin_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin CDF")
+p6 <- duos_plot(duos_bimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal CDF")
+p7 <- duos_plot(duos_jagged_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged CDF")
+p8 <- duos_plot(duos_trimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal CDF")
+p9 <- duos_plot(duos_claw_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw CDF")
+
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Duos_All_CDF.jpg", width=1094, height=541)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
+dev.off()
+```
+
 ### Gold
 
+
+```{r}
+#Test on Uniform, Normal, Exp, Bimodal 
+#xxxxxxx
+```
 #### Density Estimation
 
 #### Convergence Diagnostics

@@ -1,4 +1,4 @@
-#' Estimate of CDF from GOLD
+#' Estimate of CDF from \code{gold}
 #'
 #' Calculates a posterior estimate of the CDF based on the output from \code{gold} for an individual
 #' or vector of values.
@@ -19,16 +19,15 @@
 #' where g(x) is an unknown log density.
 #'
 #' Given that g(x) is unknown, the normalizing constant is estimated using a weighted average and the set of unknown paramters that recieve a prior is g(x) at a finite set of points.
-#' These weights are also used in the estimate of the integral in the numerator.
-#'
+#' These weights are also used in the estimate of the integral in the numerator using Riemann sums.
 #'
 #' @return
 #'
 #' \code{gold_cdf} returns a list of the CDF results from \code{gold}.
 #'
-#' \item{\code{cdf}}{A vector of the posterior mean CDF values at each value in \code{x}.}
+#' \item{\code{cdf}}{A vector of the posterior mean CDF at each value in \code{x}.}
 #' \item{\code{cri}}{A matrix with 2 columns and rows equaling the length of \code{x} containing the 95\% credible interval for the CDF at each of the points in \code{x}.}
-#' \item{\code{mat}}{A matrix containing the CDF values for each \code{x} at EACH itertation after the burnin is discarded. The number of columns is the length of \code{x}.}
+#' \item{\code{mat}}{A matrix containing the CDF values for each \code{x} at EACH iteratation after the burnin is discarded. The number of columns is the length of \code{x}.}
 #' \item{\code{x}}{A vector containing the values at which to estimate the CDF. }
 #'
 #' @examples
@@ -39,14 +38,14 @@
 #'
 #' # First run 'duos' on data sampled from a Beta(2,5) distribution wiht 100 data points.
 #' y <- rbeta(100, 2, 5)
-#' gold_beta <- gold(y, s1=1, c1=1, s2=0.8, c2=.8, MH_N=20000)
-#' #Calculate cdf at a variety of values
+#' gold_beta <- gold(y, s1 = 1, c1 = 2, s2 = 1, c2= 0.6, N = 20000, graves = FALSE)
+#' # Calculate CDF at a variety of values
 #' cdf_beta <- gold_cdf(x = c(.01, .25, .6, .9), gold_beta)
 #'
-#' #Examine the CDF at 'x'
+#' # Examine the CDF at 'x'
 #' cdf_beta$cdf
 #'
-#' #Examine the credibal intervals of the CDF at 'x'
+#' # Examine the credibal intervals of the CDF at 'x'
 #' cdf_beta$cri
 #'
 #' ## --------------------------------------------------------------------------------
@@ -55,23 +54,50 @@
 #'
 #' # First run 'gold' on data sampled from a Normal(0,1) distribution with 50 data points.
 #' y <- rnorm(50, 0, 1)
-#' gold_norm <- gold(y, s1 = 1, c1 = 0.8, s2 = 1, c2 = 0.5, MH_N=20000)
+#' # Use all defaults: enter '0.8' as a point of interest in order to examine the histogram
+#' # of its CDF estimate
+#' gold_norm <- gold(y, poi = 0.8)
+#' # Estimate the CDF at (-2, -1, 0, .8, 1.8)
 #' cdf_norm <- gold_cdf(x=c(-2, -1, 0, .8, 1.8), gold_norm)
 #'
-#' #Examine the CDF at 'x'
+#' # Examine the CDF at 'x'
 #' cdf_norm$cdf
 #'
-#' #Examine the credibal intervals of the CDF at 'x'
+#' # Examine the credibal intervals of the CDF at 'x'
 #' cdf_norm$cri
 #'
-#' Histogram of distribution of the CDF density estimate at 0.8
+#' # Histogram of distribution of the CDF density estimate at 0.8
 #' hist(cdf_norm$mat[, 4])
 
 
 gold_cdf <- function(x, gold_output, burnin=NA){
 
+  # error check 'x'
+  if(length(which(is.na(x)))>0){
+    stop("'x' contains at least one missing value.")
+  }
+  
   #Get paramters
   G <- gold_output$G
+  
+  #If burnin not specified, it is half the iterations
+  if(is.na(burnin)){
+    burnin <- nrow(G)/2
+  }
+  
+  #Error check to see if burnin greater than the number of iterations
+  if(burnin>nrow(G)){
+    stop("The specified 'burnin' is greater than the number of iterations.")
+  }
+  
+  if(burnin <= 0){
+    stop("Please specify a positive integer for 'burnin'.")
+  }
+  
+  if(burnin/ceiling(burnin)<1){
+    stop("Please specify a positive integer for 'burnin'.")
+  }
+  
   #Get widths for estimate of normalizing constant
   widths <- gold_output$widths
   #Get points at which density estimated
@@ -112,16 +138,7 @@ gold_cdf <- function(x, gold_output, burnin=NA){
     input_scaled <- input
   }
 
-  #If burnin not specified, it is half the iterations
-  if(is.na(burnin)){
-    burnin <- nrow(G)/2
-  }
-
-  #Error check to see if burnin greater than the number of iterations
-  if(burnin>nrow(G)){
-    stop("The specified burnin is greater than the number of iterations.")
-  }
-
+  
   #Collect the iterations after burnin
   G_burnin <- G[burnin:nrow(G),]
 

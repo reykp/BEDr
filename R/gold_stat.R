@@ -158,25 +158,9 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
   CDF <- duos_CDF$cdf
 
   CDF_mat <- duos_CDF$mat
-
-  which_close_function <- function(x){
-    wc <- min(which(CDF>=p_i))
-
-    diff1 <- abs(p_i-x[wc])
-    if(wc>1){
-      diff2 <- abs(p_i-x[{wc-1}])
-      if(diff1<=diff2){
-        quant_temp <- x_cdf[wc]
-      }else{
-        quant_temp <- x_cdf[{wc-1}]
-      }
-
-    }else{
-      quant_temp <- x_cdf[wc]
-    }
-    return(quant_temp)
-  }
-
+  cdf_y_perc <- apply(CDF_mat, 2, quantile, probs=c(.025, .975))
+  
+  
   #Create empty list to contain quantiles
 
   if(!is.na(p[1])){
@@ -184,25 +168,18 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
     quantiles_cri <- matrix(NA, nrow=length(p), ncol=2)
 
     for(i in 1:length(p)){
-      p_i <<- p[i]
-      quantiles_cri[i,] <- quantile(apply(CDF_mat, 1, which_close_function), c(.025, .975))
-
-      which_close <- min(which(CDF>=p[i]))
-
-      diff1 <- abs(p[i]-CDF[which_close])
-      if(which_close>1){
-        diff2 <- abs(p[i]-CDF[{which_close-1}])
-
-        if(diff1<=diff2){
-          quantiles[i] <- x_cdf[which_close]
-        }else{
-          quantiles[i] <- x_cdf[{which_close-1}]
-        }
-
-      }else{
-        quantiles[i] <- x_cdf[which_close]
-      }
-
+      ss_indiv <- smooth.spline(x_gold, cdf_y)
+      fin1 <- splinefun(ss_indiv$y, ss_indiv$x)
+      quantiles[i] <- finv(p[i])
+      
+      ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
+      fin2 <- splinefun(ss_indiv_q1$y, ss_indiv_q1$x)
+      quantiles_cri[i,1] <- finv2(p[i])
+     
+      ss_indiv_q2 <- smooth.spline(x_gold, t(cdf_y_perc)[,2])
+      fin3 <- splinefun(ss_indiv_q2$y, ss_indiv_q2$x)
+      quantiles_cri[i,2] <- finv3(p[i])
+     
     }
   }
 

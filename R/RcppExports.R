@@ -7,7 +7,7 @@
 #' 
 #' @usage
 #' 
-#' duos(y, k = ceiling(n/50) + 3, N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001, start = NA)
+#' duos(y, k = [n/50] + 3, N = 20000, alpha = 1, scale_l = 0.00001, scale_u = 0.00001, start = NA)
 #' 
 #' @name duos
 #' @param y A numeric vector. \code{duos} estimates the density on this data.
@@ -46,7 +46,7 @@
 #'
 #' The recommended number of cut-points starts at 3, and then for each increment of 50, adds a cut-point.
 #'
-#' Default: k = floor(n/50)+3
+#' Default: k = round(n/50)+3
 #' 
 #' @return
 #'
