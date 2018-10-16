@@ -3,7 +3,7 @@
 #' Plots the convergence plots on the parameters from \code{gold}.
 #'
 #' @usage 
-#' gold_mcmcplots(duos_output, type = "traceplot", plots = "all", burnin = 1)
+#' gold_mcmcplots(gold_output, type = "traceplot", npar = 6, burnin = 1)
 #'
 #' @param gold_output The list returned by \code{duos} containing the density estimate results.
 #' @param type The type of convergent plot to create (see details).
@@ -142,7 +142,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
               geom_line(aes(Iteration, Simulation))+
               #geom_point(aes(Iteration, Simulation))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free")+theme(text = element_text(size=25)))
       
     }
   }else if (type == "acf"){
@@ -177,7 +177,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
               geom_hline(aes(yintercept = 0))+
               geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")+theme(text = element_text(size=25)))
       
       
     }
@@ -222,7 +222,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
         print((ggplot(G_plot)+
                    geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))+theme(text = element_text(size=25)))
         
         
       }

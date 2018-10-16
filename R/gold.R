@@ -3,10 +3,10 @@
 #' Estimates a density from Bayesian techniques using a Gaussian process on a log density.
 #' 
 #' @usage 
-#' gold(y, s1 = 2, c1 = max([n/50], 1), s2 = NA, c2 = c1/2, N = 20000, graves = TRUE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
+#' gold(y, s1 = max(2.3 - 0.003 * n, 0.5), c1 = max([n/50], 1), s2 = NA, c2 = c1/2, N = 20000, graves = TRUE, scale_l = 0.00001, scale_u = 0.00001, poi = NA)
 #'
 #' @param y A numeric vector. \code{gold} estimates the density on this data.
-#' @param s1 The standard deviation of the Gaussian prior. The default is 2..
+#' @param s1 The standard deviation of the Gaussian prior. The default is set to a linear equaiton that decreases s1 as the sample size increases (see details).
 #' @param c1 The correlation parameter of the Gaussian prior that controls the correlation in the covariance structure and smoothness in the density estimate. See details for the defaul value.
 #' @param s2 The standard deviation of the Gaussian proposal distribution.
 #' @param c2 The correlation parameter that controls the covariance structure of the Gaussian proposal distribution.
@@ -41,7 +41,7 @@
 #' 
 #' Default: c1 = max(round(n/50), 1)
 #' 
-#' 
+#' A default is also recommended for s1 in the form of: 1.1 - 0.002 * n. However, a minimum value of .05 is enforced, but the user can specify their own value for s1 to overide this.
 #' @return
 #'
 #' \code{gold} returns a list containing the density estimate results.
@@ -138,7 +138,12 @@
 #' # x = 6.5
 #' hist(bimodal_cdf$mat[,2])
 
-gold <- function(y, s1 = 2, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, scale_l = .00001, scale_u = .00001, poi = NA){
+gold <- function(y, s1 = NA, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, scale_l = .00001, scale_u = .00001, poi = NA){
+  
+  # Specify default for s1 if missing
+  if(is.na(s1)){
+    s1 = max(2.3 - 0.003 * length(y), 0.5)
+  }
   
   # Specify default for c1 if missing
   if(is.na(c1)){

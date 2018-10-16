@@ -1627,10 +1627,113 @@ dev.off()
 
 ### Gold
 
+```{r, echo = FALSE}
+load(file = "R Objects/gold_unif_50.RData")
+load(file = "R Objects/gold_exp_200.RData")
+load(file = "R Objects/gold_normal.RData")
+load(file = "R Objects/gold_bimodal_400.RData")
+```
+
+```{r,eval = FALSE}
+# If you run 'gold' with all defaults, it automatically chooses 's1', 'c1', 's2', and 'c2'.
+gold_exp_200 <- gold(y = y_exp_200)
+# Look at default parameters chosen by 'gold'
+gold_exp_200$prior
+```
+
+```{r,eval = FALSE}
+# Run 'gold' on the uniform data with a 
+# chosen value for 0.5. Use 'graves' and
+# other defaults. Run for 10,000 iterations.
+gold_unif_50 <- gold(y = y_unif_50, c1 = 0.5, N = 10000)
+
+# Check acceptance rate
+gold_unif_50$ar
+
+# [1] 0.3333333
+
+# Check value for 's2'
+gold_unif_50$prior[3]
+
+#       s2 
+# 2.934826 
+
+# Acceptance rate was 0.32. 
+# Change s2 to get an acceptance 
+# rate of around 0.38
+gold_unif_50 <- gold(y = y_unif_50, c1 = 0.5, s2 = 2.25, graves = FALSE, N = 10000)
+
+# Check acceptance rate
+gold_unif_50$ar
+
+# [1] 0.3823382
+```
+
 
 ```{r}
-#Test on Uniform, Normal, Exp, Bimodal 
-#xxxxxxx
+# Run 'gold' on the normal with n = 100
+# Use all defaults except for the scales
+# Scale to 2*sd outside the range of the data
+gold_normal <- gold(y = y_normal, scale_l = 2*sd(y_normal), scale_u = 2*sd(y_normal))
+#save(gold_normal, file = "R Objects/gold_normal.RData")
+# Print the scaling paramter values
+gold_normal$scale_l
+
+#[1] 1.973862
+
+gold_normal$scale_u
+
+#[1] 1.973862
+
+# Print the grid and data where the density is estimated
+# Note that it is on the (0,1) scale
+# Each data point is labeled as 'data' or 'grid'
+gold_normal$x[28:32]
+
+#     grid      data      grid      data      data 
+#0.2700000 0.2735158 0.2800000 0.2886532 0.2976425 
+
+# To see where the data is estimated
+# on the original scale, reverse the
+# scaling
+min_y <- min(gold_normal$y)
+max_y <- max(gold_normal$y)
+scale_l <- gold_normal$scale_l
+scale_u <- gold_normal$scale_u
+
+((gold_normal$x*(max_y+scale_u-(min_y-scale_l)))+min_y-scale_l)[28:32]
+
+#      grid      data      grid      data      data 
+# -1.884043 -1.853575 -1.797381 -1.722391 -1.644487 
+
+```
+
+```{r}
+# Run 'gold' on bimodal data 
+# Specify less correlation than the 
+# default by increasing 'c1' and 'c2'
+# Specify points of interst as (-2.111, 1.153, 6.234)
+# Use 'graves' and default s1 = 1.10
+# Extend the are to be estimated slightly beyond the 
+# edges of the data
+gold_bimodal_400 <- gold(y = y_bimodal_400, c1 = 14, c2 = 10, poi = c(-2.111, 1.153, 6.234), scale_l = 1, scale_u = 1)
+
+# The matrix G contains the posterior simulations
+# for the estimates of the unormalized log density 
+
+# Examine the histogram for smallest point
+# the density is estimated at
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_GoldTest.jpg", width=1094, height=541)
+ggplot(data = data.frame(Edge = gold_bimodal_400$G[,1]))+geom_histogram(aes(Edge), fill = "grey", color = "black")+theme_bw()+theme(text = element_text(size=25))+xlab("g(x)")
+dev.off()
+```
+
+```{r}
+# Plot six of the trace plots for 
+# output from 'gold'
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_Unif_TP.jpg", width=1094, height=541)
+gold_mcmcplots(gold_unif_50)
+dev.off()
 ```
 #### Density Estimation
 
@@ -1639,7 +1742,7 @@ dev.off()
 #### CDF and PDF plots
 
 #### Additional statistics
-
+0.8
 Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
 
 - Never uses retina figures
