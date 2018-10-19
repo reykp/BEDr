@@ -1632,6 +1632,9 @@ load(file = "R Objects/gold_unif_50.RData")
 load(file = "R Objects/gold_exp_200.RData")
 load(file = "R Objects/gold_normal.RData")
 load(file = "R Objects/gold_bimodal_400.RData")
+load(file = "R Objects/gold_normal_long.RData")
+load(file = "R Objects/gold_normal_alt.RData")
+
 ```
 
 ```{r,eval = FALSE}
@@ -1735,6 +1738,145 @@ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Imag
 gold_mcmcplots(gold_unif_50)
 dev.off()
 ```
+```{r, echo=FALSE}
+# Plot six of the running mean plots for 
+# output from 'gold' for the N(0,1) data
+#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_rm.jpg", width=1094, height=541)
+gold_mcmcplots(gold_normal, type = "rm")
+#dev.off()
+
+# Run 'gold' on the normal with n = 100
+# Use all defaults except for the scales
+# Scale to 0.5 outside the range of the data
+gold_normal_alt <- gold(y = y_normal, scale_l =0.5, scale_u = 0.5)
+#save(gold_normal_alt, file = "R Objects/gold_normal_alt.RData")
+ #jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_rm_alt.jpg", width=1094, height=541)
+gold_mcmcplots(gold_normal_alt, type = "rm")
+ #dev.off()
+```
+
+````{r}
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_unif_acf.jpg", width=1094, height=541)
+# Create ACF plots of the last 10,000 iterations of
+# the paramters from running 'gold'
+# on the N(0,1) data
+gold_mcmcplots(gold_unif_50, type = "acf")
+dev.off()
+```
+
+```{r}
+# jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_tp.jpg", width=1094, height=541)
+# Create trace plots of four of the
+# paramters from running 'gold'
+# on the exponential data
+gold_mcmcplots(gold_exp_200, npar = 4)
+# dev.off()
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_rm.jpg", width=1094, height=541)
+# Create running mean plots of
+# 12 of the paramters from running 'gold'
+# on the 'bimodal' data
+gold_mcmcplots(gold_bimodal_400, type = "rm",npar = 12)
+# dev.off()
+
+# Create ACF plots of
+# the paramters from running 'gold'
+# on the N(0,1) data
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_normal_acf_long.jpg", width=1094, height=541)
+gold_mcmcplots(gold_normal_long, type = "acf",burnin = 40000)
+```
+
+```{r}
+# Create trace plots of the last 5,000 iterations of
+# the paramters from running 'gold'
+# on the 'bimodal' data
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_tp.jpg", width=1094, height=541)
+
+gold_mcmcplots(gold_bimodal_400, burnin = 5000, npar = 12)
+dev.off()
+```
+```{r}
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_unif_pp.jpg", width=1094, height=541)
+gold_pp(gold_unif_50)
+dev.off()
+
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_pp.jpg", width=1094, height=541)
+gold_pp(gold_bimodal_400, burnin = 5000)
+dev.off()
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_pp.jpg", width=1094, height=541)
+gold_pp(gold_exp_200, npar = 4)
+dev.off()
+```
+
+```{r}
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_alt_pdf.jpg", width=1094, height=541)
+gold_plot(gold_normal_alt)
+dev.off()
+```
+
+```{r}
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_unif_cdf.jpg", width=1094, height=541)
+gold_plot(gold_unif_50, type = "cdf")
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimodal_pdf.jpg", width=1094, height=541)
+gold_plot(gold_bimodal_400, burnin = 5000)
+dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_pdf_cri.jpg", width=1094, height=541)
+gold_plot(gold_exp_200, cri = TRUE)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_cdf_cri.jpg", width=1094, height=541)
+gold_plot(gold_normal_alt, type = "cdf", cri = TRUE)
+dev.off()
+```
+```{r}
+
+g1 <- gold_plot(gold_unif_50, data = TRUE)+ggtitle("Uniform")
+g2 <- gold_plot(gold_normal_alt, data = TRUE)+ggtitle("Normal")
+g3 <- gold_plot(gold_exp_200, data = TRUE)+ggtitle("Exponential")
+g4 <- gold_plot(gold_bimodal_400, data = TRUE)+ggtitle("Bimodal")
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_pdf_data_grid.jpg", width=1094, height=541)
+grid.arrange(g1, g2, g3, g4)
+dev.off()
+
+
+g1 <- gold_plot(gold_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")
+g2 <- gold_plot(gold_normal_alt, type = "cdf", data = TRUE)+ggtitle("Normal")
+g3 <- gold_plot(gold_exp_200, type = "cdf", data = TRUE)+ggtitle("Exponential")
+g4 <- gold_plot(gold_bimodal_400, type = "cdf", data = TRUE)+ggtitle("Bimodal")
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_cdf_data_grid.jpg", width=1094, height=541)
+grid.arrange(g1, g2, g3, g4)
+dev.off()
+```
+
+```{r}
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_pdf_bimodal_cri_data.jpg", width=1094, height=541)
+gold_plot(gold_bimodal_400, data = TRUE, cri = TRUE)
+dev.off()
+```
+
+```{r}
+gold_plot(gold_normal_alt, type = "cdf", interact = TRUE)
+
+
+gold_plot(gold_bimodal_400, type = "cdf", interact = TRUE, cri = TRUE)
+
+
+gold_plot(gold_exp_200, interact = TRUE, cri = TRUE, data = TRUE)
+
+```
+
 #### Density Estimation
 
 #### Convergence Diagnostics
