@@ -2,7 +2,7 @@
 
 
 
-helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, interact){
+helper_duos_cdf_plot <- function(duos_output, estimate, burnin=NA, cri=FALSE, data=FALSE, interact){
 
   C <- duos_output$C
   if(is.na(burnin)){
@@ -32,10 +32,10 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
 
   if(min_y<0 | max_y>1){
     input <- (1:999/1000)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_CDF <- duos_cdf(input,duos_output,burnin)
+    duos_CDF <- duos_cdf(input,duos_output,burnin, estimate = estimate)
   }else{
     input <- 1:999/1000
-    duos_CDF <- duos_cdf(input,duos_output,burnin)
+    duos_CDF <- duos_cdf(input,duos_output,burnin, estimate = estimate)
   }
 
   #Get x
@@ -66,7 +66,7 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
     ECDF_data <- data.frame(data_y$data, ECDF(data_y$data))
     names(ECDF_data) <- c("x", "ECDF")
 
-    g <- g+geom_line(data=ECDF_data, aes(x,ECDF), color="black", size=.6)
+    g <- g+geom_line(data=ECDF_data, aes(x,ECDF), color="black", size=.8)
   }
   if(cri==TRUE){
     g <- g+geom_line(data=crdble, aes(x,lower), color="red",size=.6)+
@@ -75,11 +75,11 @@ helper_duos_cdf_plot <- function(duos_output,burnin=NA, cri=FALSE, data=FALSE, i
 
   if(interact == TRUE){
     
-    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF")+
                        xlab("X")))
     
   }else{
-    g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+    g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF")+
       xlab("X")
   }
 }

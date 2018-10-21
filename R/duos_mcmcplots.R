@@ -252,7 +252,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
       
       print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
               geom_hline(aes(yintercept = 0)) +
-              geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
+              geom_segment(mapping = aes(xend = Lag, yend = 0))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
               facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
       
@@ -293,7 +293,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
           
           print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
                   geom_hline(aes(yintercept = 0)) +
-                  geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
+                  geom_segment(mapping = aes(xend = Lag, yend = 0))+
                   theme_bw()+theme(axis.title = element_text(size = 12))+
                   facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
           
@@ -355,7 +355,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
       for (i in 1:graph_index) {
         
         print((ggplot(C_plot)+
-                   geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
+                   geom_line(aes(Iteration, RunningMean, group=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
                 facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
         
@@ -404,7 +404,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
       for (i in 1:graph_index) {
         
         print((ggplot(P_plot)+
-                 geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
+                 geom_line(aes(Iteration, RunningMean, group=Parameter))+
                  theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
                  facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
         

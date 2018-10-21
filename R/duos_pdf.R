@@ -4,7 +4,7 @@
 #' or vector of values.
 #' 
 #' @usage
-#' duos_pdf(x, duos_output, burnin = NA, scale = FALSE)
+#' duos_pdf(x, duos_output, burnin = NA, estimate = "mean")
 #' 
 #' @param x A single value or vector of values at which to calculate the PDF. These values should be entered on the scale of the data (i.e. values can fall outside of 0 and 1 if data does).
 #' @param duos_output The list returned by \code{duos} containing the density estimate results.
@@ -75,7 +75,7 @@
 #' hist(pdf_gamma$mat[,2])
 #' 
 
-duos_pdf <- function(x, duos_output, burnin=NA){
+duos_pdf <- function(x, duos_output, burnin=NA,estimate = "mean"){
 
   # Get the cut-point matrix
   C <- duos_output$C
@@ -185,7 +185,11 @@ duos_pdf <- function(x, duos_output, burnin=NA){
     pdf_matrix <- apply(cbind(C_sub,P_sub), 1, pdf_forapply)
   }
   # Average to get mean estimates
-  pdf_y <- apply(pdf_matrix, 1, mean)
+  if(estimate == "mean"){
+    pdf_y <- apply(pdf_matrix, 1, mean)
+  }else{
+    pdf_y <- apply(pdf_matrix, 1, median)
+  }
   # Find credibal intervals
   pdf_y_perc <- apply(pdf_matrix, 1, quantile, probs=c(.025, .975))
 

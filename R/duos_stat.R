@@ -112,7 +112,7 @@
 #' #Get an estimate of the quantiles and their credible intervals
 #' quant_norm <- duos_stat(duos_norm, stat = "q", p = c(0.1, 0.5, 0.9))
 
-duos_stat <- function(duos_output,stat = "m", p=NA,burnin=NA,print=TRUE){
+duos_stat <- function(duos_output,stat = "m", p=NA,burnin=NA, estimate = "mean", print=TRUE){
   
   # Get Cut-points
   C <- duos_output$C
@@ -232,27 +232,41 @@ duos_stat <- function(duos_output,stat = "m", p=NA,burnin=NA,print=TRUE){
   for(i in 1:length(p)){
     q_loop <<- p[i]
     quant_matrix <- apply(cbind(C_sub,P_sub), 1, duos_quant)
-    quantiles[i] <- mean(quant_matrix)
+    if(estimate == "mean"){
+      quantiles[i] <- mean(quant_matrix)
+    }else if (estimate == "median"){
+      quantiles[i] <- median(quant_matrix)
+    }
     quantiles_cri[i,] <- quantile(quant_matrix, c(0.025, 0.975))
   }
   }
 
   # Return results
   if(stat%in%c("mean", "m")){
-    mean_list <- list(mean=mean(stats_matrix[1,]), cri=quantile(stats_matrix[1,],c(0.025, 0.975)), mat=stats_matrix[1,])
+    if(estimate == "mean"){
+      mean_list <- list(mean=mean(stats_matrix[1,]), cri=quantile(stats_matrix[1,],c(0.025, 0.975)), mat=stats_matrix[1,])
+    }else if (estimate == "median"){
+      mean_list <- list(mean=median(stats_matrix[1,]), cri=quantile(stats_matrix[1,],c(0.025, 0.975)), mat=stats_matrix[1,])
+    }
     if(print == TRUE){
     print(mean_list[1])
     print(mean_list[2])
     }
     return(mean_list)
   }else if (stat%in%c("var", "v")){
-    var_list <- list(variance=mean(stats_matrix[2,]), cri=quantile(stats_matrix[2,],c(0.025, 0.975)),mat=stats_matrix[2,])
+    if(estimate == "mean"){
+      var_list <- list(variance=mean(stats_matrix[2,]), cri=quantile(stats_matrix[2,],c(0.025, 0.975)),mat=stats_matrix[2,])
+    }else if (estimate == "median"){
+      var_list <- list(variance=median(stats_matrix[2,]), cri=quantile(stats_matrix[2,],c(0.025, 0.975)),mat=stats_matrix[2,])    
+    }
+    
     if(print == TRUE){
     print(var_list[1])
     print(var_list[2])
     }
     return(var_list)
   }else{
+    
     quant_list <- list(quantiles=quantiles, cri=quantiles_cri, mat = quant_matrix)
     if(print == TRUE){
     print(quant_list[1])

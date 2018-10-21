@@ -540,34 +540,34 @@ The code below creates data from each of the nine densitites described above. Fo
 # # Jagged
 #   y1 = 1.5
 #   y2 = .5
-#     
+# 
 #   m1 = (y2-y1)/.2
 #   m2 = (y1-y2)/.2
 #   m3 = (y2-y1)/.2
 #   m4 = (y1-y2)/.2
 #   m5 = (y2-y1)/.2
-#   
+# 
 #   b1 = y1
 #   b2 = 2*y2-y1
 #   b3 = 3*y1-2*y2
 #   b4 = 4*y2-3*y1
 #   b5 = 5*y1-4*y2
-#     
+# 
 #   x_jag = runif(n, 0, 1)
-#     
+# 
 #   y_jagged <- NA
 #   y_jagged[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
 #   y_jagged[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
 #   y_jagged[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
 #   y_jagged[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
 #   y_jagged[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
-  # x_jag = runif(350, 0, 1)
-  # y_jagged_350 <- NA
-  # y_jagged_350[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
-  # y_jagged_350[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
-  # y_jagged_350[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
-  # y_jagged_350[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
-  # y_jagged_350[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
+# x_jag = runif(350, 0, 1)
+# y_jagged_350 <- NA
+# y_jagged_350[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
+# y_jagged_350[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
+# y_jagged_350[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
+# y_jagged_350[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
+# y_jagged_350[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
 #   
 #   
 #   # Trimodal
@@ -600,7 +600,7 @@ The code below creates data from each of the nine densitites described above. Fo
   #       y_trimodal_200[i] <- rnorm(1, 2, 0.1)
   #     }
   #   }
-  # 
+
 #   
 # # Claw
 #     u <- runif( n)
@@ -812,7 +812,8 @@ This is the number of cut-points to have `duos` use. If k cut-points are chosen,
 ```{r, eval=FALSE}
 # If you run 'duos' with all defaults, it automatically chooses the 
 # number of cut-points based on the sample size. 
-duos_unif_50 <- duos(y = y_unif_50)
+duos_unif_50 <- duos(y = y_unif_50, N = 10000)
+save(duos_unif_50, file = "R Objects/duos_unif_50.RData")
 # Since y_unif_50 has 50 data points in it, the default is 4 cut-points. 
 # Use the dollar sign to print the 'k' from the 'duos' output.
 duos_unif_50$k
@@ -857,7 +858,8 @@ save(duos_exp, file = "R Objects/duos_exp.RData")
 ```{r, eval = FALSE}
 # Run duos with 14 cut-points
 
-duos_jagged_350 <- duos(y = y_jagged_350, k = 14)
+duos_jagged_350 <- duos(y = y_jagged_350)
+#save(duos_jagged_350, file = "R Objects/duos_jagged_350.RData")
 ```
 
 ```{r, echo=FALSE}
@@ -869,9 +871,9 @@ load("R Objects/duos_jagged_350.RData")
 This variable represents the number of iterations. For small data sets (i.e. data sets around 100 or less data points), less than 20,000 iterations is most likely enough, but for larger data sets, more iterations sometimes need to be run (See the next section).
 
 ```{r, eval = FALSE}
-# Run 10,000 iterations on data from N(0, 1) with the default number of cut-points. 
 # This data set has 100 points.
-duos_norm <- duos(y = y_normal, N = 10000)
+duos_norm <- duos(y = y_normal)
+#save(duos_norm, file = "R Objects/duos_norm.RData")
 
 # Run 30,000 iterations on data from the 'trimodal' data set
 # This data set has 200 data points
@@ -922,7 +924,6 @@ duos_trimodal_200_alt <- duos(y = y_trimodal_200, alpha = c(1, 3, 1, 10, 1, 2, 3
 
 ```{r, echo=FALSE}
 load("R Objects/duos_trimodal_200_alt.RData")
-load("R Objects/duos_trimodal_alpha.RData")
 
 ```
 
@@ -952,6 +953,7 @@ $(y-(min(y)-scale_l))/(max(y)+scale_u-(min(y)-scale_l))$
 ```{r, eval = FALSE}
 # Use one standard deviation of the data to scale
 duos_norm_scale <- duos(y = y_norm, scale_l = sd(y_norm), scale_u = sd(y_norm))
+save(duos_norm_scale, file = "R Objects/duos_norm_scale.RData")
 
 # For comparison, also run with the default
 # Use one standard deviation of the data to scale
@@ -971,10 +973,13 @@ Start values are automatically chosen to be `k` random numbers between 0 and 1, 
 ```{r, eval = FALSE}
 # Run the algorithm three times. Start the algorithm with values in:
 #  (0, 1/3) for run 1, (1/3, 1/3) for run 2, and (2/3, 1) for run 3.  
-duos_unif1 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
-duos_unif2 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
-duos_unif3 <- duos(y = y_unif_50, k = 4, start = c(runif(4, 0,1/3)))
+duos_unif1 <- duos(y = y_unif_50, k = 4, N = 10000, start = c(runif(4, 0,1/3)))
+duos_unif2 <- duos(y = y_unif_50, k = 4, N = 10000, start = c(runif(4, 1/3, 2/3)))
+duos_unif3 <- duos(y = y_unif_50, k = 4, N = 10000, start = c(runif(4, 2/3, 1)))
 
+save(duos_unif1, file = "R Objects/duos_unif1.RData")
+save(duos_unif2, file = "R Objects/duos_unif2.RData")
+save(duos_unif3, file = "R Objects/duos_unif3.RData")
 
 ```
 
@@ -1018,9 +1023,9 @@ gelman.diag(P, multivariate = FALSE)
 #### Convergence Diagnostics
 
 ```{r}
-
+add_theme <<- theme(text = element_text(size = 30))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 30),axis.title.y = element_text(size = 30))
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\duos_mcmcplots_unif.jpg", width=1094, height=541)
-duos_mcmcplots(duos_unif_50)
+duos_mcmcplots(duos_unif_50)+add_theme
 dev.off()
 
 ```
@@ -1028,12 +1033,12 @@ dev.off()
 ```{r}
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Norm.jpg", width=1094, height=541)
-duos_mcmcplots(duos_norm)
+duos_mcmcplots(duos_norm)+add_theme+theme(legend.position = "none")
 dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Norm_Scale.jpg", width=1094, height=541)
-duos_mcmcplots(duos_norm_scale)
+duos_mcmcplots(duos_norm_scale)+add_theme+theme(legend.position = "none")
 dev.off()
 
 ```
@@ -1051,12 +1056,12 @@ duos_mcmcplots(duos_trimodal_200_alt, type = "rm")
 dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Trimodal.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200, type = "acf")
+duos_mcmcplots(duos_trimodal_200, type = "acf")+add_theme
 dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_acf_Trimodal_Alt.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200_alt, type = "acf")
+duos_mcmcplots(duos_trimodal_200_alt, type = "acf")+add_theme
 dev.off()
 ```
 
@@ -1065,7 +1070,7 @@ dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Claw.jpg", width=1094, height=541)
-duos_mcmcplots(duos_claw_400, type = "rm")
+duos_mcmcplots(duos_claw_400, type = "rm")+add_theme
 dev.off()
 
 ```
@@ -1073,12 +1078,12 @@ dev.off()
 ```{r}
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Normal_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_norm, type = "rm", parameters = "p")
+duos_mcmcplots(duos_norm, type = "rm", parameters = "p")+add_theme+theme(legend.position = "none")+coord_cartesian(ylim=c(0, 0.4))
 dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Normal_Alt_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_norm_scale, type = "rm", parameters = "p")
+duos_mcmcplots(duos_norm_scale, type = "rm", parameters = "p")+add_theme+theme(legend.position = "none")+coord_cartesian(ylim=c(0, 0.4))
 dev.off()
 
 ```
@@ -1086,12 +1091,12 @@ dev.off()
 ```{r}
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200, type = "rm", parameters = "p")
+duos_mcmcplots(duos_trimodal_200, type = "rm", parameters = "p")+add_theme
 dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_RM_Trimodal_Alt_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200_alt, type = "rm", parameters = "p")
+duos_mcmcplots(duos_trimodal_200_alt, type = "rm", parameters = "p")+add_theme
 dev.off()
 
 ```
@@ -1100,7 +1105,7 @@ dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Claw_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_claw_400, type = "acf", parameters = "p")
+duos_mcmcplots(duos_claw_400, type = "acf", parameters = "p")+add_theme
 dev.off()
 
 ```
@@ -1109,7 +1114,7 @@ dev.off()
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Unif_P.jpg", width=1094, height=541)
 # Plot the trace plots of the bin probabilities on separate graphs
 #  from the unif(0, 1) data.
-duos_mcmcplots(duos_unif_50, parameters = "p", plots = "indiv")
+duos_mcmcplots(duos_unif_50, parameters = "p", plots = "indiv")+add_theme
 dev.off()
 ```
 
@@ -1117,13 +1122,13 @@ dev.off()
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Norm_C.jpg", width=1094, height=541)
 # Plot the ACF plots of the cut-points on separate graphs
 #  from the Norm(0, 1) data with the default scaling.
-duos_mcmcplots(duos_norm, type = "acf", plots = "indiv")
+duos_mcmcplots(duos_norm, type = "acf", plots = "indiv")+add_theme
 dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Norm_Alt_C.jpg", width=1094, height=541)
 # Plot the ACF plots of the cut-points on separate graphs
 #  from the Norm(0, 1) data with the default scaling.
-duos_mcmcplots(duos_norm_scale, type = "acf",plots = "indiv")
+duos_mcmcplots(duos_norm_scale, type = "acf",plots = "indiv")+add_theme
 dev.off()
 ```
 
@@ -1131,7 +1136,7 @@ dev.off()
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_ACF_Unif_P.jpg", width=1094, height=541)
 # Plot the autocorrelation pltos of the bin probabilities overlaid on a single graph
 #  from the unif(0, 1).
-duos_mcmcplots(duos_unif_50, parameters = "p", type = "acf")
+duos_mcmcplots(duos_unif_50, parameters = "p", type = "acf")+add_theme
 dev.off()
 ```
 
@@ -1161,19 +1166,19 @@ dev.off()
 
 ```{r}
 #jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200, parameters = "p", plots = "indiv")
+duos_mcmcplots(duos_trimodal_200, parameters = "p", plots = "indiv")+add_theme
 #dev.off()
 
 
 #jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_Alt_P.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200_alt, parameters = "p", plots = "indiv")
+duos_mcmcplots(duos_trimodal_200_alt, parameters = "p", plots = "indiv")+add_theme
 #dev.off()
 ```
 
 
 ```{r}
 #jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Traceplots_Trimodal_C.jpg", width=1094, height=541)
-duos_mcmcplots(duos_trimodal_200, plots = "indiv", burnin = 15000)
+duos_mcmcplots(duos_trimodal_200, plots = "indiv", burnin = 20000)
 #dev.off()
 
 
@@ -1258,7 +1263,7 @@ dev.off()
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PP_Claw_Alt_C_N.jpg", width=1094, height=541)
 # Posterior verses prior plots on the unif(0, 1) data
 # with alternative 'alpha'
-duos_pp(duos_claw_400_N, burnin = 25000)
+duos_pp(duos_claw_400_N, burnin = 30000)
 dev.off()
 ```
 
@@ -1271,8 +1276,14 @@ This function is designed to plot the PDF and CDF based on the output from \text
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Unif.jpg", width=1094, height=541)
-duos_plot(duos_unif_50)
+duos_plot(duos_unif_50)+add_theme
 dev.off()
+
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Unif_Med.jpg", width=1094, height=541)
+duos_plot(duos_unif_50, estimate = "median")+add_theme
+dev.off()
+
 
 ```
 
@@ -1280,11 +1291,11 @@ dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Norm.jpg", width=1094, height=541)
-duos_plot(duos_norm)
+duos_plot(duos_norm)+add_theme
 dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Norm_Alt.jpg", width=1094, height=541)
-duos_plot(duos_norm_scale)
+duos_plot(duos_norm_scale)+add_theme
 dev.off()
 
 ```
@@ -1293,11 +1304,11 @@ dev.off()
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Trimodal.jpg", width=1094, height=541)
-duos_plot(duos_trimodal_200_alt)
+duos_plot(duos_trimodal_200_alt)+add_theme
 dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_Claw.jpg", width=1094, height=541)
-duos_plot(duos_claw_400_N)
+duos_plot(duos_claw_400_N)+add_theme
 dev.off()
 
 ```
@@ -1305,10 +1316,10 @@ dev.off()
 ```{r}
 
 
-c1 <- duos_plot(duos_unif_50, type = "cdf")+ggtitle("Uniform")
-c2 <- duos_plot(duos_norm_scale, type = "cdf")+ggtitle("Normal")
-c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf")+ggtitle("Trimodal")
-c4 <- duos_plot(duos_claw_400_N, type = "cdf")+ggtitle("Claw")
+c1 <- duos_plot(duos_unif_50, type = "cdf")+ggtitle("Uniform")+add_theme
+c2 <- duos_plot(duos_norm_scale, type = "cdf")+ggtitle("Normal")+add_theme
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf")+ggtitle("Trimodal")+add_theme
+c4 <- duos_plot(duos_claw_400_N, type = "cdf")+ggtitle("Claw")+add_theme
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CDF_Grid.jpg", width=1094, height=541)
 grid.arrange(c1, c2, c3, c4)
@@ -1319,20 +1330,24 @@ dev.off()
 ```{r}
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_PDF_claw_BI.jpg", width=1094, height=541)
-duos_plot(duos_claw_400_N, burnin = 30000)
+duos_plot(duos_claw_400_N, burnin = 30000)+add_theme
 dev.off()
 ```
 
 ```{r}
 
 
-c1 <- duos_plot(duos_unif_50, cri = TRUE)+ggtitle("Uniform")
-c2 <- duos_plot(duos_norm_scale, cri = TRUE)+ggtitle("Normal")
-c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", cri = TRUE)+ggtitle("Trimodal")
-c4 <- duos_plot(duos_claw_400_N, type = "cdf", cri = TRUE)+ggtitle("Claw")
+c1 <- duos_plot(duos_unif_50, cri = TRUE)+ggtitle("Uniform")+add_theme
+c2 <- duos_plot(duos_norm_scale, cri = TRUE)+ggtitle("Normal")+add_theme
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", cri = TRUE)+ggtitle("Trimodal")+add_theme
+c4 <- duos_plot(duos_claw_400_N, type = "cdf", cri = TRUE)+ggtitle("Claw")+add_theme
 
-jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CRI_Grid.jpg", width=1094, height=541)
-grid.arrange(c1, c2, c3, c4)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CRI_Grid1.jpg", width=1094, height=541)
+grid.arrange(c1, c2,nrow = 1)
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_CRI_Grid2.jpg", width=1094, height=541)
+grid.arrange(c3, c4,nrow = 1)
 dev.off()
 ```
 
@@ -1341,10 +1356,10 @@ dev.off()
 ```{r}
 
 
-c1 <- duos_plot(duos_unif_50, data = TRUE)+ggtitle("Uniform")
-c2 <- duos_plot(duos_norm_scale, data = TRUE)+ggtitle("Normal")
-c3 <- duos_plot(duos_trimodal_200_alt, data = TRUE)+ggtitle("Trimodal")
-c4 <- duos_plot(duos_claw_400_N, data = TRUE)+ggtitle("Claw")
+c1 <- duos_plot(duos_unif_50, data = TRUE)+ggtitle("Uniform")+add_theme
+c2 <- duos_plot(duos_norm_scale, data = TRUE)+ggtitle("Normal")+add_theme
+c3 <- duos_plot(duos_trimodal_200_alt, data = TRUE)+ggtitle("Trimodal")+add_theme
+c4 <- duos_plot(duos_claw_400_N, data = TRUE)+ggtitle("Claw")+add_theme
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_PDF_Grid.jpg", width=1094, height=541)
 grid.arrange(c1, c2, c3, c4)
@@ -1354,10 +1369,10 @@ dev.off()
 ```{r}
 
 
-c1 <- duos_plot(duos_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")
-c2 <- duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")
-c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", data = TRUE)+ggtitle("Trimodal")
-c4 <- duos_plot(duos_claw_400_N, type = "cdf", data = TRUE)+ggtitle("Claw")
+c1 <- duos_plot(duos_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")+add_theme
+c2 <- duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")+add_theme
+c3 <- duos_plot(duos_trimodal_200_alt, type = "cdf", data = TRUE)+ggtitle("Trimodal")+add_theme
+c4 <- duos_plot(duos_claw_400_N, type = "cdf", data = TRUE)+ggtitle("Claw")+add_theme
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_CDF_Grid.jpg", width=1094, height=541)
 grid.arrange(c1, c2, c3, c4)
@@ -1367,28 +1382,36 @@ dev.off()
 ```{r}
 
 
-duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")
+duos_plot(duos_norm_scale, type = "cdf", data = TRUE)+ggtitle("Normal")+add_theme
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_PDF_Data_CRI.jpg", width=1094, height=541)
-duos_plot(duos_norm_scale, cri = TRUE, data = TRUE)+ggtitle("Normal")
+duos_plot(duos_norm_scale, estimate = "median",cri = TRUE, data = TRUE)+add_theme
+dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Data_PDF_Data_CRI2.jpg", width=1094, height=541)
+duos_plot(duos_unif_50, type = "cdf", cri = TRUE, data = TRUE)+add_theme
 dev.off()
 ```
 
 ```{r}
+#V_CDF_Trimodal_Interact
 duos_plot(duos_trimodal_200_alt, type = "cdf", interact = TRUE)
 ```
 
 
 ```{r}
+#V_CDF_Unif_Interact
 duos_plot(duos_unif_50, cri = TRUE, interact = TRUE)
 ```
 
 
 ```{r}
+#V_PDF_Norm_Interact
 duos_plot(duos_norm_scale, data = TRUE, cri = TRUE, interact = TRUE)
 ```
 
 ```{r}
+#V_CDF_Claw_Interact
 duos_plot(duos_claw_400_N, type = "cdf", data = TRUE, cri = TRUE, interact = TRUE)
 ```
 
@@ -1402,6 +1425,10 @@ duos_pdf(x = c(.2, .4, 1.2),duos_output = duos_unif_50)
 
 
 ```{r}
+
+max(duos_claw_400_N$y)+duos_claw_400_N$scale_u
+
+min(duos_claw_400_N$y)-duos_claw_400_N$scale_l
 
 duos_pdf(x = c(0, 1.5, -2.9,-3.1, 4),duos_output = duos_claw_400_N)
 
@@ -1431,24 +1458,84 @@ data.frame(duos_pdf_unif$mat) %>% gather(Variable, Value) %>%
   ggplot(aes(Value, fill = Variable, color = Variable))+
   geom_histogram(alpha = 0.5, bins = 40)+
   theme_bw()+theme(axis.title =  element_text(size = 12))+
-  facet_wrap(~Variable, nrow = 4)+xlim(c(0, 3))
+  facet_wrap(~Variable, nrow = 4)+xlim(c(0, 3))+add_theme
 dev.off()
   
 ```
 
 ```{r}
+# User iteractive identify range of values to check for mode
+duos_plot(duos_trimodal_200_alt,interact = TRUE)
+
+# Estimated the density for a dense grid between
+# 1.75 and 2.3 on the 'trimodal' data
+x_seq <- seq(from = 1.75, to = 2.3, by = 0.001)
+duos_pdf_trimodal <- duos_pdf(x = x_seq, duos_output = duos_trimodal_200_alt)
+
+find_max <- which(duos_pdf_trimodal$pdf==max(duos_pdf_trimodal$pdf))
+x_seq[find_max]
+
+[1] 1.926
+
+# Get the credible interval of the density
+# at 1.926
+duos_pdf_trimodal$cri[find_max,]
+
+     2.5%     97.5% 
+0.9683369 1.4830538 
+
+
+# First create a histogram to see if it is multimodal
+g_hist <- data.frame(Density = duos_pdf_trimodal$mat[, find_max])%>%
+  ggplot(aes(Density))+
+  geom_histogram(bins = 40,colour = "black", fill = "grey")+add_theme
+
+# Plot the traceplot of the last 10,000 iterations since
+# a burnin of 10,000 was discarded
+g_tp <- data.frame(Iteration = 1:nrow(duos_pdf_trimodal$mat), 
+                   Density = duos_pdf_trimodal$mat[, find_max])%>%
+  ggplot(aes(Iteration, Density))+
+  geom_line()+
+  theme_bw()+add_theme
+
+# Calculate the acf
+acf_output <-  acf(duos_pdf_trimodal$mat[, find_max], plot = FALSE, lag = 1000)
+# Create the acf plot
+g_acf <- data.frame(with(acf_output, data.frame(lag, acf))) %>%
+  ggplot(aes(x = lag, y = acf))+
+              geom_hline(aes(yintercept = 0)) +
+              geom_segment(mapping = aes(xend = lag, yend = 0))+
+              theme_bw()+add_theme
+
+
+# Create the running mean plot
+g_rm <- ggplot(data = data.frame(Iteration = 1:nrow(duos_pdf_trimodal$mat),
+      RunningMean = cumsum(duos_pdf_trimodal$mat[, find_max])/seq_along(duos_pdf_trimodal$mat[, find_max])))+
+              geom_line(aes(Iteration, RunningMean))+
+              theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running Mean")+add_theme
+
+
+library(gridExtra)
+     jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Post_Matrix.jpg", width=1094, height=541)
+grid.arrange(g_hist, g_tp, g_acf, g_rm)
+dev.off()
+
+```
+
+
+```{r}
 # User iteractive identify locations of possible modes
-duos_plot(duos_norm_scale, interact = TRUE)
+duos_plot(duos_norm_scale, estimate = "median",interact = TRUE)
 ```
 
 
 ```{r}
 # User iteractive identify range of values to check for mode
-duos_plot(duos_norm_scale, interact = TRUE)
+duos_plot(duos_norm_scale, estimate = "median",interact = TRUE)
 
 # Estimated the density at seq(from = -.6, to = .65, by = 0.001) for
 # the 'claw' data
-x_seq <- seq(from = -.6, to = .65, by = 0.001)
+x_seq <- seq(from = -.65, to = .7, by = 0.001)
 duos_pdf_norm <- duos_pdf(x = x_seq, duos_output = duos_norm_scale)
 
 find_max <- which(duos_pdf_norm$pdf==max(duos_pdf_norm$pdf))
@@ -1456,12 +1543,13 @@ x_seq[find_max]
 
 duos_pdf_norm$cri[find_max,]
 
+duos_pdf(x = 0, duos_output = duos_norm_scale)$pdf
 ```
 
 ```{r}
 # Estimated the density at (-1, -0.5, .025, 0.54, 1) for
 # the 'claw' data
-duos_pdf_claw <- duos_pdf(x = c(-2.5, -2, 2.5, 3), duos_output = duos_claw_400_N)
+duos_pdf_claw <- duos_pdf(x = c(-2.5, -2, 2.5, 3), duos_output = duos_claw_400_N, burnin = 30000)
 
 duos_pdf_claw$pdf
 
@@ -1478,6 +1566,11 @@ duos_cdf_unif$cdf
 
 duos_cdf_unif$cri
 
+duos_unif_500 <- duos(y = runif(500))
+duos_cdf(x = c(0.25, 0.5, 0.75), duos_output = duos_unif_500)$cdf
+
+#save(duos_unif_500, file = "R Objects/duos_unif_500.RData")
+load(file = "R Objects/duos_unif_500.RData")
 ```
 
 
@@ -1521,9 +1614,6 @@ duos_cdf_claw$cdf[4]-duos_cdf_claw$cdf[3]
 duos_cdf_claw$cdf[5]-duos_cdf_claw$cdf[4]
 duos_cdf_claw$cdf[6]-duos_cdf_claw$cdf[5]
 
-# Find the credible interval using the matrix
-# of values
-quantile(duos_cdf_trimodal$mat[,2]-duos_cdf_trimodal$mat[,1], c(.025, .975))
 
 cdf_mat <- data.frame(Mode1 = duos_cdf_claw$mat[,2]-duos_cdf_claw$mat[,1],
                       Mode2 = duos_cdf_claw$mat[,3]-duos_cdf_claw$mat[,2],
@@ -1536,49 +1626,254 @@ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Imag
   cdf_mat %>% gather(Variable, Value) %>%
     ggplot(aes(Value, fill = Variable, color = Variable))+
   geom_histogram(position = "identity", alpha = 0.5, bins = 40)+
-  theme_bw()+theme(axis.title =  element_text(size = 12))
+  theme_bw()+theme(axis.title =  element_text(size = 12))+add_theme
 dev.off()
 
 
 
 
 ```
+
+```{r}
+
+duos_cdf(x = c(0.25, 0.5, 0.75), duos_unif_50, estimate = "median")$cdf
+```
+
+
 #### Additional statistics
 
 ```{r}
 
+# By default returns posterio
+# mean estimate of the mean
+# Prints the mean and
+# credible intervals
 duos_unif_mean <- duos_stat(duos_unif_50)
+
+$mean
+[1] 0.4736424
+
+$cri
+     2.5%     97.5% 
+0.3951506 0.5556537 
+     
+# These values can also be referenced
+# by the 'duos_unif_mean' output
+duos_unif_mean$mean
+[1] 0.4736424
+
+duos_unif_mean$cri
+
+     2.5%     97.5% 
+0.3951506 0.5556537 
+     
+# The 'mat' output can be used to 
+# the posterior simulations for this estimate
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_mean_unif_hist.jpg", width=1094, height=541)
+
+     ggplot(data.frame(Mean = duos_unif_mean$mat))+geom_histogram(aes(Mean), color = "black", fill = "grey")+theme_bw()+add_theme
+dev.off()
+```
+```{r}
+# By default returns posterior mean estimate of the expectation
+# Prints the mean and credible intervals
+duos_norm_mean <- duos_stat(duos_norm_scale)
+
+$mean
+[1] 0.05457617
+
+$cri
+      2.5%      97.5% 
+-0.1538141  0.2667833 
+```
+
+```{r}
+# Look at the variance of the normal distribution
+duos_var_norm <- duos_stat(duos_norm_scale, stat = "var")
+
+$variance
+[1] 1.251317
+
+$cri
+     2.5%     97.5% 
+0.9570762 1.6172240
+```
+
+```{r}
+# Look at the .25th, the .5th,
+# and .75th quantiles of the 'trimodal' data
+duos_quant_trimodal <- duos_stat(duos_trimodal_alpha, stat = "q", p = c(0.25, 0.5, 0.75))
+
+$quantiles
+[1] 1.826622 2.010735 3.554473
+
+$cri
+         [,1]     [,2]
+[1,] 1.668794 1.928355
+[2,] 1.959109 2.065735
+[3,] 2.119141 5.411553
+
+```
+
+```{r}
+# Look at the mean, median, and variance
+# of the 'claw' distribution with
+# a burnin of 30,000
+duos_claw_mean <- duos_stat(duos_claw_400_N, burnin = 30000)
+
+$mean
+[1] 0.002829717
+
+$cri
+       2.5%       97.5% 
+-0.08177974  0.08749602 
+       
+duos_claw_var <- duos_stat(duos_claw_400_N, stat = "var", burnin = 30000)
+ 
+$variance
+[1] 0.7718336
+
+$cri
+     2.5%     97.5% 
+0.6680444 0.8960527 
+
+duos_claw_var <- duos_stat(duos_claw_400_N, stat = "q", p = .5, burnin = 30000)
+ 
+$quantiles
+[1] -0.001937281
+
+$cri
+            [,1]       [,2]
+[1,] -0.07625381 0.06900067   
+```
+
+```{r}
+# Look the the posterior median estimate of the
+# mean of the DUOS density estimate
+duos_stat(duos_unif_50, estimate = "median", print = FALSE)$mean
+
+[1] 0.4729205
+
+# Look the the posterior median estimate of the
+# median of the DUOS density estimate
+duos_stat(duos_unif_50, stat = "q", p = 0.5, estimate = "median", print = FALSE)$quantiles
+
+[1] 0.4325653
+
+# Look the the posterior median estimate of the
+# variance of the DUOS density estimate
+duos_stat(duos_unif_50, stat = "var", estimate = "median", print = FALSE)$variance
+
+[1] 0.09049921
 ```
 
 #### All distributions
 
 ```{r, eval = FALSE}
-duos_unif_all <- duos(y = distr_gather$value[distr_gather$variable=="Uniform"], k = 3)
+duos_unif_all <- duos(y = runif(250))
 #save(duos_unif_all, file = "R Objects/duos_unif_all.RData")
-duos_beta_all <- duos(y = distr_gather$value[distr_gather$variable=="Beta"])
+duos_beta_all <- duos(y = rbeta(250,2,5))
 #save(duos_beta_all, file = "R Objects/duos_beta_all.RData")
-duos_normal_all <- duos(y = distr_gather$value[distr_gather$variable=="Normal"], 
-                        scale_l = 2*sd(distr_gather$value[distr_gather$variable=="Normal"]),
-                        scale_u = 2*sd(distr_gather$value[distr_gather$variable=="Normal"]))
-#save(duos_normal_all, file = "R Objects/duos_normal_all.RData")
-duos_exponential_all <- duos(y = distr_gather$value[distr_gather$variable=="Exponential"])
+duos_normal_all <- duos(y = rnorm(250))
+save(duos_normal_all, file = "R Objects/duos_normal_all.RData")
+
+duos_exponential_all <- duos(y = rexp(250,1))
 #save(duos_beta_all, file = "R Objects/duos_beta_all.RData")
 
-duos_arcsin_all <- duos(y = distr_gather$value[distr_gather$variable=="Arcsin"])
+duos_arcsin_all <- duos(y = rbeta(250,.5,.5))
 #save(duos_arcsin_all, file = "R Objects/duos_arcsin_all.RData")
 
-duos_bimodal_all <- duos(y = distr_gather$value[distr_gather$variable=="Bimodal"], k = 7)
+# Bimodal
+n <- 250
+  # Sample from uniform
+  u <- runif(n)
+
+  # Variable to store data
+  y_bimodal_250 <- rep(NA,n)
+
+  # Sampling from the mixture
+  for(i in 1:n){
+      if(u[i]<.3){
+        y_bimodal_250[i] <- rnorm(1, 0, 1)
+      }else {
+        y_bimodal_250[i] <- rnorm(1, 4, 1)
+      }
+  }
+ # Jagged
+  y1 = 1.5
+  y2 = .5
+
+  m1 = (y2-y1)/.2
+  m2 = (y1-y2)/.2
+  m3 = (y2-y1)/.2
+  m4 = (y1-y2)/.2
+  m5 = (y2-y1)/.2
+
+  b1 = y1
+  b2 = 2*y2-y1
+  b3 = 3*y1-2*y2
+  b4 = 4*y2-3*y1
+  b5 = 5*y1-4*y2
+
+  x_jag = runif(n, 0, 1)
+
+  y_jagged_250 <- NA
+  y_jagged_250[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
+  y_jagged_250[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
+  y_jagged_250[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
+  y_jagged_250[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
+  y_jagged_250[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
+#   
+   # Trimodal
+     u <- runif(250)
+
+    y_trimodal_250 <- rep(NA,n)
+
+    #Sampling from the mixture
+    for(i in 1:n){
+      if(u[i]<.2){
+        y_trimodal_250[i] <- rnorm(1, 0, 1)
+      }else if(u[i]<.5){
+        y_trimodal_250[i] <- rnorm(1, 6, 1)
+      }else{
+        y_trimodal_250[i] <- rnorm(1, 2, 0.1)
+      }
+    }
+   
+# # Claw
+    u <- runif(250)
+
+    y_claw_250 = rep(NA, n)
+
+    # Sampling from the mixture
+    for(i in 1: n){
+      if(u[i]<.5){
+        y_claw_250[i] <- rnorm(1, 0, 1)
+      }else if(u[i]<.6){
+        y_claw_250[i] <- rnorm(1, -1, 0.1)
+      }else if (u[i] < .7){
+        y_claw_250[i] <- rnorm(1, -0.5, 0.1)
+      }else if (u[i]<.8){
+        y_claw_250[i] <- rnorm(1, 0, 0.1)
+      }else if (u[i] < .9){
+        y_claw_250[i] <- rnorm(1, 0.5, 0.1)
+      }else {
+        y_claw_250[i] <- rnorm(1, 1, 0.1)
+      }
+    }
+
+duos_bimodal_all <- duos(y = y_bimodal_250)
 #save(duos_bimodal_all, file = "R Objects/duos_bimodal_all.RData")
 
 
-duos_jagged_all <- duos(y = distr_gather$value[distr_gather$variable=="Jagged"], k = 8)
+duos_jagged_all <- duos(y = y_jagged_250)
 #save(duos_jagged_all, file = "R Objects/duos_jagged_all.RData")
 
-duos_trimodal_all <- duos(y = distr_gather$value[distr_gather$variable=="Trimodal"])
+duos_trimodal_all <- duos(y = y_trimodal_250)
 #save(duos_trimodal_all, file = "R Objects/duos_trimodal_all.RData")
 
-duos_claw_all <- duos(y = distr_gather$value[distr_gather$variable=="Claw"], k = 10,
-                      scale_l = 0.5, scale_u = 0.5)
+duos_claw_all <- duos(y = y_claw_250)
+
 #save(duos_claw_all, file = "R Objects/duos_claw_all.RData")
 
 ```
@@ -1593,31 +1888,96 @@ load("R Objects/duos_bimodal_all.RData")
 load("R Objects/duos_arcsin_all.RData")
 load("R Objects/duos_normal_all.RData")
 load("R Objects/duos_exp.RData")
+input <- runif(1000)
 
-p1 <- duos_plot(duos_unif_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform PDF")
-p2 <- duos_plot(duos_beta_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta PDF")
-p3 <- duos_plot(duos_normal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal PDF")
-p4 <- duos_plot(duos_exp, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential PDF")
-p5 <- duos_plot(duos_arcsin_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin PDF")
-p6 <- duos_plot(duos_bimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal PDF")
-p7 <- duos_plot(duos_jagged_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged PDF")
-p8 <- duos_plot(duos_trimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal PDF")
-p9 <- duos_plot(duos_claw_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw PDF")
+add_theme <<- theme(text = element_text(size = 22))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20))
+
+p1 <- duos_plot(duos_unif_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =rep(1,length(input))), aes(X,Y), color = "red",size = 1)+ ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform")+ggplot2::xlab("")+add_theme
+
+
+p2 <- duos_plot(duos_beta_all, data = TRUE)+geom_line(data = data.frame(X = input, Y = dbeta(input,2,5)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta")+ggplot2::xlab("")+add_theme
+
+  input_n <- input*(max(duos_normal_all$y)+.00001-(min(duos_normal_all$y)-.00001))+(min(duos_normal_all$y)-.00001)
+  
+p3 <- duos_plot(duos_normal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y = dnorm(input_n,0,1)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(duos_exponential_all$y)+.00001-(min(duos_exponential_all$y)-.00001))+(min(duos_exponential_all$y)-.00001)
+input_n <- input_n[input_n>=0]
+p4 <- duos_plot(duos_exponential_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =dexp(input_n,1)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential")+ggplot2::xlab("")+add_theme+expand_limits(x=0)
+
+p5 <- duos_plot(duos_arcsin_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =dbeta(input,0.5,0.5)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(duos_bimodal_all$y)+.00001-(min(duos_bimodal_all$y)-.00001))+(min(duos_bimodal_all$y)-.00001)
+      Y <- (.3*dnorm(input_n)+.7*dnorm(input_n,4,1))
+      
+p6 <- duos_plot(duos_bimodal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal")+ggplot2::xlab("")+add_theme
+
+Y <-NA
+      Y[input>=0 & input <.2] <- 1.5-5*input[input>=0 & input<.2]
+      Y[input>=.2 & input <.4] <- -0.5+5*input[input>=.2 & input<.4]
+      Y[input>=.4 & input <.6] <- 3.5-5*input[input>=.4 & input<.6]
+      Y[input>=.6 & input <.8] <- -2.5+5*input[input>=.6 & input<.8]
+      Y[input>=.8 & input <1] <- 5.5-5*input[input>=.8 & input<1]
+p7 <- duos_plot(duos_jagged_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(duos_trimodal_all$y)+.00001-(min(duos_trimodal_all$y)-.00001))+(min(duos_trimodal_all$y)-.00001)
+      Y <- (.2*dnorm(input_n)+.3*dnorm(input_n,6,1)+.5*dnorm(input_n,2,.1))
+
+p8 <- duos_plot(duos_trimodal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(duos_claw_all$y)+.00001-(min(duos_claw_all$y)-.00001))+(min(duos_claw_all$y)-.00001)
+   
+ Y <- (.5*dnorm(input_n)+.1*dnorm(input_n,-1,.1)+.1*dnorm(input_n,-.5,.1)+.1*dnorm(input_n,0,.1)+.1*dnorm(input_n,.5,.1)+.1*dnorm(input_n,1,.1))
+
+ p9 <- duos_plot(duos_claw_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw")+ggplot2::xlab("")+add_theme
 
 library(gridExtra)
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Duos_All_PDF.jpg", width=1094, height=541)
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
 dev.off()
 
-p1 <- duos_plot(duos_unif_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform CDF")
-p2 <- duos_plot(duos_beta_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta CDF")
-p3 <- duos_plot(duos_normal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal CDF")
-p4 <- duos_plot(duos_exp, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential CDF")
-p5 <- duos_plot(duos_arcsin_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin CDF")
-p6 <- duos_plot(duos_bimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal CDF")
-p7 <- duos_plot(duos_jagged_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged CDF")
-p8 <- duos_plot(duos_trimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal CDF")
-p9 <- duos_plot(duos_claw_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw CDF")
+input <- runif(1000)
+
+add_theme <<- theme(text = element_text(size = 22))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20))
+
+p1 <- duos_plot(duos_unif_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =input), aes(X,Y), color = "red",size = 1)+ ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform")+ggplot2::xlab("")+add_theme
+
+
+p2 <- duos_plot(duos_beta_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y = pbeta(input,2,5)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta")+ggplot2::xlab("")+add_theme
+
+  input_n <- input*(max(duos_normal_all$y)+.00001-(min(duos_normal_all$y)-.00001))+(min(duos_normal_all$y)-.00001)
+  
+p3 <- duos_plot(duos_normal_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y = pnorm(input_n,0,1)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(duos_exponential_all$y)+.00001-(min(duos_exponential_all$y)-.00001))+(min(duos_exponential_all$y)-.00001)
+input_n <- input_n[input_n>=0]
+p4 <- duos_plot(duos_exponential_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =pexp(input_n,1)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential")+ggplot2::xlab("")+add_theme+expand_limits(x=0)
+
+p5 <- duos_plot(duos_arcsin_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =pbeta(input,0.5,0.5)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(duos_bimodal_all$y)+.00001-(min(duos_bimodal_all$y)-.00001))+(min(duos_bimodal_all$y)-.00001)
+      Y <- (.3*pnorm(input_n)+.7*pnorm(input_n,4,1))
+      
+p6 <- duos_plot(duos_bimodal_all, type = "cdf",data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal")+ggplot2::xlab("")+add_theme
+
+Y <-NA
+     Y[input>=0 & input <.2] <- 1.5*input[input>=0 & input<.2]-(5*input[input>=0 & input<.2]^2)/2
+      Y[input>=.2 & input <.4] <- (5*input[input>=.2 & input<.4]^2)/2-.5*input[input>=.2 & input<.4]+.2
+      Y[input>=.4 & input <.6] <- (-5*input[input>=.4 & input<.6]^2)/2+3.5*input[input>=.4 & input<.6]-.6
+      Y[input>=.6 & input <.8] <- (5*input[input>=.6 & input<.8]^2)/2-2.5*input[input>=.6 & input<.8]+1.2
+      Y[input>=.8 & input <1] <- (-5*input[input>=.8 & input<1]^2)/2+5.5*input[input>=.8 & input<1]-2
+p7 <- duos_plot(duos_jagged_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(duos_trimodal_all$y)+.00001-(min(duos_trimodal_all$y)-.00001))+(min(duos_trimodal_all$y)-.00001)
+      Y <- (.2*pnorm(input_n)+.3*pnorm(input_n,6,1)+.5*pnorm(input_n,2,.1))
+
+p8 <- duos_plot(duos_trimodal_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(duos_claw_all$y)+.00001-(min(duos_claw_all$y)-.00001))+(min(duos_claw_all$y)-.00001)
+   
+ Y <- (.5*pnorm(input_n)+.1*pnorm(input_n,-1,.1)+.1*pnorm(input_n,-.5,.1)+.1*pnorm(input_n,0,.1)+.1*pnorm(input_n,.5,.1)+.1*pnorm(input_n,1,.1))
+
+ p9 <- duos_plot(duos_claw_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw")+ggplot2::xlab("")+add_theme
 
 library(gridExtra)
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Duos_All_CDF.jpg", width=1094, height=541)
@@ -1634,6 +1994,7 @@ load(file = "R Objects/gold_normal.RData")
 load(file = "R Objects/gold_bimodal_400.RData")
 load(file = "R Objects/gold_normal_long.RData")
 load(file = "R Objects/gold_normal_alt.RData")
+load(file = "R Objects/gold_bimodal_400_poi.RData")
 
 ```
 
@@ -1877,6 +2238,139 @@ gold_plot(gold_exp_200, interact = TRUE, cri = TRUE, data = TRUE)
 
 ```
 
+
+```{r}
+# Estimated the density at (0.2, 0.4, 0.6, 0.8) for
+# the unif(0, 1) data
+gold_pdf_unif <- gold_pdf(x = c(0.2, 0.4, 0.6, 0.8), gold_output = gold_unif_50)
+
+# Get the estimates of the pdf at these values
+gold_pdf_unif$pdf
+
+
+# Get the credible intervals for the density at these values
+gold_pdf_unif$cri
+
+# View the first 4 rows of the matrix of
+# posterior draws of the pdf estimates
+head(gold_pdf_unif$mat, 4)
+
+```
+
+
+```{r}
+# User iteractive identify range of values to check for mode
+gold_plot(gold_norm_scale, interact = TRUE)
+
+# Estimated the density at seq(from = -.1, to = .1 by = 0.001) for
+# the N(0,1) data
+x_seq <- seq(from = -.1, to = .1, by = 0.001)
+gold_pdf_norm <- gold_pdf(x = x_seq, gold_output = gold_normal_alt)
+
+# Find the value in 'x_seq' that resulted in the 
+# largest value for the pdf
+find_max <- which(gold_pdf_norm$pdf==max(gold_pdf_norm$pdf))
+x_seq[find_max]
+
+# Look at the PDF of this value
+gold_pdf_norm$pdf[find_max]
+
+# Look at the value of the PDF
+# where the true mode of the N(0,1)
+# distribution occurs
+gold_pdf(x = 0, gold_normal_alt)$pdf
+
+```
+
+
+```{r}
+# Use 'dplyr', 'tidyr', and 'ggplot2' to plot histograms of the estiamtes of the density
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Use the 'poi' values returned
+# from 'gold' as input
+gold_bimodal_pdf <- gold_pdf(x = gold_bimodal_400$poi, gold_bimodal_400, burnin = 5000)
+
+# Create histograms of the density estimate
+# at each point of interest
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_pdf_bimodal_mat.jpg", width=1094, height=541)
+data.frame(gold_bimodal_pdf$mat) %>% gather(Variable, Value) %>%
+ggplot(aes(Value, fill = Variable, color = Variable))+
+geom_histogram(alpha = 0.5, bins = 40)+
+theme_bw()+theme(axis.title = element_text(size = 12))+
+facet_wrap(~Variable, nrow = 4)
+dev.off()
+```
+
+```{r}
+# Estimated the CDF at (1, 4) for
+# the exp(1) data
+gold_cdf_exp <- gold_cdf(x = c(1, 4), gold_output = gold_exp_200)
+
+
+# Get the estimates of the CDF
+gold_cdf_exp $cdf
+
+# Note the turn values of 
+# the exp(1) CDF
+pexp(c(1,4), 1)
+
+# Get the credible intervals
+gold_cdf_exp$cri
+```
+```{r}
+# Estimate the CDF at (0.5, 1.96, 2.5)
+# of data from N(0, 1)
+gold_cdf_norm <- gold_cdf(x = c(0.5, 1.96, 2.5), gold_output = gold_normal_alt)
+
+# Find the probailities of being 
+# greater than these values
+1-gold_cdf_norm$cdf
+
+[1] 0.31981122 0.03610849 0.01084580
+
+# Find the credible intervals
+# for the probabilites of being greater
+# than these values
+(1-gold_cdf_norm$cri)[,c(2,1)]
+
+           [,1]       [,2]
+[1,] 0.24562236 0.39739728
+[2,] 0.01384089 0.06941931
+[3,] 0.00240739 0.02689882
+```
+
+```{r}
+# Plot the interactive estimate of the PDF of the 'trimodal' data
+gold_plot(gold_bimodal_400, interact = TRUE)
+
+# Estimate the CDF at (-0.36, 3.89) for
+# the data from 'bimodal'
+gold_cdf_bimodal <- gold_cdf(x = c(-0.36, 3.89), gold_output = gold_bimodal_400, burnin = 5000)
+
+# Find the probability of being
+# between -0.36 and 3.89
+gold_cdf_bimodal$cdf[2]-gold_cdf_bimodal$cdf[1]
+
+[1] 0.5122909
+
+# Add (-0.36, 3.89) as points of interest
+# in order to acquire their posterior
+# draws in order to create credible intervals,
+gold_bimodal_400_poi <- gold(y = y_bimodal_400, c1 = 14, c2 = 10, poi = c(-2.111, 1.153, 6.234,-0.36, 3.89), scale_l = 1, scale_u = 1)
+
+# Run the CDF function again
+gold_cdf_bimodal_poi <- gold_cdf(x = c(-0.36, 3.89), gold_output = gold_bimodal_400_poi, burnin = 5000)
+
+# Get the quantiles
+quantile(gold_cdf_bimodal_poi$mat[,2]-gold_cdf_bimodal_poi$mat[,1], c(.025, .975))
+
+     2.5%     97.5% 
+0.4722148 0.5572042 
+```
+
 #### Density Estimation
 
 #### Convergence Diagnostics
@@ -1884,6 +2378,85 @@ gold_plot(gold_exp_200, interact = TRUE, cri = TRUE, data = TRUE)
 #### CDF and PDF plots
 
 #### Additional statistics
+
+
+
+```{r}
+load(file = "R Objects/gold_unif_50.RData")
+load(file = "R Objects/gold_normal_alt.RData")
+load(file = "R Objects/gold_exp_200.RData")
+load(file = "R Objects/gold_bimodal_400.RData")
+
+
+```
+
+```{r}
+
+# By default returns posterio
+# mean estimate of the mean
+# Prints the mean and
+# credible intervals
+gold_unif_mean <- gold_stat(gold_unif_50)
+
+$mean
+[1] 0.4645679
+
+$cri
+     2.5%     97.5% 
+0.3856315 0.5519831
+     
+# These values can also be referenced
+# by the 'duos_unif_mean' output
+gold_unif_mean$mean
+[1] 0.4645679
+
+gold_unif_mean$cri
+
+     2.5%     97.5% 
+0.3856315 0.5519831      
+```
+
+```{r}
+# Look at the variance of the normal distribution
+gold_var_norm <- gold_stat(gold_normal_alt, stat = "var")
+
+$variance
+[1] 1.034328
+
+$cri
+     2.5%     97.5% 
+0.7853894 1.3477922
+```
+
+```{r}
+# Look at the .25th, the .5th,
+# and .75th quantiles of the exp(1) data
+gold_exp_quantiles <- gold_stat(gold_exp_200, stat = "q", p = c(0.25, 0.5, 0.75))
+
+$quantiles
+0.3058890 0.6808731 1.3207216
+
+
+
+```
+
+```{r}
+# Look at the mean, median, and variance
+# of the 'bimodal' distribution with
+# a burnin of 5,000
+gold_stat(gold_bimodal_400, burnin = 5000, print = FALSE)$mean
+
+[1] 2.812133
+
+gold_stat(gold_bimodal_400, stat = "var", burnin = 5000, print = FALSE)$variance
+
+[1] 4.630505
+
+gold_stat(gold_bimodal_400, stat = "q", p = 0.5, burnin = 5000, print = FALSE)$quantiles
+
+[1] 1.320843       
+```
+
 0.8
 Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
 
@@ -1902,6 +2475,77 @@ The `html_vignette` template includes a basic CSS theme. To override this theme 
     output: 
       rmarkdown::html_vignette:
         css: mystyles.css
+
+
+```{r, eval = FALSE}
+gold_unif_all <- gold(y = distr_gather$value[distr_gather$variable=="Uniform"], c1 = .8)
+#save(gold_unif_all, file = "R Objects/gold_unif_all.RData")
+gold_beta_all <- gold(y = distr_gather$value[distr_gather$variable=="Beta"])
+#save(gold_beta_all, file = "R Objects/gold_beta_all.RData")
+gold_normal_all <- gold(y = distr_gather$value[distr_gather$variable=="Normal"])
+#save(gold_normal_all, file = "R Objects/gold_normal_all.RData")
+gold_exponential_all <- gold(y = distr_gather$value[distr_gather$variable=="Exponential"])
+#save(gold_beta_all, file = "R Objects/gold_beta_all.RData")
+
+gold_arcsin_all <- gold(y = distr_gather$value[distr_gather$variable=="Arcsin"])
+#save(gold_arcsin_all, file = "R Objects/gold_arcsin_all.RData")
+
+gold_bimodal_all <- gold(y = distr_gather$value[distr_gather$variable=="Bimodal"], c1 = 8)
+#save(gold_bimodal_all, file = "R Objects/gold_bimodal_all.RData")
+
+
+gold_jagged_all <- gold(y = distr_gather$value[distr_gather$variable=="Jagged"], c1 = 12)
+#save(gold_jagged_all, file = "R Objects/gold_jagged_all.RData")
+
+gold_trimodal_all <- gold(y = distr_gather$value[distr_gather$variable=="Trimodal"], c1 = 60)
+#save(gold_trimodal_all, file = "R Objects/gold_trimodal_all.RData")
+
+gold_claw_all <- gold(y = distr_gather$value[distr_gather$variable=="Claw"], c1 = 15)
+#save(duos_claw_all, file = "R Objects/duos_claw_all.RData")
+
+```
+
+```{r}
+load("R Objects/duos_claw_all.RData")
+load("R Objects/duos_unif_all.RData")
+load("R Objects/duos_jagged_all.RData")
+load("R Objects/duos_trimodal_all.RData")
+load("R Objects/duos_beta_all.RData")
+load("R Objects/duos_bimodal_all.RData")
+load("R Objects/duos_arcsin_all.RData")
+load("R Objects/duos_normal_all.RData")
+load("R Objects/duos_exp.RData")
+
+p1 <- gold_plot(gold_unif_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform PDF")
+p2 <- gold_plot(gold_beta_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta PDF")
+p3 <- gold_plot(gold_normal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal PDF")
+p4 <- gold_plot(gold_exponential_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential PDF")
+p5 <- gold_plot(gold_arcsin_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin PDF")
+p6 <- gold_plot(gold_bimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal PDF")
+p7 <- gold_plot(gold_jagged_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged PDF")
+p8 <- gold_plot(gold_trimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal PDF")
+p9 <- gold_plot(gold_claw_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw PDF")
+
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Gold_All_PDF.jpg", width=1094, height=541)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
+dev.off()
+
+p1 <- gold_plot(gold_unif_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform CDF")
+p2 <- gold_plot(gold_beta_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta CDF")
+p3 <- gold_plot(gold_normal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal CDF")
+p4 <- gold_plot(gold_exponential_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential CDF")
+p5 <- gold_plot(gold_arcsin_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin CDF")
+p6 <- gold_plot(gold_bimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal CDF")
+p7 <- gold_plot(gold_jagged_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged CDF")
+p8 <- gold_plot(gold_trimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal CDF")
+p9 <- gold_plot(gold_claw_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw CDF")
+
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Gold_All_CDF.jpg", width=1094, height=541)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
+dev.off()
+```
 
 ## Figures
 
@@ -1932,3 +2576,4 @@ Also a quote using `>`:
 
 > "He who gives up [code] safety for [code] speed deserves neither."
 ([via](https://twitter.com/hadleywickham/status/504368538874703872))
+

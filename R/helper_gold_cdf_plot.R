@@ -71,10 +71,10 @@ helper_gold_cdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, i
   }
 
   if(interact == TRUE){
-    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF")+
       xlab("X")))
   }else{
-    g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF Estimate")+
+    g+geom_line(data=plot_CDF, aes(x, CDF),color="blue", size=.8)+ylab("CDF")+
       xlab("X")
   }
     

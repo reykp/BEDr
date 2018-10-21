@@ -98,7 +98,7 @@ duos_pp <- function(duos_output, parameters="c", burnin=NA){
         print(ggplot(C_plot, aes(Simulation,fill=Source, color=Source))+
                 geom_histogram(position = "identity", alpha = .5, bins = 80)+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i))
         
         
             }
@@ -144,7 +144,7 @@ duos_pp <- function(duos_output, parameters="c", burnin=NA){
       print(ggplot(P_plot, aes(Simulation,fill=Source, color=Source))+
               geom_histogram(position = "identity", alpha = .5, bins = 80)+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i))
       
       
     }

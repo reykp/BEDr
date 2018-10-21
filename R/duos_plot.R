@@ -117,7 +117,7 @@
 #' 
 
 
-duos_plot <- function(duos_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, interact=FALSE){
+duos_plot <- function(duos_output,type="pdf", estimate = "mean", burnin=NA, cri=FALSE, data=FALSE, interact=FALSE){
   
   if(!(type%in%c("pdf","Pdf", "PDF", "cdf", "Cdf", "CDF"))){
     stop("Please choose from the available graph types: 'pdf' or 'cdf'.")
@@ -125,8 +125,8 @@ duos_plot <- function(duos_output,type="pdf",burnin=NA, cri=FALSE, data=FALSE, i
   
   # Plotting implemented in helper functions
   if(type=="pdf"){
-    helper_duos_pdf_plot(duos_output, burnin, cri, data, interact)
+    helper_duos_pdf_plot(duos_output, estimate, burnin, cri, data, interact)
   }else if (type=="cdf"){
-    helper_duos_cdf_plot(duos_output, burnin, cri, data, interact)
+    helper_duos_cdf_plot(duos_output, estimate, burnin, cri, data, interact)
   }
 }

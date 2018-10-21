@@ -84,7 +84,7 @@
 
 
 
-gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
+gold_stat <- function(gold_output, stat = "m", p=NA,burnin=NA, print = TRUE){
 
 
 
@@ -109,8 +109,8 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
   # Find max and minimums
   #Find min and max of data
   if(!is.null(gold_output[["poi"]])){
-    max_y <- max(y, gold_output$poi)
-    min_y <- min(y, gold_output$poi)
+    max_y <- max(y_orig, gold_output$poi)
+    min_y <- min(y_orig, gold_output$poi)
   }else{
     min_y <- min(y_orig)
     max_y <- max(y_orig)
@@ -154,12 +154,12 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
     duos_CDF <- gold_cdf(x_gold,gold_output,burnin)
   }
 
-  x_cdf <<- duos_CDF$x
-  CDF <- duos_CDF$cdf
+  x_gold <- duos_CDF$x
+  cdf_y <- duos_CDF$cdf
 
   CDF_mat <- duos_CDF$mat
   cdf_y_perc <- apply(CDF_mat, 2, quantile, probs=c(.025, .975))
-  
+  # 
   
   #Create empty list to contain quantiles
 
@@ -169,8 +169,9 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
 
     for(i in 1:length(p)){
       ss_indiv <- smooth.spline(x_gold, cdf_y)
-      fin1 <- splinefun(ss_indiv$y, ss_indiv$x)
-      quantiles[i] <- finv(p[i])
+      finv1 <- splinefun(ss_indiv$y, ss_indiv$x)
+      quantiles[i] <- finv1(p[i])
+    
       
       ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
       fin2 <- splinefun(ss_indiv_q1$y, ss_indiv_q1$x)
@@ -183,12 +184,28 @@ gold_stat <- function(stat,gold_output, p=NA,burnin=NA){
     }
   }
 
+
   if(stat%in%c("mean", "m")){
-    return(list(mean=mean(mean_matrix), cri=quantile(mean_matrix,c(0.025, 0.975))))
+    mean_list <- list(mean=mean(mean_matrix), cri=quantile(mean_matrix,c(0.025, 0.975)))
+    if(print == TRUE){
+      print(mean_list[1])
+      print(mean_list[2])
+    }
+    return(mean_list)
   }else if (stat%in%c("var", "v")){
-    return(list(variance=mean(var_matrix), cri=quantile(var_matrix,c(0.025, 0.975))))
+    var_list <- list(variance=mean(var_matrix), cri=quantile(var_matrix,c(0.025, 0.975)))
+    if(print == TRUE){
+      print(var_list[1])
+      print(var_list[2])
+    }
+    return(var_list)
   }else{
-    return(list(quantiles=quantiles, cri=quantiles_cri))
+    quant_list <- list(quantiles=quantiles, cri=quantiles_cri)
+    if(print == TRUE){
+      print(quant_list[1])
+      print(quant_list[2])
+    }
+    return(quant_list)
   }
 
 }

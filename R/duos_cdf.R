@@ -78,7 +78,7 @@
 #' 
 
 
-duos_cdf <- function(x, duos_output, burnin=NA){
+duos_cdf <- function(x, duos_output, burnin=NA, estimate = "mean"){
 
   # Initial set up ##############
   
@@ -189,7 +189,11 @@ duos_cdf <- function(x, duos_output, burnin=NA){
   }
   
   # Calculate mean at each 'x'
-  cdf_y <- apply(cdf_matrix, 1, mean)
+  if(estimate == "mean"){
+    cdf_y <- apply(cdf_matrix, 1, mean)
+  }else{
+    cdf_y <- apply(cdf_matrix, 1, median)
+  }
   
   # Calculate percentiles at each 'x'
   cdf_y_perc <- apply(cdf_matrix, 1, quantile, probs=c(.025, .975))
