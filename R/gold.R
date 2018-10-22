@@ -142,7 +142,7 @@ gold <- function(y, s1 = NA, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, 
   
   # Specify default for s1 if missing
   if(is.na(s1)){
-    s1 = max(2.3 - 0.003 * length(y), 0.5)
+    s1 = max(2.3 - 0.003 * length(y), 0.05)
   }
   
   # Specify default for c1 if missing
@@ -154,6 +154,9 @@ gold <- function(y, s1 = NA, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, 
     c2 <- c1/2
   }
   
+  if(!is.na(s2)){
+    graves = FALSE
+  }
   # All error checking ********************************************************************
   
   # No missing values in y
@@ -197,12 +200,6 @@ gold <- function(y, s1 = NA, c1 = NA, s2 = NA, c2 = NA, N = 20000, graves=TRUE, 
     total_length <- length(y)
   }
   
-  # Print a warning if choose graves, but also specify a value for 's2'
-  if(graves == TRUE){
-  if(!is.na(s2)){
-    warning(" 'graves' == TRUE. Specified value for 's2' will be ignored.")
-  }
-  }
     
   # Make sure N is an integer 
   if(N/ceiling(N)<1){

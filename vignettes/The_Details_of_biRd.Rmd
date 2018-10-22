@@ -737,8 +737,8 @@ g3 <- ggplot(data.frame(y_exp_200), aes(y_exp_200))+geom_histogram(color="black"
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
         legend.position = "none")+ggtitle("Exponential: n = 200")
-
-jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_GoldTest.jpg", width=1094, height=541)
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_GoldTest2.jpg", width=1094, height=541)
 grid.arrange(g1, g2, g3, g4)
 dev.off()
 
@@ -1025,7 +1025,7 @@ gelman.diag(P, multivariate = FALSE)
 ```{r}
 add_theme <<- theme(text = element_text(size = 30))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 30),axis.title.y = element_text(size = 30))
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\duos_mcmcplots_unif.jpg", width=1094, height=541)
-duos_mcmcplots(duos_unif_50)+add_theme
+duos_mcmcplots(duos_unif_50)
 dev.off()
 
 ```
@@ -1895,6 +1895,7 @@ add_theme <<- theme(text = element_text(size = 22))+theme(axis.text.x = element_
 p1 <- duos_plot(duos_unif_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =rep(1,length(input))), aes(X,Y), color = "red",size = 1)+ ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform")+ggplot2::xlab("")+add_theme
 
 
+
 p2 <- duos_plot(duos_beta_all, data = TRUE)+geom_line(data = data.frame(X = input, Y = dbeta(input,2,5)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta")+ggplot2::xlab("")+add_theme
 
   input_n <- input*(max(duos_normal_all$y)+.00001-(min(duos_normal_all$y)-.00001))+(min(duos_normal_all$y)-.00001)
@@ -2003,6 +2004,8 @@ load(file = "R Objects/gold_bimodal_400_poi.RData")
 gold_exp_200 <- gold(y = y_exp_200)
 # Look at default parameters chosen by 'gold'
 gold_exp_200$prior
+
+gold_exp_200$ar
 ```
 
 ```{r,eval = FALSE}
@@ -2014,7 +2017,7 @@ gold_unif_50 <- gold(y = y_unif_50, c1 = 0.5, N = 10000)
 # Check acceptance rate
 gold_unif_50$ar
 
-# [1] 0.3333333
+[1] 0.3823382
 
 # Check value for 's2'
 gold_unif_50$prior[3]
@@ -2025,12 +2028,15 @@ gold_unif_50$prior[3]
 # Acceptance rate was 0.32. 
 # Change s2 to get an acceptance 
 # rate of around 0.38
-gold_unif_50 <- gold(y = y_unif_50, c1 = 0.5, s2 = 2.25, graves = FALSE, N = 10000)
+gold_unif_50 <- gold(y = y_unif_50, c1 = 0.5, s2 = 2.25, N = 10000)
 
 # Check acceptance rate
 gold_unif_50$ar
 
 # [1] 0.3823382
+
+gold_unif_50$prior
+
 ```
 
 
@@ -2080,15 +2086,26 @@ scale_u <- gold_normal$scale_u
 # Use 'graves' and default s1 = 1.10
 # Extend the are to be estimated slightly beyond the 
 # edges of the data
-gold_bimodal_400 <- gold(y = y_bimodal_400, c1 = 14, c2 = 10, poi = c(-2.111, 1.153, 6.234), scale_l = 1, scale_u = 1)
+gold_bimodal_400 <- gold(y = y_bimodal_400,s1 = 0.8, c1 = 20, c2 = 12, s2 = .04, poi = c(-2.111, 1.153, 6.234), scale_l = 1, scale_u = 1, N = 30000)
+
+gold_bimodal_400$ar
+
+
+save(gold_bimodal_400, file = "R Objects/gold_bimodal_400.RData")
 
 # The matrix G contains the posterior simulations
 # for the estimates of the unormalized log density 
 
 # Examine the histogram for smallest point
 # the density is estimated at
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_GoldTest.jpg", width=1094, height=541)
-ggplot(data = data.frame(Edge = gold_bimodal_400$G[,1]))+geom_histogram(aes(Edge), fill = "grey", color = "black")+theme_bw()+theme(text = element_text(size=25))+xlab("g(x)")
+data.frame(gold_bimodal_400$G[,c(1,200,400,437)]) %>% 
+  rename("1" = X1, "200" = X2, "400" = X3, "437" = X4) %>%
+  gather(Parameter, Simulation) %>%
+  ggplot()+geom_histogram(aes(Simulation), fill = "grey", color = "black")+theme_bw()+theme(text = element_text(size=25))+xlab("g(x)")+facet_wrap(~Parameter)+add_theme
 dev.off()
 ```
 
@@ -2099,12 +2116,22 @@ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Imag
 gold_mcmcplots(gold_unif_50)
 dev.off()
 ```
+
+
+```{r}
+# Plot six of the trace plots for 
+# output from 'gold'
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_Norm_TP.jpg", width=1094, height=541)
+gold_mcmcplots(gold_normal)
+dev.off()
+```
+
 ```{r, echo=FALSE}
 # Plot six of the running mean plots for 
 # output from 'gold' for the N(0,1) data
-#jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_rm.jpg", width=1094, height=541)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_rm.jpg", width=1094, height=541)
 gold_mcmcplots(gold_normal, type = "rm")
-#dev.off()
+dev.off()
 
 # Run 'gold' on the normal with n = 100
 # Use all defaults except for the scales
@@ -2123,22 +2150,21 @@ gold_mcmcplots(gold_normal_alt, type = "rm")
 # on the N(0,1) data
 gold_mcmcplots(gold_unif_50, type = "acf")
 dev.off()
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_Exp_acf.jpg", width=1094, height=541)
+gold_mcmcplots(gold_exp_200, type = "acf", burnin = 5000)
+dev.off()
+
 ```
 
 ```{r}
-# jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_tp.jpg", width=1094, height=541)
-# Create trace plots of four of the
-# paramters from running 'gold'
-# on the exponential data
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_tp.jpg", width=1094, height=541)
 gold_mcmcplots(gold_exp_200, npar = 4)
-# dev.off()
+dev.off()
 
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_rm.jpg", width=1094, height=541)
-# Create running mean plots of
-# 12 of the paramters from running 'gold'
-# on the 'bimodal' data
 gold_mcmcplots(gold_bimodal_400, type = "rm",npar = 12)
-# dev.off()
+ dev.off()
 
 # Create ACF plots of
 # the paramters from running 'gold'
@@ -2147,15 +2173,48 @@ gold_mcmcplots(gold_bimodal_400, type = "rm",npar = 12)
 gold_mcmcplots(gold_normal_long, type = "acf",burnin = 40000)
 ```
 
+
 ```{r}
 # Create trace plots of the last 5,000 iterations of
 # the paramters from running 'gold'
 # on the 'bimodal' data
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_tp.jpg", width=1094, height=541)
 
-gold_mcmcplots(gold_bimodal_400, burnin = 5000, npar = 12)
+gold_mcmcplots(gold_bimodal_400, burnin = 5000)
 dev.off()
 ```
+
+
+```{r}
+
+# Simulate 500 values from beta(2,5)
+y_beta_500 <- rbeta(500, 2, 5)
+
+# Run 'gold' with the default prior for data of size 50
+gold_beta_500 <- gold(y = y_beta_500, s1 = 2.15, c1 = 1)
+
+# First check the acceptance rate
+gold_beta_500$ar
+
+[1] 0.4940747
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_Beta_tp.jpg", width=1094, height=541)
+gold_mcmcplots(gold_beta_500)
+dev.off()
+
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_Beta_acf.jpg", width=1094, height=541)
+gold_mcmcplots(gold_beta_500, type = "acf")
+dev.off()
+
+# Run 'gold' with the default prior for data of size 50
+gold_beta_500_s1 <- gold(y = y_beta_500, s1 = .6, c1 = 1)
+
+gold_beta_500_c1 <- gold(y = y_beta_500, s1 = 2.15, c1 = 10)
+
+```
+
+
 ```{r}
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_unif_pp.jpg", width=1094, height=541)
 gold_pp(gold_unif_50)
@@ -2163,31 +2222,43 @@ dev.off()
 
 
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimod_pp.jpg", width=1094, height=541)
-gold_pp(gold_bimodal_400, burnin = 5000)
+gold_pp(gold_bimodal_400, npar = 4)
 dev.off()
 
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_pp.jpg", width=1094, height=541)
-gold_pp(gold_exp_200, npar = 4)
+gold_pp(gold_exp_200, burnin = 5000)
+dev.off()
+
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_pp.jpg", width=1094,height=541)
+gold_pp(gold_normal, npar = 10)
+dev.ff()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_beta_pp.jpg", width=1094,height=541)
+gold_pp(gold_beta_500)
 dev.off()
 ```
 
 ```{r}
 
- jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_alt_pdf.jpg", width=1094, height=541)
-gold_plot(gold_normal_alt)
+input <- runif(1000, -4.2, 4.2)
+ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_norm_pdf.jpg", width=1094, height=541)
+gold_plot(gold_normal)+stat_function(fun = dnorm, color = "red", linetype = 2, size = .8) +add_theme+add_theme
 dev.off()
 ```
 
 ```{r}
 
  jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_unif_cdf.jpg", width=1094, height=541)
-gold_plot(gold_unif_50, type = "cdf")
+gold_plot(gold_unif_50, type = "cdf")+add_theme
 dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_bimodal_pdf.jpg", width=1094, height=541)
 gold_plot(gold_bimodal_400, burnin = 5000)
 dev.off()
 
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_pdf.jpg", width=1094, height=541)
+gold_plot(gold_exp_200, burnin = 5000)+add_theme
+dev.off()
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_exp_pdf_cri.jpg", width=1094, height=541)
 gold_plot(gold_exp_200, cri = TRUE)
@@ -2197,12 +2268,38 @@ jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Imag
 gold_plot(gold_normal_alt, type = "cdf", cri = TRUE)
 dev.off()
 ```
+
+```{r}
+# Plot the GOLD estimate of the PDF on the 
+# $unif(0,1)$ data with credible intervals
+g1 <- gold_plot(gold_unif_50, cri = TRUE)+add_theme
+
+# Plot the GOLD estimate of the PDF on the 
+# 'bimodal' data with credible intervals
+g2 <-gold_plot(gold_bimodal_400, cri = TRUE)+add_theme
+
+# Plot the GOLD estimate of the CDF on the 
+# $exp(1)$ data with credible intervals
+g3 <- gold_plot(gold_exp_200, type = "cdf", cri = TRUE, burnin = 5000)+add_theme
+
+# Plot the GOLD estimate of the CDF on the 
+# $N(0,1)$ data with credible intervals
+g4 <- gold_plot(gold_normal, type = "cdf", cri = TRUE)+add_theme
+
+library(gridExtra)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_cri_grid.jpg", width=1094, height=541)
+grid.arrange(g1, g2, g3, g4)
+dev.off()
+
+```
+
+
 ```{r}
 
-g1 <- gold_plot(gold_unif_50, data = TRUE)+ggtitle("Uniform")
-g2 <- gold_plot(gold_normal_alt, data = TRUE)+ggtitle("Normal")
-g3 <- gold_plot(gold_exp_200, data = TRUE)+ggtitle("Exponential")
-g4 <- gold_plot(gold_bimodal_400, data = TRUE)+ggtitle("Bimodal")
+g1 <- gold_plot(gold_unif_50, data = TRUE)+ggtitle("Uniform")+add_theme
+g2 <- gold_plot(gold_normal, data = TRUE)+ggtitle("Normal")+add_theme
+g3 <- gold_plot(gold_exp_200, data = TRUE, burnin = 5000)+ggtitle("Exponential")+add_theme
+g4 <- gold_plot(gold_bimodal_400, data = TRUE)+ggtitle("Bimodal")+add_theme
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_pdf_data_grid.jpg", width=1094, height=541)
@@ -2210,10 +2307,10 @@ grid.arrange(g1, g2, g3, g4)
 dev.off()
 
 
-g1 <- gold_plot(gold_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")
-g2 <- gold_plot(gold_normal_alt, type = "cdf", data = TRUE)+ggtitle("Normal")
-g3 <- gold_plot(gold_exp_200, type = "cdf", data = TRUE)+ggtitle("Exponential")
-g4 <- gold_plot(gold_bimodal_400, type = "cdf", data = TRUE)+ggtitle("Bimodal")
+g1 <- gold_plot(gold_unif_50, type = "cdf", data = TRUE)+ggtitle("Uniform")+add_theme
+g2 <- gold_plot(gold_normal_alt, type = "cdf", data = TRUE)+ggtitle("Normal")+add_theme
+g3 <- gold_plot(gold_exp_200, type = "cdf", data = TRUE, burnin = 5000)+ggtitle("Exponential")+add_theme
+g4 <- gold_plot(gold_bimodal_400, type = "cdf", data = TRUE)+ggtitle("Bimodal")+add_theme
 
 
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_cdf_data_grid.jpg", width=1094, height=541)
@@ -2223,23 +2320,35 @@ dev.off()
 
 ```{r}
 jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_pdf_bimodal_cri_data.jpg", width=1094, height=541)
-gold_plot(gold_bimodal_400, data = TRUE, cri = TRUE)
+gold_plot(gold_bimodal_400, data = TRUE, cri = TRUE)+add_theme
 dev.off()
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_Gold_cdf_bimodal_cri_data.jpg", width=1094, height=541)
+gold_plot(gold_bimodal_400, type = "cdf", data = TRUE, cri = TRUE)+add_theme
+dev.off()
+
 ```
 
 ```{r}
+
+gold_plot(gold_unif_50, interact = TRUE)
+
 gold_plot(gold_normal_alt, type = "cdf", interact = TRUE)
 
 
 gold_plot(gold_bimodal_400, type = "cdf", interact = TRUE, cri = TRUE)
 
 
-gold_plot(gold_exp_200, interact = TRUE, cri = TRUE, data = TRUE)
+gold_plot(gold_exp_200, type = "cdf", interact = TRUE, cri = TRUE, data = TRUE)
 
 ```
 
 
 ```{r}
+
+gold_pdf_norm <- gold_pdf(x = c(-4, 5), gold_output = gold_normal)
+
+
 # Estimated the density at (0.2, 0.4, 0.6, 0.8) for
 # the unif(0, 1) data
 gold_pdf_unif <- gold_pdf(x = c(0.2, 0.4, 0.6, 0.8), gold_output = gold_unif_50)
@@ -2289,6 +2398,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
+gold_bimodal_400$poi
+
 # Use the 'poi' values returned
 # from 'gold' as input
 gold_bimodal_pdf <- gold_pdf(x = gold_bimodal_400$poi, gold_bimodal_400, burnin = 5000)
@@ -2300,14 +2411,41 @@ data.frame(gold_bimodal_pdf$mat) %>% gather(Variable, Value) %>%
 ggplot(aes(Value, fill = Variable, color = Variable))+
 geom_histogram(alpha = 0.5, bins = 40)+
 theme_bw()+theme(axis.title = element_text(size = 12))+
-facet_wrap(~Variable, nrow = 4)
+facet_wrap(~Variable, nrow = 4)+add_theme
 dev.off()
 ```
 
 ```{r}
+
+gold_exp_pdf <- gold_pdf(x = c(min(gold_exp_200$y), max(gold_exp_200$y)), gold_exp_200, burnin = 5000)
+
+gold_exp_pdf$pdf
+[1] 0.83598217 0.02149234
+
+gold_exp_pdf$cri
+           [,1]       [,2]
+[1,] 0.62788990 1.08403535
+[2,] 0.00355967 0.06056884
+```
+
+```{r}
+
+# Estimated the CDF at (0.5) for
+# the unif(0,11) data
+gold_cdf_unif <- gold_cdf(x = 0.5, gold_output = gold_unif_50)
+
+# Get the estimates of the CDF
+gold_cdf_unif$cdf
+[1] 0.5639597
+
+# Get the credible intervals
+gold_cdf_unif$cri
+          [,1]      [,2]
+[1,] 0.4383706 0.6753827
+
 # Estimated the CDF at (1, 4) for
 # the exp(1) data
-gold_cdf_exp <- gold_cdf(x = c(1, 4), gold_output = gold_exp_200)
+gold_cdf_exp <- gold_cdf(x = c(1, 4), gold_output = gold_exp_200, burnin = 5000)
 
 
 # Get the estimates of the CDF
@@ -2346,23 +2484,43 @@ gold_cdf_norm <- gold_cdf(x = c(0.5, 1.96, 2.5), gold_output = gold_normal_alt)
 # Plot the interactive estimate of the PDF of the 'trimodal' data
 gold_plot(gold_bimodal_400, interact = TRUE)
 
+
 # Estimate the CDF at (-0.36, 3.89) for
 # the data from 'bimodal'
-gold_cdf_bimodal <- gold_cdf(x = c(-0.36, 3.89), gold_output = gold_bimodal_400, burnin = 5000)
+gold_cdf_bimodal <- gold_cdf(x = c(-0.52, 4), gold_output = gold_bimodal_400)
 
 # Find the probability of being
 # between -0.36 and 3.89
 gold_cdf_bimodal$cdf[2]-gold_cdf_bimodal$cdf[1]
 
-[1] 0.5122909
+[1] 0.5356532
 
-# Add (-0.36, 3.89) as points of interest
+# Add (-0.52, 4) to the original list of points of interest
 # in order to acquire their posterior
 # draws in order to create credible intervals,
-gold_bimodal_400_poi <- gold(y = y_bimodal_400, c1 = 14, c2 = 10, poi = c(-2.111, 1.153, 6.234,-0.36, 3.89), scale_l = 1, scale_u = 1)
+gold_bimodal_400_poi <- gold(y = y_bimodal_400,s1 = 0.8, c1 = 20, c2 = 12, s2 = .04, poi = c(-2.111, 1.153, 6.234,-0.52, 4), scale_l = 1, scale_u = 1, N = 30000)
 
 # Run the CDF function again
-gold_cdf_bimodal_poi <- gold_cdf(x = c(-0.36, 3.89), gold_output = gold_bimodal_400_poi, burnin = 5000)
+gold_cdf_bimodal_poi <- gold_cdf(x = c(-0.52, 4), gold_output = gold_bimodal_400_poi)
+
+# Get the posterior simulations for the CDF at (-0.52, 4)
+probs <- data.frame(gold_cdf_bimodal_poi$mat)
+
+# Calculate the probability of being greater than 4
+probs[,2] <- 1-probs[,2]
+names(probs) <- c("P(x < -0.52)", "P(x > 4)")
+
+# Packages for ploting
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_gold_mode_comp.jpg", width=1094, height=541)
+probs %>% gather(CDF, Probability) %>%
+ggplot(aes(Probability, fill = CDF, color = CDF))+
+geom_histogram(alpha = 0.5, bins = 40)+
+theme_bw()+theme(axis.title = element_text(size = 12))+add_theme
+dev.off()
 
 # Get the quantiles
 quantile(gold_cdf_bimodal_poi$mat[,2]-gold_cdf_bimodal_poi$mat[,1], c(.025, .975))
@@ -2383,11 +2541,9 @@ quantile(gold_cdf_bimodal_poi$mat[,2]-gold_cdf_bimodal_poi$mat[,1], c(.025, .975
 
 ```{r}
 load(file = "R Objects/gold_unif_50.RData")
-load(file = "R Objects/gold_normal_alt.RData")
+load(file = "R Objects/gold_normal.RData")
 load(file = "R Objects/gold_exp_200.RData")
 load(file = "R Objects/gold_bimodal_400.RData")
-
-
 ```
 
 ```{r}
@@ -2418,14 +2574,25 @@ gold_unif_mean$cri
 
 ```{r}
 # Look at the variance of the normal distribution
-gold_var_norm <- gold_stat(gold_normal_alt, stat = "var")
+gold_var_norm <- gold_stat(gold_normal, stat = "var")
 
 $variance
-[1] 1.034328
+[1] 1.163285
 
 $cri
      2.5%     97.5% 
-0.7853894 1.3477922
+0.8863599 1.5467197
+     
+     
+gold_mean_norm <- gold_stat(gold_normal, print = FALSE)
+     
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\V_gold_mean_mat_norm.jpg", width=1094, height=541)
+data.frame(Mean = gold_mean_norm$mat) %>%
+  ggplot()+
+  geom_histogram(aes(Mean), color = "black",fill = "grey")+
+  theme_bw()+theme(axis.title = element_text(size = 12))+add_theme
+dev.off()
+
 ```
 
 ```{r}
@@ -2444,17 +2611,33 @@ $quantiles
 # Look at the mean, median, and variance
 # of the 'bimodal' distribution with
 # a burnin of 5,000
-gold_stat(gold_bimodal_400, burnin = 5000, print = FALSE)$mean
+gold_bimodal_quant <- gold_stat(gold_bimodal_400, stat = "q", p = c(0.25, 0.5, 0.75))
+  
+$quantiles
+[1] 1.216634 3.372583 4.353333
 
-[1] 2.812133
+$cri
+          [,1]     [,2]
+[1,] 0.6217338 1.815797
+[2,] 3.1602849 3.565834
+[3,] 4.2099915 4.498409   
+```
+```{r}
+# Get the posterior mean of the expectation
+gold_stat(gold_exp_200, stat = "m", burnin = 5000, print = FALSE)$mean
 
-gold_stat(gold_bimodal_400, stat = "var", burnin = 5000, print = FALSE)$variance
+[1] 1.094266
 
-[1] 4.630505
+# Get the posterior mean of the variance
+gold_stat(gold_exp_200, stat = "v", burnin = 5000, print = FALSE)$variance
 
-gold_stat(gold_bimodal_400, stat = "q", p = 0.5, burnin = 5000, print = FALSE)$quantiles
+[1] 1.612343
 
-[1] 1.320843       
+# Get the posterior mean of the median
+gold_stat(gold_exp_200, stat = "q", p = 0.5, burnin = 5000, print = FALSE)$quantiles
+
+[1] 0.6800891
+
 ```
 
 0.8
@@ -2477,72 +2660,220 @@ The `html_vignette` template includes a basic CSS theme. To override this theme 
         css: mystyles.css
 
 
-```{r, eval = FALSE}
-gold_unif_all <- gold(y = distr_gather$value[distr_gather$variable=="Uniform"], c1 = .8)
-#save(gold_unif_all, file = "R Objects/gold_unif_all.RData")
-gold_beta_all <- gold(y = distr_gather$value[distr_gather$variable=="Beta"])
-#save(gold_beta_all, file = "R Objects/gold_beta_all.RData")
-gold_normal_all <- gold(y = distr_gather$value[distr_gather$variable=="Normal"])
-#save(gold_normal_all, file = "R Objects/gold_normal_all.RData")
-gold_exponential_all <- gold(y = distr_gather$value[distr_gather$variable=="Exponential"])
-#save(gold_beta_all, file = "R Objects/gold_beta_all.RData")
 
-gold_arcsin_all <- gold(y = distr_gather$value[distr_gather$variable=="Arcsin"])
+```{r, eval = FALSE}
+gold_unif_all <- gold(y = runif(250))
+#save(gold_unif_all, file = "R Objects/gold_unif_all.RData")
+gold_beta_all <- gold(y = rbeta(250,2,5))
+#save(gold_beta_all, file = "R Objects/gold_beta_all.RData")
+gold_normal_all <- gold(y = rnorm(250))
+#save(gold_normal_all, file = "R Objects/gold_normal_all.RData")
+
+gold_exponential_all <- gold(y = rexp(250,1))
+#save(gold_exponential_all, file = "R Objects/gold_exponential_all")
+
+gold_arcsin_all <- gold(y = rbeta(250,.5,.5))
 #save(gold_arcsin_all, file = "R Objects/gold_arcsin_all.RData")
 
-gold_bimodal_all <- gold(y = distr_gather$value[distr_gather$variable=="Bimodal"], c1 = 8)
+# Bimodal
+n <- 250
+  # Sample from uniform
+  u <- runif(n)
+
+  # Variable to store data
+  y_bimodal_250 <- rep(NA,n)
+
+  # Sampling from the mixture
+  for(i in 1:n){
+      if(u[i]<.3){
+        y_bimodal_250[i] <- rnorm(1, 0, 1)
+      }else {
+        y_bimodal_250[i] <- rnorm(1, 4, 1)
+      }
+  }
+ # Jagged
+  y1 = 1.5
+  y2 = .5
+
+  m1 = (y2-y1)/.2
+  m2 = (y1-y2)/.2
+  m3 = (y2-y1)/.2
+  m4 = (y1-y2)/.2
+  m5 = (y2-y1)/.2
+
+  b1 = y1
+  b2 = 2*y2-y1
+  b3 = 3*y1-2*y2
+  b4 = 4*y2-3*y1
+  b5 = 5*y1-4*y2
+
+  x_jag = runif(n, 0, 1)
+
+  y_jagged_250 <- NA
+  y_jagged_250[x_jag>=0 & x_jag<.2] <- (-1.5+sqrt(1.5^2-10*x_jag[x_jag>=0 & x_jag<.2]))/(-5)
+  y_jagged_250[x_jag>=.2 & x_jag<.4] <- (.5+sqrt(.5^2-4*(5/2)*(.2-x_jag[x_jag>=.2 & x_jag<.4])))/(5)
+  y_jagged_250[x_jag>=.4 & x_jag<.6] <- (-3.5+sqrt(3.5^2-4*(-5/2)*(-.6-x_jag[x_jag>=.4 & x_jag<.6])))/(-5)
+  y_jagged_250[x_jag>=.6 & x_jag<.8] <- (2.5+sqrt(2.5^2-4*(5/2)*(1.2-x_jag[x_jag>=.6 & x_jag<.8])))/(5)
+  y_jagged_250[x_jag>=.8 & x_jag<1] <- (-5.5+sqrt(5.5^2-4*(-5/2)*(-2-x_jag[x_jag>=.8 & x_jag<1])))/(-5)
+#   
+   # Trimodal
+     u <- runif(250)
+
+    y_trimodal_250 <- rep(NA,n)
+
+    #Sampling from the mixture
+    for(i in 1:n){
+      if(u[i]<.2){
+        y_trimodal_250[i] <- rnorm(1, 0, 1)
+      }else if(u[i]<.5){
+        y_trimodal_250[i] <- rnorm(1, 6, 1)
+      }else{
+        y_trimodal_250[i] <- rnorm(1, 2, 0.1)
+      }
+    }
+   
+# # Claw
+    u <- runif(250)
+
+    y_claw_250 = rep(NA, n)
+
+    # Sampling from the mixture
+    for(i in 1: n){
+      if(u[i]<.5){
+        y_claw_250[i] <- rnorm(1, 0, 1)
+      }else if(u[i]<.6){
+        y_claw_250[i] <- rnorm(1, -1, 0.1)
+      }else if (u[i] < .7){
+        y_claw_250[i] <- rnorm(1, -0.5, 0.1)
+      }else if (u[i]<.8){
+        y_claw_250[i] <- rnorm(1, 0, 0.1)
+      }else if (u[i] < .9){
+        y_claw_250[i] <- rnorm(1, 0.5, 0.1)
+      }else {
+        y_claw_250[i] <- rnorm(1, 1, 0.1)
+      }
+    }
+
+gold_bimodal_all <- gold(y = y_bimodal_250)
 #save(gold_bimodal_all, file = "R Objects/gold_bimodal_all.RData")
 
 
-gold_jagged_all <- gold(y = distr_gather$value[distr_gather$variable=="Jagged"], c1 = 12)
+gold_jagged_all <- gold(y = y_jagged_250)
 #save(gold_jagged_all, file = "R Objects/gold_jagged_all.RData")
 
-gold_trimodal_all <- gold(y = distr_gather$value[distr_gather$variable=="Trimodal"], c1 = 60)
+gold_trimodal_all <- gold(y = y_trimodal_250)
 #save(gold_trimodal_all, file = "R Objects/gold_trimodal_all.RData")
 
-gold_claw_all <- gold(y = distr_gather$value[distr_gather$variable=="Claw"], c1 = 15)
-#save(duos_claw_all, file = "R Objects/duos_claw_all.RData")
+gold_claw_all <- gold(y = y_claw_250)
+
+#save(gold_claw_all, file = "R Objects/gold_claw_all.RData")
 
 ```
 
 ```{r}
-load("R Objects/duos_claw_all.RData")
-load("R Objects/duos_unif_all.RData")
-load("R Objects/duos_jagged_all.RData")
-load("R Objects/duos_trimodal_all.RData")
-load("R Objects/duos_beta_all.RData")
-load("R Objects/duos_bimodal_all.RData")
-load("R Objects/duos_arcsin_all.RData")
-load("R Objects/duos_normal_all.RData")
-load("R Objects/duos_exp.RData")
+load("R Objects/gold_claw_all.RData")
+load("R Objects/gold_unif_all.RData")
+load("R Objects/gold_jagged_all.RData")
+load("R Objects/gold_trimodal_all.RData")
+load("R Objects/gold_beta_all.RData")
+load("R Objects/gold_bimodal_all.RData")
+load("R Objects/gold_arcsin_all.RData")
+load("R Objects/gold_normal_all.RData")
+load("R Objects/gold_exp.RData")
+input <- runif(1000)
 
-p1 <- gold_plot(gold_unif_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform PDF")
-p2 <- gold_plot(gold_beta_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta PDF")
-p3 <- gold_plot(gold_normal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal PDF")
-p4 <- gold_plot(gold_exponential_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential PDF")
-p5 <- gold_plot(gold_arcsin_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin PDF")
-p6 <- gold_plot(gold_bimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal PDF")
-p7 <- gold_plot(gold_jagged_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged PDF")
-p8 <- gold_plot(gold_trimodal_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal PDF")
-p9 <- gold_plot(gold_claw_all, data = TRUE)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw PDF")
+add_theme <<- theme(text = element_text(size = 22))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20))
+
+p1 <- gold_plot(gold_unif_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =rep(1,length(input))), aes(X,Y), color = "red",size = 1)+ ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform")+ggplot2::xlab("")+add_theme
+
+
+
+p2 <- gold_plot(gold_beta_all, data = TRUE)+geom_line(data = data.frame(X = input, Y = dbeta(input,2,5)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta")+ggplot2::xlab("")+add_theme
+
+  input_n <- input*(max(gold_normal_all$y)+.00001-(min(gold_normal_all$y)-.00001))+(min(gold_normal_all$y)-.00001)
+  
+p3 <- gold_plot(gold_normal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y = dnorm(input_n,0,1)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(gold_exponential_all$y)+.00001-(min(gold_exponential_all$y)-.00001))+(min(gold_exponential_all$y)-.00001)
+input_n <- input_n[input_n>=0]
+p4 <- gold_plot(gold_exponential_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =dexp(input_n,1)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential")+ggplot2::xlab("")+add_theme+expand_limits(x=0)
+
+p5 <- gold_plot(gold_arcsin_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =dbeta(input,0.5,0.5)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(gold_bimodal_all$y)+.00001-(min(gold_bimodal_all$y)-.00001))+(min(gold_bimodal_all$y)-.00001)
+      Y <- (.3*dnorm(input_n)+.7*dnorm(input_n,4,1))
+      
+p6 <- gold_plot(gold_bimodal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal")+ggplot2::xlab("")+add_theme
+
+Y <-NA
+      Y[input>=0 & input <.2] <- 1.5-5*input[input>=0 & input<.2]
+      Y[input>=.2 & input <.4] <- -0.5+5*input[input>=.2 & input<.4]
+      Y[input>=.4 & input <.6] <- 3.5-5*input[input>=.4 & input<.6]
+      Y[input>=.6 & input <.8] <- -2.5+5*input[input>=.6 & input<.8]
+      Y[input>=.8 & input <1] <- 5.5-5*input[input>=.8 & input<1]
+p7 <- gold_plot(gold_jagged_all, data = TRUE)+geom_line(data = data.frame(X = input, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(gold_trimodal_all$y)+.00001-(min(gold_trimodal_all$y)-.00001))+(min(gold_trimodal_all$y)-.00001)
+      Y <- (.2*dnorm(input_n)+.3*dnorm(input_n,6,1)+.5*dnorm(input_n,2,.1))
+
+p8 <- gold_plot(gold_trimodal_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(gold_claw_all$y)+.00001-(min(gold_claw_all$y)-.00001))+(min(gold_claw_all$y)-.00001)
+   
+ Y <- (.5*dnorm(input_n)+.1*dnorm(input_n,-1,.1)+.1*dnorm(input_n,-.5,.1)+.1*dnorm(input_n,0,.1)+.1*dnorm(input_n,.5,.1)+.1*dnorm(input_n,1,.1))
+
+ p9 <- gold_plot(gold_claw_all, data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw")+ggplot2::xlab("")+add_theme
 
 library(gridExtra)
-jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Gold_All_PDF.jpg", width=1094, height=541)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_gold_All_PDF.jpg", width=1094, height=541)
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
 dev.off()
 
-p1 <- gold_plot(gold_unif_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform CDF")
-p2 <- gold_plot(gold_beta_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta CDF")
-p3 <- gold_plot(gold_normal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal CDF")
-p4 <- gold_plot(gold_exponential_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential CDF")
-p5 <- gold_plot(gold_arcsin_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin CDF")
-p6 <- gold_plot(gold_bimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal CDF")
-p7 <- gold_plot(gold_jagged_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged CDF")
-p8 <- gold_plot(gold_trimodal_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal CDF")
-p9 <- gold_plot(gold_claw_all, type = "cdf")+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw CDF")
+input <- runif(1000)
+
+add_theme <<- theme(text = element_text(size = 22))+theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20))
+
+p1 <- gold_plot(gold_unif_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =input), aes(X,Y), color = "red",size = 1)+ ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Uniform")+ggplot2::xlab("")+add_theme
+
+
+p2 <- gold_plot(gold_beta_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y = pbeta(input,2,5)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Beta")+ggplot2::xlab("")+add_theme
+
+  input_n <- input*(max(gold_normal_all$y)+.00001-(min(gold_normal_all$y)-.00001))+(min(gold_normal_all$y)-.00001)
+  
+p3 <- gold_plot(gold_normal_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y = pnorm(input_n,0,1)), aes(X,Y), color = "red", size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Normal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(gold_exponential_all$y)+.00001-(min(gold_exponential_all$y)-.00001))+(min(gold_exponential_all$y)-.00001)
+input_n <- input_n[input_n>=0]
+p4 <- gold_plot(gold_exponential_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =pexp(input_n,1)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Exponential")+ggplot2::xlab("")+add_theme+expand_limits(x=0)
+
+p5 <- gold_plot(gold_arcsin_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =pbeta(input,0.5,0.5)), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Arcsin")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(gold_bimodal_all$y)+.00001-(min(gold_bimodal_all$y)-.00001))+(min(gold_bimodal_all$y)-.00001)
+      Y <- (.3*pnorm(input_n)+.7*pnorm(input_n,4,1))
+      
+p6 <- gold_plot(gold_bimodal_all, type = "cdf",data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Bimodal")+ggplot2::xlab("")+add_theme
+
+Y <-NA
+     Y[input>=0 & input <.2] <- 1.5*input[input>=0 & input<.2]-(5*input[input>=0 & input<.2]^2)/2
+      Y[input>=.2 & input <.4] <- (5*input[input>=.2 & input<.4]^2)/2-.5*input[input>=.2 & input<.4]+.2
+      Y[input>=.4 & input <.6] <- (-5*input[input>=.4 & input<.6]^2)/2+3.5*input[input>=.4 & input<.6]-.6
+      Y[input>=.6 & input <.8] <- (5*input[input>=.6 & input<.8]^2)/2-2.5*input[input>=.6 & input<.8]+1.2
+      Y[input>=.8 & input <1] <- (-5*input[input>=.8 & input<1]^2)/2+5.5*input[input>=.8 & input<1]-2
+p7 <- gold_plot(gold_jagged_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Jagged")+ggplot2::xlab("")+add_theme
+
+    input_n <- input*(max(gold_trimodal_all$y)+.00001-(min(gold_trimodal_all$y)-.00001))+(min(gold_trimodal_all$y)-.00001)
+      Y <- (.2*pnorm(input_n)+.3*pnorm(input_n,6,1)+.5*pnorm(input_n,2,.1))
+
+p8 <- gold_plot(gold_trimodal_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Trimodal")+ggplot2::xlab("")+add_theme
+
+   input_n <- input*(max(gold_claw_all$y)+.00001-(min(gold_claw_all$y)-.00001))+(min(gold_claw_all$y)-.00001)
+   
+ Y <- (.5*pnorm(input_n)+.1*pnorm(input_n,-1,.1)+.1*pnorm(input_n,-.5,.1)+.1*pnorm(input_n,0,.1)+.1*pnorm(input_n,.5,.1)+.1*pnorm(input_n,1,.1))
+
+ p9 <- gold_plot(gold_claw_all, type = "cdf", data = TRUE)+geom_line(data = data.frame(X = input_n, Y  =Y), aes(X,Y), color = "red",size = 1)+ggplot2::ylab("")+ggplot2::theme(text = ggplot2::element_text(size=20))+ggplot2::ggtitle("Claw")+ggplot2::xlab("")+add_theme
 
 library(gridExtra)
-jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_Gold_All_CDF.jpg", width=1094, height=541)
+jpeg(file = "D:\\Documents\\Dissertation - Summer 2018\\Latex Dissertation\\Images\\Ch3_gold_All_CDF.jpg", width=1094, height=541)
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow=3)
 dev.off()
 ```

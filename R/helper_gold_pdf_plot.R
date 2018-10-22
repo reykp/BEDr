@@ -66,10 +66,10 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, i
   }
 
   if(interact == TRUE){
-    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
     xlab("X")))
   }else{
-    g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("PDF Estimate")+
+    g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
       xlab("X")
   }
 }

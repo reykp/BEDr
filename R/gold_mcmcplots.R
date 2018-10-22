@@ -142,7 +142,8 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
               geom_line(aes(Iteration, Simulation))+
               #geom_point(aes(Iteration, Simulation))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free")+theme(text = element_text(size=25)))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free")+
+              theme(text = element_text(size=25)))
       
     }
   }else if (type == "acf"){
@@ -175,9 +176,10 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
       
       print(ggplot(acf_plot,aes(x = Lag, y = ACF))+
               geom_hline(aes(yintercept = 0))+
-              geom_segment(mapping = aes(xend = Lag, yend = 0, color = Parameter))+
+              geom_segment(mapping = aes(xend = Lag, yend = 0))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")+theme(text = element_text(size=25)))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")+
+              theme(text = element_text(size=25)))
       
       
     }
@@ -220,9 +222,10 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
       for (i in 1:graph_index) {
         
         print((ggplot(G_plot)+
-                   geom_line(aes(Iteration, RunningMean, group=Parameter, color=Parameter))+
+                   geom_line(aes(Iteration, RunningMean, group=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))+theme(text = element_text(size=25)))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))+
+                theme(text = element_text(size=25)))
         
         
       }

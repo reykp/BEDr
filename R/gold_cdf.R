@@ -122,14 +122,37 @@ gold_cdf <- function(x, gold_output, burnin=NA){
   scale_u <- gold_output$scale_u
   
   
-  if(min_y<0|max_y>1){
-    for (i in 1:length(x)){
-      if(x[i]<(min_y-scale_l)|x[i]>(max_y+scale_u)){
-        print(x[i])
-        print("is out of the range of the data in 'y'.")
-      }
-    }    
+  # Check to make sure can estimate p at x
+  if(max(gold_output$y)>1 | min(gold_output$y)< 0){
+    
+    outside_range_u <- which(x > (max(gold_output$y)+gold_output$scale_u))
+    outside_range_l <- which(x < (min(gold_output$y)-gold_output$scale_l))
+    if((length(outside_range_u)>0) &(length(outside_range_l)==0)){
+      print(x[outside_range_u])
+      stop("The requested 'x' vector contains the above value(s) outside the range of max(y)+scale_u.")
+    }
+    
+    if((length(outside_range_l)>0) &(length(outside_range_u)==0)){
+      print(x[outside_range_l])
+      stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l.")
+    }
+    
+    if((length(outside_range_l)>0) &(length(outside_range_u)>0)){
+      print(x[c(outside_range_l, outside_range_u)])
+      stop("The requested 'x' vector contains the above value(s) outside the range of min(y)-scale_l and max(y)+scale_u.")
+    }
+    
+    
+  }else{
+    outside_range_u <- which(x > 1)
+    outside_range_l <- which(x < 0)
+    if((length(outside_range_u)>0)|(length(outside_range_l)>0)){
+      print(x[c(outside_range_u, outside_range_l)])
+      stop("The requested 'x' vector contains the above value(s) outside the range of (0, 1).")
+    }
+    
   }
+  
   
   #If min and max of y outside of range of 1, data needs to be standardized
   if((min_y<0 | max_y>1)){
@@ -140,7 +163,7 @@ gold_cdf <- function(x, gold_output, burnin=NA){
 
   
   #Collect the iterations after burnin
-  G_burnin <- G[burnin:nrow(G),]
+  G_burnin <- G[{burnin+1}:nrow(G),]
 
   #Exponentiate for numerator
   G_burnin_exp <- exp(G_burnin)

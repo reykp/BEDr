@@ -119,7 +119,7 @@ gold_stat <- function(gold_output, stat = "m", p=NA,burnin=NA, print = TRUE){
   # Get points at which to 
   x_gold <- gold_output$x
 
-  G_burnin <- G[burnin:nrow(G),]
+  G_burnin <- G[{burnin+1}:nrow(G),]
 
   #Exponentiate for numerator
   G_burnin_exp <-  exp(G_burnin)
@@ -145,21 +145,46 @@ gold_stat <- function(gold_output, stat = "m", p=NA,burnin=NA, print = TRUE){
     var_matrix <- ((G_PDF %*% (x_gold^2))-mean_matrix^2)
   }
 
+# 
+#   if((min_y<0) | (max_y>1)){
+#     input <- (x_gold)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
+#     duos_CDF <- gold_cdf(input,gold_output,burnin)
+#   }else{
+#     input <- x_gold
+#     duos_CDF <- gold_cdf(x_gold,gold_output,burnin)
+#   }
+# 
+#   x_gold <- duos_CDF$x
+#   cdf_y <- duos_CDF$cdf
+# 
+#   CDF_mat <- duos_CDF$mat
+#   cdf_y_perc <- apply(CDF_mat, 2, quantile, probs=c(.025, .975))
 
-  if((min_y<0) | (max_y>1)){
-    input <- (x_gold)*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l);
-    duos_CDF <- gold_cdf(input,gold_output,burnin)
-  }else{
-    input <- x_gold
-    duos_CDF <- gold_cdf(x_gold,gold_output,burnin)
+
+  #Exponentiate for numerator
+  G_burnin_exp <- exp(G_burnin)
+  #Calculate normalizing constant
+  nc <- (widths%*%t(G_burnin_exp))
+  
+  #Calcualte first part of CDF
+  G_CDF_start <- G_burnin_exp
+  for (i in 1:nrow(G_burnin_exp)){
+    G_CDF_start[i,] <- widths*G_CDF_start[i,]/nc[i]
   }
-
-  x_gold <- duos_CDF$x
-  cdf_y <- duos_CDF$cdf
-
-  CDF_mat <- duos_CDF$mat
+  
+  #Need to cumulative sum to get values of CDF
+  CDF_mat <- t(apply(G_CDF_start, 1,cumsum))
+  
+  #Calculate posterior mean cdf
+  cdf_y <- NA
+  for (j in 1:ncol(CDF_mat)){
+    cdf_y[j] <- mean(CDF_mat[,j])
+  }
+  
+  
+  #Calculate percentiles
   cdf_y_perc <- apply(CDF_mat, 2, quantile, probs=c(.025, .975))
-  # 
+  
   
   #Create empty list to contain quantiles
 
@@ -168,32 +193,47 @@ gold_stat <- function(gold_output, stat = "m", p=NA,burnin=NA, print = TRUE){
     quantiles_cri <- matrix(NA, nrow=length(p), ncol=2)
 
     for(i in 1:length(p)){
-      ss_indiv <- smooth.spline(x_gold, cdf_y)
-      finv1 <- splinefun(ss_indiv$y, ss_indiv$x)
-      quantiles[i] <- finv1(p[i])
+      if((max_y>1)|(min_y<0)){
+        ss_indiv <- smooth.spline(x_gold, cdf_y)
+        finv1 <- splinefun(ss_indiv$y, ss_indiv$x)
+        quantiles[i] <- finv1(p[i])*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l)
+        
+        
+        ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
+        finv2 <- splinefun(ss_indiv_q1$y, ss_indiv_q1$x)
+        quantiles_cri[i,2] <- finv2(p[i])*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l)
+        
+        ss_indiv_q2 <- smooth.spline(x_gold, t(cdf_y_perc)[,2])
+        finv3 <- splinefun(ss_indiv_q2$y, ss_indiv_q2$x)
+        quantiles_cri[i,1] <- finv3(p[i])*(max_y+scale_u-(min_y-scale_l))+(min_y-scale_l)
+       
+      }else{
+        ss_indiv <- smooth.spline(x_gold, cdf_y)
+        finv1 <- splinefun(ss_indiv$y, ss_indiv$x)
+        quantiles[i] <- finv1(p[i])
     
       
-      ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
-      fin2 <- splinefun(ss_indiv_q1$y, ss_indiv_q1$x)
-      quantiles_cri[i,1] <- finv2(p[i])
+        ss_indiv_q1 <- smooth.spline(x_gold, t(cdf_y_perc)[,1])
+        finv2 <- splinefun(ss_indiv_q1$y, ss_indiv_q1$x)
+        quantiles_cri[i,1] <- finv2(p[i])
      
-      ss_indiv_q2 <- smooth.spline(x_gold, t(cdf_y_perc)[,2])
-      fin3 <- splinefun(ss_indiv_q2$y, ss_indiv_q2$x)
-      quantiles_cri[i,2] <- finv3(p[i])
-     
+        ss_indiv_q2 <- smooth.spline(x_gold, t(cdf_y_perc)[,2])
+        finv3 <- splinefun(ss_indiv_q2$y, ss_indiv_q2$x)
+        quantiles_cri[i,2] <- finv3(p[i])
+      } 
     }
   }
 
 
   if(stat%in%c("mean", "m")){
-    mean_list <- list(mean=mean(mean_matrix), cri=quantile(mean_matrix,c(0.025, 0.975)))
+    mean_list <- list(mean=mean(mean_matrix), cri=quantile(mean_matrix,c(0.025, 0.975)), mat = mean_matrix)
     if(print == TRUE){
       print(mean_list[1])
       print(mean_list[2])
     }
     return(mean_list)
   }else if (stat%in%c("var", "v")){
-    var_list <- list(variance=mean(var_matrix), cri=quantile(var_matrix,c(0.025, 0.975)))
+    var_list <- list(variance=mean(var_matrix), cri=quantile(var_matrix,c(0.025, 0.975)), mat = var_matrix)
     if(print == TRUE){
       print(var_list[1])
       print(var_list[2])

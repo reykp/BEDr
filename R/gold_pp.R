@@ -138,12 +138,17 @@ gold_pp <- function(gold_output, npar=6, burnin=NA){
       graph_index <- ceiling(npar/6)
       for (i in 1:graph_index) {
         
-        print(ggplot()+
-                geom_histogram(data = G_plot, aes(Simulation),fill ="#F8766D", color = "#F8766D", alpha = .5, bins = 60)+
-                geom_histogram(data = G_plot_prior, aes(Simulation),fill ="#00BFC4", color = "#00BFC4", alpha = .5, bins = 60)+
-                theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i))
+        # print(ggplot()+
+        #         geom_histogram(data = G_plot, aes(Simulation),fill ="#F8766D", color = "#F8766D", alpha = .5, bins = 40)+
+        #         geom_histogram(data = G_plot_prior, aes(Simulation),fill ="#00BFC4", color = "#00BFC4", alpha = .5, bins = 60)+
+        #         theme_bw()+theme(axis.title = element_text(size = 12))+
+        #         facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i))
         
+        print(ggplot()+
+                geom_histogram(data = G_plot, aes(Simulation, color = "Posterior", fill = "Posterior"), alpha = .5, bins = 40)+
+                geom_histogram(data = G_plot_prior, aes(Simulation, color = "Prior", fill = "Prior"), alpha = .5, bins = 60)+
+                theme_bw()+theme(axis.title = element_text(size = 12),legend.title=element_blank())+
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i)+guides(colour=FALSE))
         
       }
         
