@@ -104,7 +104,7 @@
 
 
 duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plots="all", burnin=NA){
-  
+
   # Get cut-point parameters
   C_output <- duos_output$C
   # Get bin proportion parameters
@@ -176,7 +176,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
         print(ggplot(C_plot)+
                 geom_line(aes(Iteration, Simulation))+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y"))
 
 
       }
@@ -215,7 +215,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
         print(ggplot(P_plot)+
                 geom_line(aes(Iteration, Simulation))+
                 theme_bw()+theme(axis.title = element_text(size = 12))+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y"))
 
 
       }
@@ -254,7 +254,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
               geom_hline(aes(yintercept = 0)) +
               geom_segment(mapping = aes(xend = Lag, yend = 0))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y"))
       
       
     }
@@ -295,7 +295,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
                   geom_hline(aes(yintercept = 0)) +
                   geom_segment(mapping = aes(xend = Lag, yend = 0))+
                   theme_bw()+theme(axis.title = element_text(size = 12))+
-                  facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))
+                  facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y"))
           
           
         }
@@ -357,7 +357,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
         print((ggplot(C_plot)+
                    geom_line(aes(Iteration, RunningMean, group=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y")))
         
         
       }
@@ -406,7 +406,7 @@ duos_mcmcplots <- function(duos_output, type = "traceplot",  parameters="c", plo
         print((ggplot(P_plot)+
                  geom_line(aes(Iteration, RunningMean, group=Parameter))+
                  theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                 facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")))
+                 facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y")))
         
         
       }

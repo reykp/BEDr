@@ -1,7 +1,7 @@
 # Plot Probability Density from gold.
 
 helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, interact){
-
+  
   if(is.na(burnin)){
     burnin <- nrow(gold_output$G)/2
   }
@@ -49,10 +49,10 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, i
   # }
 
     data_y <- data.frame(gold_output$y)
-    names(data_y) <- "data"
+    names(data_y) <- "X"
   
 
-  g <- ggplot(data_y, aes(x=data))+
+  g <- ggplot(data_y, aes(x=X))+
     theme(axis.title = element_text(size = 12))+
     theme_bw()+expand_limits(y=0)
 
@@ -66,8 +66,13 @@ helper_gold_pdf_plot <- function(gold_output,burnin=NA, cri=FALSE, data=FALSE, i
   }
 
   if(interact == TRUE){
-    suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
-    xlab("X")))
+    if(data==FALSE){
+      suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
+      xlab("X"), tooltip = c("X", "PDF", "lower", "upper")))
+    }else{
+      suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
+                                          xlab("X")))
+    }
   }else{
     g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+
       xlab("X")

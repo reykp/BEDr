@@ -2,12 +2,22 @@ Package: biRd
 Type: Package
 Title: What the Package Does in One 'Title Case' Line
 Version: 0.0.0.9100
-Date: 2018-07-15
+Date: 2018-11-11
 Author: Kathleen Rey
-Maintainer: Your Name <your@email.com>
+Maintainer: Kathleen Rey <your@email.com>
 Description: One paragraph description of what the package does as one or more full sentences.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.16)
+Imports: 
+  Rcpp (>= 0.12.16),
+  ggforce,
+  dplyr,
+  tidyr,
+  ggplot2,
+  plotly,
+  gridExtra,
+  Hmisc,
+  matrixcalc,
+  MASS
 LinkingTo: Rcpp
 RoxygenNote: 6.1.0
 Suggests: knitr,

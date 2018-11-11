@@ -76,9 +76,13 @@ helper_duos_pdf_plot <- function(duos_output, estimate, burnin=NA, cri=FALSE, da
   }
 
   if(interact == TRUE){
+    if(data!=TRUE){
+      suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(X, PDF),color="blue", size=.8)+ylab("Density")+
+                                          xlab("X"), tooltip=c("X","PDF", "lower", "upper")))
+    }else{
     suppressMessages(plotly::ggplotly(g+geom_line(data=plot_density, aes(X, PDF),color="blue", size=.8)+ylab("Density")+
                        xlab("X"), tooltip=c("X","PDF", "lower", "upper", "Data")))
-    
+    }
     
   }else{
     g+geom_line(data=plot_density, aes(x, PDF),color="blue", size=.8)+ylab("Density")+

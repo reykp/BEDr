@@ -86,6 +86,8 @@
 
 gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA){
   
+  
+  
   G_output <- gold_output$G
   
   
@@ -142,7 +144,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
               geom_line(aes(Iteration, Simulation))+
               #geom_point(aes(Iteration, Simulation))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free")+
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i,scales="free_y")+
               theme(text = element_text(size=25)))
       
     }
@@ -178,7 +180,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
               geom_hline(aes(yintercept = 0))+
               geom_segment(mapping = aes(xend = Lag, yend = 0))+
               theme_bw()+theme(axis.title = element_text(size = 12))+
-              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free")+
+              facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y")+
               theme(text = element_text(size=25)))
       
       
@@ -224,7 +226,7 @@ gold_mcmcplots <- function(gold_output, type = "traceplot",  npar = 6, burnin=NA
         print((ggplot(G_plot)+
                    geom_line(aes(Iteration, RunningMean, group=Parameter))+
                    theme_bw()+theme(axis.title = element_text(size = 12))+ylab("Running mean")+
-                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free"))+
+                facet_wrap_paginate(~Parameter, ncol = 2, nrow = 3, page = i, scales="free_y"))+
                 theme(text = element_text(size=25)))
         
         
